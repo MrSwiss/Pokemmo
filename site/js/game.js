@@ -281,11 +281,17 @@ function renderChars(ctx){
 function drawPokemonParty(){
 	var x = 500;
 	var y = 10;
-	var deltaY = 74;
+	var deltaY = 45;
 	if(!pokemonParty || !pokemonData) return;
 	
 	for(var i=0;i<pokemonParty.length;++i){
+		ctx.save();
+		ctx.shadowOffsetX = 4;
+		ctx.shadowOffsetY = 4;
+		ctx.shadowBlur = 5;
+		ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
 		ctx.drawImage(uiPokemon, x, y);
+		ctx.restore();
 		
 		if(pokemonParty[i].imageSmall.width){
 			ctx.drawImage(pokemonParty[i].imageSmall, x + 8, y + 8);
@@ -298,16 +304,19 @@ function drawPokemonParty(){
 		drawStyleText(pokemonData[pokemonParty[i].id].name.toUpperCase(), 45, 21);
 		
 		// Level
+		var lvWidth = ctx.measureText('Lv '+pokemonParty[i].level).width;
 		drawStyleText('Lv '+pokemonParty[i].level, 45, 35);
 		ctx.font = '12pt Font1';
 		var hp = pokemonParty[i].hp+'/'+pokemonParty[i].maxHp;
-		drawStyleText(hp, 280 - ctx.measureText(hp).width, 35);
+		var hpWidth = ctx.measureText(hp).width;
+		drawStyleText(hp, 280 - hpWidth, 35);
 		
 		ctx.fillStyle = 'rgb(0, 200, 0)';
 		ctx.strokeStyle = 'rgb(0, 0, 0)';
 		
-		ctx.fillRect(x + 110, y + 27, 100 * Math.ceil(pokemonParty[i].hp/pokemonParty[i].maxHp), 7);
-		ctx.strokeRect(x + 110, y + 27, 100, 7);
+		var sx = x + 60 + lvWidth;
+		ctx.fillRect(sx, y + 27, (200 - hpWidth - lvWidth) * Math.ceil(pokemonParty[i].hp/pokemonParty[i].maxHp), 7);
+		ctx.strokeRect(sx, y + 27, (200 - hpWidth - lvWidth), 7);
 		
 		
 		y += deltaY;
