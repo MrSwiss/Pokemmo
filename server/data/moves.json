@@ -5,6 +5,18 @@
 		"pp_max":	56,
 		"power":	35,
 		"accuracy":	0.95,
-		"contact":	true
+		"contact":	true,
+		"attackType": "simple"
+	},
+	
+	"growl": {
+		"type":			"normal",
+		"pp":			40,
+		"pp_max":		64,
+		"accuracy":		1.0,
+		"contact":		false,
+		"attackType":	"debuff",
+		"debuffStat":	"atk",
+		"debuffAmount":	"1"
 	}
 }

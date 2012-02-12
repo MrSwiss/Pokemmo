@@ -6,6 +6,7 @@
 		"ability":		"overgrow",
 		"genderRatio":	"0.875",
 		
+		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
 		"baseExp":		64,
 		"baseStats": {

@@ -1,0 +1,1 @@
+The folder "site" in the parent directory MUST be included (that's because the server needs to read the map files).
