@@ -1,0 +1,9 @@
+{
+	"tackle": {
+		"pp":		35,
+		"pp_max":	56,
+		"power":	35,
+		"accuracy":	0.95,
+		"contact":	true
+	}
+}
