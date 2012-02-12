@@ -17,6 +17,7 @@ var DIR_UP = 2;
 var DIR_RIGHT = 3;
 
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
+var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
 
 console.log('Loading maps...');
 start = +new Date();
@@ -104,6 +105,11 @@ io.sockets.on('connection', function (socket) {
 	};
 	
 	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new PlayerPokemon("1", 5));
 	
 	maps[client.map].chars.push(client.char);
 	
@@ -174,6 +180,8 @@ function PlayerPokemon(id, level){
 	self.id = String(id);
 	self.level = Math.min(Math.max(2, level), 100);
 	
+	self.nickname = null;
+	
 	self.hp = 0;
 	self.maxHp = 0;
 	self.atk = 0;
@@ -195,6 +203,9 @@ function PlayerPokemon(id, level){
 	self.ivSpAtk = Math.floor(Math.random() * 32);
 	self.ivSpDef = Math.floor(Math.random() * 32);
 	self.ivSpeed = Math.floor(Math.random() * 32);
+	
+	self.shiny = (1/8192 > Math.random());
+	self.moves = [null, null, null, null];
 	
 	self.calculateExpGain = function(isTrainer){
 		return ((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7;
@@ -240,6 +251,16 @@ function PlayerPokemon(id, level){
 		self.spAtk = calculateSingleStat(pokemonData[self.id].baseStats.spAtk, self.ivSpAtk, self.evSpAtk);
 		self.spDef = calculateSingleStat(pokemonData[self.id].baseStats.spDef, self.ivSpDef, self.evSpDef);
 		self.speed = calculateSingleStat(pokemonData[self.id].baseStats.speed, self.ivSpeed, self.evSpeed);
+	}
+	
+	
+	// Make it learn the 4 highest level moves for his level
+	var j = 0;
+	var learnset = pokemonData[self.id].learnset;
+	for(var i=0;i<learnset.length;++i){
+		if(learnset[i].level > self.level) break;
+		self.moves[j] = learnset[i].move;
+		j = (j+1) % 4;
 	}
 	
 	self.calculateStats();

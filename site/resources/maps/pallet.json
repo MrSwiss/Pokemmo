@@ -37,6 +37,29 @@
          "width":24,
          "x":0,
          "y":0
+        }, 
+        {
+         "height":64,
+         "name":"pokemons",
+         "objects":[
+                {
+                 "height":160,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "type":"",
+                 "width":64,
+                 "x":384,
+                 "y":1120
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":24,
+         "x":0,
+         "y":0
         }],
  "orientation":"orthogonal",
  "properties":
@@ -110,42 +133,42 @@
                 },
              "117":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "118":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "119":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "120":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "121":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "122":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "128":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "129":
                 {
-                 "cliff":"1",
+                 "ledge":"1",
                  "solid":"1"
                 },
              "13":

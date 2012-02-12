@@ -224,6 +224,10 @@ function isTileGrass(map, x, y){
 	return hasTileProp(map, x, y, 'grass');
 }
 
+function isTileLedge(map, x, y){
+	return hasTileProp(map, x, y, 'ledge');
+}
+
 function hasTileProp(map, x, y, prop){
 	for(var i=0;i<map.layers.length;++i){
 		var layer = map.layers[i];
@@ -281,14 +285,14 @@ function renderChars(ctx){
 function drawPokemonParty(){
 	var x = 500;
 	var y = 10;
-	var deltaY = 45;
+	var deltaY = 48;
 	if(!pokemonParty || !pokemonData) return;
 	
 	for(var i=0;i<pokemonParty.length;++i){
 		ctx.save();
 		ctx.shadowOffsetX = 4;
 		ctx.shadowOffsetY = 4;
-		ctx.shadowBlur = 5;
+		ctx.shadowBlur = 0;
 		ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
 		ctx.drawImage(uiPokemon, x, y);
 		ctx.restore();
@@ -301,7 +305,7 @@ function drawPokemonParty(){
 		ctx.font = '12pt Font1';
 		
 		// Name
-		drawStyleText(pokemonData[pokemonParty[i].id].name.toUpperCase(), 45, 21);
+		drawStyleText((pokemonParty[i].nickname || pokemonData[pokemonParty[i].id].name).toUpperCase(), 45, 21);
 		
 		// Level
 		var lvWidth = ctx.measureText('Lv '+pokemonParty[i].level).width;

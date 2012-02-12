@@ -349,49 +349,49 @@
   </tile>
   <tile id="117">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="118">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="119">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="120">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="121">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="122">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="128">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
   <tile id="129">
    <properties>
-    <property name="cliff" value="1"/>
+    <property name="ledge" value="1"/>
     <property name="solid" value="1"/>
    </properties>
   </tile>
