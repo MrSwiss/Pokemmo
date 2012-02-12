@@ -331,7 +331,11 @@ function drawPokemonParty(){
 		ctx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
 		
 		ctx.fillStyle = 'rgb(0, 0, 200)';
+<<<<<<< HEAD
 		ctx.fillRect(sx + 5, y + 30, Math.ceil((190 - barWidth - lvWidth) * (pokemonParty[i].experience / pokemonParty[i].experienceNeeded)), 5);
+=======
+		ctx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth) * Math.ceil(pokemonParty[i].experience / pokemonParty[i].experienceNeeded), 5);
+>>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		ctx.strokeRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
 		
 		// Hp bar
@@ -340,7 +344,11 @@ function drawPokemonParty(){
 		ctx.strokeStyle = 'rgb(0, 0, 0)';
 		
 		
+<<<<<<< HEAD
 		ctx.fillRect(sx, y + 27, Math.ceil((200 - barWidth - lvWidth) * (pokemonParty[i].hp / pokemonParty[i].maxHp)), 5);
+=======
+		ctx.fillRect(sx, y + 27, (200 - barWidth - lvWidth) * Math.ceil(pokemonParty[i].hp / pokemonParty[i].maxHp), 5);
+>>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		ctx.strokeRect(sx, y + 27, (200 - barWidth - lvWidth), 5);
 		
 		
