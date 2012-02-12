@@ -27,6 +27,7 @@ var loadingMapRender;
 
 var characters = [];
 var objects = [];
+var pokemonParty = [];
 
 var pokemonData;
 
@@ -62,7 +63,7 @@ if(isPhone){
 	iOSUI.src = 'resources/ui/ios_ui.png';
 }
 
-
+var uiPokemon;
 
 var miscSprites;
 
@@ -274,6 +275,50 @@ function renderChars(ctx){
 			ctx.drawImage(miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
+	}
+}
+
+function drawPokemonParty(){
+	var x = 500;
+	var y = 10;
+	var deltaY = 74;
+	if(!pokemonParty || !pokemonData) return;
+	
+	for(var i=0;i<pokemonParty.length;++i){
+		ctx.drawImage(uiPokemon, x, y);
+		
+		if(pokemonParty[i].imageSmall.width){
+			ctx.drawImage(pokemonParty[i].imageSmall, x + 8, y + 8);
+		}
+		
+		
+		ctx.font = '12pt Font1';
+		
+		// Name
+		drawStyleText(pokemonData[pokemonParty[i].id].name.toUpperCase(), 45, 21);
+		
+		// Level
+		drawStyleText('Lv '+pokemonParty[i].level, 45, 35);
+		ctx.font = '12pt Font1';
+		var hp = pokemonParty[i].hp+'/'+pokemonParty[i].maxHp;
+		drawStyleText(hp, 280 - ctx.measureText(hp).width, 35);
+		
+		ctx.fillStyle = 'rgb(0, 200, 0)';
+		ctx.strokeStyle = 'rgb(0, 0, 0)';
+		
+		ctx.fillRect(x + 110, y + 27, 100 * Math.ceil(pokemonParty[i].hp/pokemonParty[i].maxHp), 7);
+		ctx.strokeRect(x + 110, y + 27, 100, 7);
+		
+		
+		y += deltaY;
+	}
+	
+	function drawStyleText(str, $x, $y){
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillText(str, x + $x + 1, y + $y + 1);
+		
+		ctx.fillStyle = 'rgb(255, 255, 255)';
+		ctx.fillText(str, x + $x, y + $y);
 	}
 }
 
@@ -494,7 +539,7 @@ function loadMap(id){
 	characters = [];
 	loadedChars = false;
 	
-	var pending = 1;
+	var pending = 0;
 	var completed = 0;
 	var error = false;
 	
@@ -503,6 +548,12 @@ function loadMap(id){
 	miscSprites.onload = function(){--pending;++completed;};
 	miscSprites.onerror = function(){--pending;error = true;refresh();};
 	miscSprites.src = 'resources/tilesets/misc.png';
+	
+	++pending;
+	uiPokemon = new Image();
+	uiPokemon.onload = function(){--pending;++completed;};
+	uiPokemon.onerror = function(){--pending;error = true;refresh();};
+	uiPokemon.src = 'resources/ui/pokemon.png';
 	
 	++pending;
 	$q.ajax('resources/data/pokemon.json', {
@@ -520,6 +571,7 @@ function loadMap(id){
 		}
 	});
 	
+	++pending;
 	$q.ajax('resources/maps/'+id+'.json', {
 		'dataType': 'json',
 		'success': function(data, textStatus, jqXHR){
@@ -536,6 +588,7 @@ function loadMap(id){
 					error = true;
 					break;
 				}else{
+					++pending;
 					tileset.onload = function(tileset){
 						--pending;
 						refresh();
@@ -571,6 +624,8 @@ function loadMap(id){
 				console.log('Map loaded');
 				state = ST_MAP;
 				render();
+			}else{
+				console.log('Pending: '+pending);
 			}
 		}
 		
@@ -616,13 +671,13 @@ function render(){
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
 					}else{
-						ctx.drawImage(gameCanvas, canvas.width/2 - screenWidth/2, 10);
+						ctx.drawImage(gameCanvas, 10, 10);
 					}
 				}else{
 					throw new Error('No map in memory');
 				}
 				
-				
+				drawPokemonParty();
 			break;
 			case ST_LOADING:
 				loadingMapRender();
@@ -743,6 +798,12 @@ window.initGame = function($canvas){
 	socket.on('setInfo', function(data){
 		console.log('setInfo: '+data.id);
 		myId = data.id;
+		pokemonParty = data.pokemon;
+		
+		for(var i=0;i<pokemonParty.length;++i){
+			pokemonParty[i].imageSmall = new Image();
+			pokemonParty[i].imageSmall.src = 'resources/sprites/'+pokemonParty[i].id+'_small.png';
+		}
 	});
 	
 	socket.on('loadMap', function(data){

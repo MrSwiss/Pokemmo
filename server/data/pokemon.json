@@ -10,10 +10,10 @@
 		"baseExp":		64,
 		"baseStats": {
 			"hp":		45,
-			"attack":	49,
-			"defense":	49,
-			"spatk":	65,
-			"spdef":	65,
+			"atk":		49,
+			"def":		49,
+			"spAtk":	65,
+			"spDef":	65,
 			"speed":	45
 		},
 		
@@ -44,7 +44,7 @@
 		],
 		
 		"evYield": {
-			"spatk": 1
+			"spAtk": 1
 		}
 	}
 }

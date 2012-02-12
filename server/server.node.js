@@ -167,12 +167,83 @@ io.sockets.on('connection', function (socket) {
 
 function PlayerPokemon(id, level){
 	var self = this;
+	
+	var MAX_EV = 510;
+	var MAX_INDIVIDUAL_EV = 255;
+	
 	self.id = String(id);
 	self.level = Math.min(Math.max(2, level), 100);
+	
+	self.hp = 0;
+	self.maxHp = 0;
+	self.atk = 0;
+	self.def = 0;
+	self.spAtk = 0;
+	self.spDef = 0;
+	self.speed = 0;
+	
+	self.evHp = 0;
+	self.evAtk = 0;
+	self.evDef = 0;
+	self.evSpAtk = 0;
+	self.evSpDef = 0;
+	self.evSpeed = 0;
+	
+	self.ivHp = Math.floor(Math.random() * 32);
+	self.ivAtk = Math.floor(Math.random() * 32);
+	self.ivDef = Math.floor(Math.random() * 32);
+	self.ivSpAtk = Math.floor(Math.random() * 32);
+	self.ivSpDef = Math.floor(Math.random() * 32);
+	self.ivSpeed = Math.floor(Math.random() * 32);
 	
 	self.calculateExpGain = function(isTrainer){
 		return ((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7;
 	}
+	
+	self.addEV = function(data){
+		var total = self.evHp + self.evAtk + self.evDef + self.SpAtk + self.evSpDef + self.evSpeed;
+		var tmp;
+		if(total > 510) return;
+		
+		var evs = [
+			['hp', 'evHp'],
+			['atk', 'evAtk'],
+			['def', 'evDef'],
+			['spAtk', 'evSpAtk'],
+			['spDef', 'evSpDef'],
+			['speed', 'evSpeed']
+		];
+		
+		for(var i in evs){
+			if(data[evs[i][0]]){
+				tmp = data[evs[i][0]];
+				// If adding this ev will exceed the max total ev, lower the amount of given EV
+				if(total + tmp > MAX_EV) tmp = MAX_EV - total;
+				
+				// Do not let it go over the maximum individual EV
+				self[evs[i][1]] = Math.min(self[evs[i][1]] + tmp, MAX_INDIVIDUAL_EV);
+				
+				total += tmp;
+				if(total >= MAX_EV) return;
+			}
+		}
+	}
+	
+	self.calculateStats = function(){
+		function calculateSingleStat(base, iv, ev){
+			return Math.floor((iv + (2 * base) + (ev / 4)) * self.level / 100 + 5);
+		}
+		
+		self.maxHp = Math.floor((((self.ivHp + (2 * pokemonData[self.id].baseStats.hp)) + (self.evHp / 4) + 100) * self.level) / 100 + 10);
+		self.atk = calculateSingleStat(pokemonData[self.id].baseStats.atk, self.ivAtk, self.evAtk);
+		self.def = calculateSingleStat(pokemonData[self.id].baseStats.def, self.ivDef, self.evDef);
+		self.spAtk = calculateSingleStat(pokemonData[self.id].baseStats.spAtk, self.ivSpAtk, self.evSpAtk);
+		self.spDef = calculateSingleStat(pokemonData[self.id].baseStats.spDef, self.ivSpDef, self.evSpDef);
+		self.speed = calculateSingleStat(pokemonData[self.id].baseStats.speed, self.ivSpeed, self.evSpeed);
+	}
+	
+	self.calculateStats();
+	self.hp = self.maxHp;
 }
 
 function generateRandomString(len){

@@ -1,5 +1,6 @@
 {
 	"tackle": {
+		"type":		"normal",
 		"pp":		35,
 		"pp_max":	56,
 		"power":	35,
