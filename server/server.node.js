@@ -53,13 +53,14 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	for(var n=0;n<map.data.layers.length;++n){
 		var layer = map.data.layers[n];
+		if(layer.type != 'tileLayer') continue;
+		
 		if(layer.properties && layer.properties.solid == '0') continue;
 		
 		var j = 0;
 		
 		for(var y=0;y<solidData[0].length;++y){
 			for(var x=0;x<solidData.length;++x, ++j){
-				
 				
 				var tileid = layer.data[j];
 				if(!tileid) continue;
