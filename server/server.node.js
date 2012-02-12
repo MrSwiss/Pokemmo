@@ -2,7 +2,7 @@ var io = require('socket.io').listen(2828).configure({'close timeout':0});
 var fs = require('fs');
 
 var mapsNames = ['pallet'];
-var clients = {};
+var clients = [];
 var maps = {};
 
 var start, end;
@@ -164,6 +164,8 @@ io.sockets.on('connection', function (socket) {
 		lastPokecenter: ["pallet", 6, 48],
 		pokemon: []
 	};
+	
+	clients.push(client);
 	
 	client.pokemon.push(new PlayerPokemon("1", 5));
 	client.pokemon.push(new PlayerPokemon("1", 5));
