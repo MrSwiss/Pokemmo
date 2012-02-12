@@ -5,6 +5,11 @@ var serverHost = 'http://localhost:2828';
 
 var $q = jQuery;
 var canvas, ctx;
+var gameCanvas;
+var gameCtx;
+var onScreenCanvas;
+var onScreenCtx;
+
 var curMap;
 var socket;
 
@@ -39,8 +44,7 @@ var CHAR_HEIGHT = 64;
 
 var cameraX = 0;
 var cameraY = 0;
-var gameCanvas;
-var gameCtx;
+
 
 var lastAckMove = 0;
 var loadedChars = false;
@@ -629,6 +633,9 @@ function render(){
 			ctx.drawImage(iOSUI, 0, 0);
 		}
 		//console.timeEnd('render');
+		
+		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
+		onScreenCtx.drawImage(canvas, 0, 0);
 	}
 	
 	if(!willRender){
@@ -664,13 +671,21 @@ function tick(){
 }
 
 window.initGame = function($canvas){
-	canvas = $canvas;
+	onScreenCanvas = $canvas;
+	onScreenCtx = onScreenCanvas.getContext('2d');
 	
+	gameCanvas = document.createElement('canvas');
+	gameCanvas.width = screenWidth;
+	gameCanvas.height = screenHeight;
+	gameCtx = gameCanvas.getContext('2d');
+	
+	canvas = document.createElement('canvas');
+	ctx = canvas.getContext('2d');
 	
 	$q(document).on('touchstart',	function(e){e.preventDefault();return false;});
 	$q(document).on('touchmove',	function(e){e.preventDefault();return false;});
 
-	$(canvas).on('touchstart', function(e){
+	$(onScreenCanvas).on('touchstart', function(e){
 		var pressX = event.pageX;
 		var pressY = event.pageY;
 		if((iOSAButtonPos.x - pressX) * (iOSAButtonPos.x - pressX) + (iOSAButtonPos.y - pressY) * (iOSAButtonPos.y - pressY) < 1200){
@@ -682,21 +697,10 @@ window.initGame = function($canvas){
 		}
 	});
 	
-	$(canvas).on('touchend', function(e){
+	$(onScreenCanvas).on('touchend', function(e){
 		uiAButtonDown = false;
 		uiBButtonDown = false;
 	});
-	
-	ctx = canvas.getContext('2d');
-	canvas.mozImageSmoothingEnabled = false;
-	
-	gameCanvas = document.createElement('canvas');
-	gameCanvas.width = screenWidth;
-	gameCanvas.height = screenHeight;
-	gameCtx = gameCanvas.getContext('2d');
-	gameCanvas.mozImageSmoothingEnabled = false;
-	
-	
 	
 	$q(window).blur(function(){
 		for(var i=0;i<keysDown.length;++i){
@@ -716,12 +720,13 @@ window.initGame = function($canvas){
 	
 	$q(window).resize(function(){
 		if(isPhone){
-			canvas.width = $q(window).width();
-			canvas.height = $q(window).height();
+			onScreenCanvas.width = canvas.width = $q(window).width();
+			onScreenCanvas.height = canvas.height = $q(window).height();
+			
 		}else{
-			canvas.width = 800;
-			canvas.height = 600;
-			$q(canvas).css({'top':'50%','left':'50%','position':'fixed','margin-top':'-300px','margin-left':'-400px'});
+			onScreenCanvas.width = canvas.width = 800;
+			onScreenCanvas.height = canvas.height = 600;
+			$q(onScreenCanvas).css({'top':'50%','left':'50%','position':'fixed','margin-top':'-300px','margin-left':'-400px'});
 		}
 		render();
 	}).resize();
