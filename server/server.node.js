@@ -328,11 +328,6 @@ function PlayerPokemon(id, level){
 		}else{
 			self.experienceNeeded = experienceRequired[pokemonData[self.id].experienceCurve][self.level + 1];
 		}
-<<<<<<< HEAD
-		
-		self.experience = Math.floor((self.experienceNeeded-1) * Math.random());
-=======
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 	}
 	
 	
