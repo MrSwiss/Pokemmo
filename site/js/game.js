@@ -31,7 +31,7 @@ var pokemonParty = [];
 
 var pokemonData;
 
-var myId = 'player';
+var myId = null;
 var keysDown = [];
 
 var CHAR_MOVE_WAIT = 0.3;
@@ -136,6 +136,7 @@ function Layer(data){
 	this.height = data.height;
 	this.x = data.x;
 	this.y = data.y;
+	this.type = data.type;
 	this.properties = data.properties || {};
 }
 
@@ -169,6 +170,8 @@ function getTilesetOfTile(map, n){
 }
 
 function drawLayer(ctx, map, layer){
+	if(layer.type != 'tilelayer') return;
+	
 	var tilesets = map.tilesets;
 	var j=0;
 	
@@ -231,6 +234,8 @@ function isTileLedge(map, x, y){
 function hasTileProp(map, x, y, prop){
 	for(var i=0;i<map.layers.length;++i){
 		var layer = map.layers[i];
+		
+		if(layer.type != 'tilelayer') continue;
 		
 		if(layer.properties.solid == '0') continue;
 		
