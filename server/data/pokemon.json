@@ -1,0 +1,50 @@
+{
+	"1": {
+		"name":			"Bulbasaur",
+		"type1":		"grass",
+		"type2":		"poison",
+		"ability":		"overgrow",
+		"genderRatio":	"0.875",
+		
+		"catchRate":	45,
+		"baseExp":		64,
+		"baseStats": {
+			"hp":		45,
+			"atk":		49,
+			"def":		49,
+			"spAtk":	65,
+			"spDef":	65,
+			"speed":	45
+		},
+		
+		
+		"evolveTo":		"2",
+		"evolveLevel":	16,
+		
+		
+		"learnset":	[
+			{"level": 1, "move": "tackle"},
+			{"level": 4, "move": "growl"},
+			{"level": 7, "move": "leench seed"},
+			{"level": 10, "move": "vine whip"},
+			{"level": 15, "move": "poisonpowder"},
+			{"level": 15, "move": "sleeppowder"},
+			{"level": 20, "move": "razor leaf"},
+			{"level": 25, "move": "sweet scent"},
+			{"level": 32, "move": "growth"},
+			{"level": 39, "move": "synthesis"},
+			{"level": 46, "move": "solarbeam"}
+		],
+		
+		"learnableTM": [
+			"TM06", "TM09", "TM10", "TM11", "TM17",
+			"TM19", "TM21", "TM22", "TM27", "TM32",
+			"TM36", "TM42", "TM43", "TM44", "TM45",
+			"HM01", "HM04", "HM05", "HM06"
+		],
+		
+		"evYield": {
+			"spAtk": 1
+		}
+	}
+}
