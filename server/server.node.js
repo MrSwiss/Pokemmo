@@ -106,55 +106,35 @@ console.log('Maps loaded! ('+(end-start)+' ms)');
 	}
 	
 	experienceRequired.fast = arr = [0];
-<<<<<<< HEAD
 	for(var i=1;i<=100;++i){
-=======
-	for(var i=0;i<=100;++i){
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		arr[i] = 4 * i * i * i / 5 - arr[i - 1];
 		
 		arr[i] = Math.floor(arr[i]);
 	}
 	
 	experienceRequired.mediumFast = arr = [0];
-<<<<<<< HEAD
 	for(var i=1;i<=100;++i){
-=======
-	for(var i=0;i<=100;++i){
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		arr[i] = i * i * i - arr[i - 1];
 		
 		arr[i] = Math.floor(arr[i]);
 	}
 	
 	experienceRequired.mediumSlow = arr = [0];
-<<<<<<< HEAD
 	for(var i=1;i<=100;++i){
-=======
-	for(var i=0;i<=100;++i){
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		arr[i] = 6 / 5 * i * i * i - 15 * i * i + 100 * i - 140 - arr[i - 1];
 		
 		arr[i] = Math.floor(arr[i]);
 	}
 	
 	experienceRequired.slow = arr = [0];
-<<<<<<< HEAD
 	for(var i=1;i<=100;++i){
-=======
-	for(var i=0;i<=100;++i){
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		arr[i] = 5 * i * i * i / 4 - arr[i - 1];
 		
 		arr[i] = Math.floor(arr[i]);
 	}
 	
 	experienceRequired.fluctuating = arr = [0];
-<<<<<<< HEAD
 	for(var i=1;i<=100;++i){
-=======
-	for(var i=0;i<=100;++i){
->>>>>>> 78086bfb578d51b653428242fa5e854ebbd34f2c
 		if(n <= 15){
 			arr[i] = i * i * i * (((n + 1) / 3 + 24) / 50);
 		}else if(n <= 36){
