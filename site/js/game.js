@@ -123,7 +123,7 @@ function Tileset(data){
 		self.tileproperties[i] = data.tileproperties[i];
 	}
 	
-	for(var i = 0, len = (self.imagewidth/self.tilewidth)*(self.imageheight/self.tileheight); i<len; ++i){
+	for(var i = 0, len = (self.imagewidth / self.tilewidth) * (self.imageheight / self.tileheight); i < len; ++i){
 		if(!self.tileproperties[i]){
 			self.tileproperties[i] = {};
 		}
@@ -206,11 +206,8 @@ function drawLayer(ctx, map, layer){
 			var srcx = (curTilesetTileid % numTilesX) * tileset.tilewidth;
 			var srcy = Math.floor(curTilesetTileid / numTilesX) * tileset.tileheight;
 			
-			try{
-				ctx.drawImage(tileset.image, srcx, srcy, tileset.tilewidth, tileset.tileheight,  (x + layer.x) * tileset.tilewidth + offsetX, (y + layer.y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
-			}catch(e){
-				console.log([tileset.image, srcx, srcy, tileset.tilewidth, tileset.tileheight,  (x + layer.x) * tileset.tilewidth + offsetX, (y + layer.y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight]);
-			}
+			ctx.drawImage(tileset.image, srcx, srcy, tileset.tilewidth, tileset.tileheight,  (x + layer.x) * tileset.tilewidth + offsetX, (y + layer.y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
+			
 		}
 	}
 }
@@ -308,6 +305,7 @@ function drawPokemonParty(){
 		
 		
 		ctx.font = '12pt Font1';
+		ctx.fillStyle = 'rgb(255, 255, 255)';
 		
 		// Name
 		drawStyleText((pokemonParty[i].nickname || pokemonData[pokemonParty[i].id].name).toUpperCase(), 45, 21);
@@ -316,16 +314,34 @@ function drawPokemonParty(){
 		var lvWidth = ctx.measureText('Lv '+pokemonParty[i].level).width;
 		drawStyleText('Lv '+pokemonParty[i].level, 45, 35);
 		ctx.font = '12pt Font1';
-		var hp = pokemonParty[i].hp+'/'+pokemonParty[i].maxHp;
-		var hpWidth = ctx.measureText(hp).width;
-		drawStyleText(hp, 280 - hpWidth, 35);
+		
+		var hp = pokemonParty[i].hp  +'/' +pokemonParty[i].maxHp;
+		var barWidth = ctx.measureText(hp).width;
+		drawStyleText(hp, 280 - barWidth, 35);
+		
+		
+		var sx = x + 60 + lvWidth;
+		
+		// Exp bar
+		
+		
+		ctx.strokeStyle = 'rgb(0, 0, 0)';
+		
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
+		
+		ctx.fillStyle = 'rgb(0, 0, 200)';
+		ctx.fillRect(sx + 5, y + 30, Math.ceil((190 - barWidth - lvWidth) * (pokemonParty[i].experience / pokemonParty[i].experienceNeeded)), 5);
+		ctx.strokeRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
+		
+		// Hp bar
 		
 		ctx.fillStyle = 'rgb(0, 200, 0)';
 		ctx.strokeStyle = 'rgb(0, 0, 0)';
 		
-		var sx = x + 60 + lvWidth;
-		ctx.fillRect(sx, y + 27, (200 - hpWidth - lvWidth) * Math.ceil(pokemonParty[i].hp/pokemonParty[i].maxHp), 7);
-		ctx.strokeRect(sx, y + 27, (200 - hpWidth - lvWidth), 7);
+		
+		ctx.fillRect(sx, y + 27, Math.ceil((200 - barWidth - lvWidth) * (pokemonParty[i].hp / pokemonParty[i].maxHp)), 5);
+		ctx.strokeRect(sx, y + 27, (200 - barWidth - lvWidth), 5);
 		
 		
 		y += deltaY;
@@ -695,7 +711,9 @@ function render(){
 					throw new Error('No map in memory');
 				}
 				
-				drawPokemonParty();
+				if(!isPhone){
+					drawPokemonParty();
+				}
 			break;
 			case ST_LOADING:
 				loadingMapRender();

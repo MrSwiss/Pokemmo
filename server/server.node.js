@@ -19,6 +19,8 @@ var DIR_RIGHT = 3;
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
 var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
 
+var experienceRequired = {};
+
 console.log('Loading maps...');
 start = +new Date();
 for(var i=0;i<mapsNames.length;++i){
@@ -83,17 +85,75 @@ for(var i=0;i<mapsNames.length;++i){
 end = +new Date();
 console.log('Maps loaded! ('+(end-start)+' ms)');
 
-io.sockets.on('connection', function (socket) {
-	/*socket.emit('news', { hello: 'world' });
-	socket.on('my other event', function (data) {
-	console.log(data);
-	});*/
+// Generate experience lookup table
+// The table works as this: experienceRequired.fast[100] would be
+// the experience that a level 99 pokémon needs to acquire to reach level 100
+// (experience needed at level 99, not total)
+(function(){
+	var arr;
+	
+	experienceRequired.erratic = arr = [0];
+	for(var i=1;i<=100;++i){
+		if(i <= 50){
+			arr[i] = i * i * i * (100 - i) / 50;
+		}else if(n <= 68){
+			arr[i] = i * i * i * (150 - i) / 100;
+		}else if(n <= 98){
+			arr[i] = i * i * i * ((1911 - 10 * i) / 3) / 500
+		}else{
+			arr[i] = i * i * i * (160 - n) / 100;
+		}
+	}
+	
+	experienceRequired.fast = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 4 * i * i * i / 5 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.mediumFast = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = i * i * i - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.mediumSlow = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 6 / 5 * i * i * i - 15 * i * i + 100 * i - 140 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.slow = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 5 * i * i * i / 4 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.fluctuating = arr = [0];
+	for(var i=1;i<=100;++i){
+		if(n <= 15){
+			arr[i] = i * i * i * (((n + 1) / 3 + 24) / 50);
+		}else if(n <= 36){
+			arr[i] = i * i * i * ((n + 14) / 50);
+		}else{
+			arr[i] = i * i * i * ((n / 2 + 32) / 50)
+		}
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+})();
 
+io.sockets.on('connection', function (socket) {
 	var client = {
 		id: generateRandomString(16),
 		map: 'pallet',
 		char: {
 			get id(){return client.id},
+			get inBattle(){return client.inBattle},
 			type: 'red',
 			x: 6,
 			y: 48,
@@ -156,6 +216,8 @@ io.sockets.on('connection', function (socket) {
 		|| chr.x == data.x && chr.y - 2 == data.y
 		|| chr.x == data.x && chr.y + 2 == data.y)){
 			// WOW! It's fucking nothing!
+			// The player isn't far enough to be considerated an invalid move
+			// Maybe one of his 'walk' messages is delayed
 		}else{
 			client.lastAckMove = +new Date();
 			socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
@@ -163,7 +225,8 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('turn', function(data){
-		client.char.direction = data.dir % 4;
+		if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
+		client.char.direction = data.dir
 	});
 	
 	function sendUpdate(){
@@ -181,6 +244,8 @@ function PlayerPokemon(id, level){
 	self.id = String(id);
 	self.level = Math.min(Math.max(2, level), 100);
 	
+	self.unique = generateRandomString(16);
+	
 	self.nickname = null;
 	
 	self.hp = 0;
@@ -190,6 +255,9 @@ function PlayerPokemon(id, level){
 	self.spAtk = 0;
 	self.spDef = 0;
 	self.speed = 0;
+	
+	self.experience = 0;
+	self.experienceNeeded = 0;
 	
 	self.evHp = 0;
 	self.evAtk = 0;
@@ -207,6 +275,8 @@ function PlayerPokemon(id, level){
 	
 	self.shiny = (1/8192 > Math.random());
 	self.moves = [null, null, null, null];
+	self.movesPP = [0, 0, 0, 0];
+	self.movesMaxPP = [0, 0, 0, 0];
 	
 	self.calculateExpGain = function(isTrainer){
 		return ((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7;
@@ -252,6 +322,14 @@ function PlayerPokemon(id, level){
 		self.spAtk = calculateSingleStat(pokemonData[self.id].baseStats.spAtk, self.ivSpAtk, self.evSpAtk);
 		self.spDef = calculateSingleStat(pokemonData[self.id].baseStats.spDef, self.ivSpDef, self.evSpDef);
 		self.speed = calculateSingleStat(pokemonData[self.id].baseStats.speed, self.ivSpeed, self.evSpeed);
+		
+		if(self.level >= 100){
+			self.experienceNeeded = 0;
+		}else{
+			self.experienceNeeded = experienceRequired[pokemonData[self.id].experienceCurve][self.level + 1];
+		}
+		
+		self.experience = Math.floor((self.experienceNeeded-1) * Math.random());
 	}
 	
 	
@@ -261,6 +339,8 @@ function PlayerPokemon(id, level){
 	for(var i=0;i<learnset.length;++i){
 		if(learnset[i].level > self.level) break;
 		self.moves[j] = learnset[i].move;
+		self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
+		
 		j = (j+1) % 4;
 	}
 	
