@@ -418,4 +418,12 @@
  <objectgroup name="pokemons" width="24" height="64">
   <object x="384" y="1120" width="64" height="160"/>
  </objectgroup>
+ <objectgroup name="teleports" width="24" height="64"/>
+ <objectgroup name="doors" width="24" height="64">
+  <object type="door" x="192" y="1504" width="32" height="32">
+   <properties>
+    <property name="destination" value="['pallet_hero_home_1f', 4, 9]"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>
