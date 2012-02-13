@@ -162,7 +162,9 @@ io.sockets.on('connection', function (socket) {
 		lastAckMove: 0,
 		inBattle: false,
 		lastPokecenter: ["pallet", 6, 48],
-		pokemon: []
+		pokemon: [],
+		messageQueue: [],
+		lastMessage: 0
 	};
 	
 	clients.push(client);
@@ -181,6 +183,7 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('createChars', {arr:maps[client.map].chars});
 	
 	var updateInterval = setInterval(sendUpdate, 250);
+	var messageInterval = setInterval(sendMessages, 250);
 	
 	socket.on('disconnect', function(){
 		var i = maps[client.map].chars.indexOf(client.char);
@@ -231,8 +234,30 @@ io.sockets.on('connection', function (socket) {
 		client.char.direction = data.dir
 	});
 	
+	socket.on('sendMessage', function(data) {
+		// 48-character limit, half a second cooldown between messages
+		var t = new Date().getTime();
+		var str = data.str.substr(0,48);
+		if (t-client.lastMessage > 500 && str != '') {
+			for (var i=0;i<clients.length;++i) {
+				if (clients[i].map = client.map);
+					// queue new messages for each client in map
+					clients[i].messageQueue.push({username: client.id, str: str, x: client.x, y: client.y});
+			}
+			client.lastMessage = t;
+		}
+	});
+	
 	function sendUpdate(){
 		socket.volatile.emit('update', {chars:maps[client.map].chars});
+	}
+	
+	function sendMessages() {
+		// dispatch queued messages
+		for (var i=0;i<client.messageQueue.length;++i) {
+			socket.emit('receiveMessage', client.messageQueue[i]);
+		}
+		client.messageQueue = [];
 	}
 });
 

@@ -46,6 +46,10 @@ var CHAR_HEIGHT = 64;
 var cameraX = 0;
 var cameraY = 0;
 
+var chatLog = [];
+var chatOffset = 0;
+var newMessages = 0;
+var inChat = false;
 
 var lastAckMove = 0;
 var loadedChars = false;
@@ -64,6 +68,7 @@ if(isPhone){
 }
 
 var uiPokemon;
+var uiChat;
 
 var miscSprites;
 
@@ -355,6 +360,24 @@ function drawPokemonParty(){
 	}
 }
 
+function drawChat() {
+	var x = 10;
+	var y = 335;
+	
+	ctx.font = '12pt Font1';
+	ctx.drawImage(uiChat, x, y);
+	for (var i=chatLog.length-1; i >= 0 && i > chatLog.length-12;--i) {
+		var str = chatLog[i-chatOffset];
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillText(str, x + 10, y + 178-(14*(chatLog.length-i)));
+	}
+	
+	if (newMessages > 0) {
+		ctx.fillStyle = 'rgb(200, 0, 0)';
+		ctx.fillText(newMessages + ' NEW', x + 740, y + 164);
+	}
+}
+
 function Character(data){
 	var self = this;
 	
@@ -413,22 +436,43 @@ function Character(data){
 			self.walkingPerc = 0.0;
 			
 			if(self.id == myId){
-				if(isKeyDown(65)){ // A
-					self.walking = true;
-					if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
-					self.direction = DIR_LEFT;
-				}else if(isKeyDown(83)){ // S
-					self.walking = true;
-					if(self.direction == DIR_DOWN) self.walkingPerc = CHAR_MOVE_WAIT;
-					self.direction = DIR_DOWN;
-				}else if(isKeyDown(68)){ // D
-					self.walking = true;
-					if(self.direction == DIR_RIGHT) self.walkingPerc = CHAR_MOVE_WAIT;
-					self.direction = DIR_RIGHT;
-				}else if(isKeyDown(87)){ // W
-					self.walking = true;
-					if(self.direction == DIR_UP) self.walkingPerc = CHAR_MOVE_WAIT;
-					self.direction = DIR_UP;
+				if (!inChat) {
+					if(isKeyDown(65)){ // A
+						self.walking = true;
+						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
+						self.direction = DIR_LEFT;
+					}else if(isKeyDown(83)){ // S
+						self.walking = true;
+						if(self.direction == DIR_DOWN) self.walkingPerc = CHAR_MOVE_WAIT;
+						self.direction = DIR_DOWN;
+					}else if(isKeyDown(68)){ // D
+						self.walking = true;
+						if(self.direction == DIR_RIGHT) self.walkingPerc = CHAR_MOVE_WAIT;
+						self.direction = DIR_RIGHT;
+					}else if(isKeyDown(87)){ // W
+						self.walking = true;
+						if(self.direction == DIR_UP) self.walkingPerc = CHAR_MOVE_WAIT;
+						self.direction = DIR_UP;
+					}
+				}
+				if (isKeyDown(38)) { // Up arrow
+					if (chatLog.length - chatOffset >= 12)
+						++chatOffset;
+				}
+				if (isKeyDown(40)) { // Down arrow
+					if (chatOffset > 0) {
+						--chatOffset;
+						if (chatOffset == newMessages-1)
+							--newMessages;
+					}
+				}
+				if (isKeyDown(37)) { // Left arrow
+					if (chatLog.length > 11)
+						chatOffset = chatLog.length - 11;
+				}
+				if (isKeyDown(39)) { // Right arrow
+					chatOffset = 0;
+					newMessages = 0;
 				}
 			}else{
 				tickBot();
@@ -554,6 +598,14 @@ function Character(data){
 	}
 }
 
+function generateRandomString(len){
+	var i = len;
+	var str = '';
+	var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	while(i--) str += chars[Math.floor(Math.random()*chars.length)];
+	return str;
+}
+
 function getPlayerChar(){
 	return getCharById(myId);
 }
@@ -587,6 +639,12 @@ function loadMap(id){
 	uiPokemon.onload = function(){--pending;++completed;};
 	uiPokemon.onerror = function(){--pending;error = true;refresh();};
 	uiPokemon.src = 'resources/ui/pokemon.png';
+	
+	++pending;
+	uiChat = new Image();
+	uiChat.onload = function(){--pending;++completed;};
+	uiChat.onerror = function(){--pending;error = true;refresh();};
+	uiChat.src = 'resources/ui/chat.png';
 	
 	++pending;
 	$q.ajax('resources/data/pokemon.json', {
@@ -712,6 +770,7 @@ function render(){
 				
 				if(!isPhone){
 					drawPokemonParty();
+					drawChat();
 				}
 			break;
 			case ST_LOADING:
@@ -760,6 +819,14 @@ function tick(){
 	render();
 }
 
+function sendMessage() {
+	var chatBox = document.getElementById("chatBox");
+	socket.emit('sendMessage', {'username':myId, 'str':chatBox.value});
+	chatBox.value = '';	
+	chatOffset = 0;
+	newMessages = 0;
+}
+
 window.initGame = function($canvas){
 	onScreenCanvas = $canvas;
 	onScreenCtx = onScreenCanvas.getContext('2d');
@@ -771,6 +838,47 @@ window.initGame = function($canvas){
 	
 	canvas = document.createElement('canvas');
 	ctx = canvas.getContext('2d');
+	
+	if (!isPhone) {
+		// not sure if this is the best way to do it, but it's fine for testing
+		var chatForm = document.createElement("div");
+		chatForm.id = "chatForm";
+		chatForm.style.margin = '20px';
+		
+		var chatBox = document.createElement("input");
+		chatBox.type = "text";
+		chatBox.id = "chatBox";
+		chatBox.maxLength = 48;
+		chatBox.style.width = '450px'
+		chatBox.style.marginRight = '10px'
+		
+		chatBox.onfocus = function() {
+			inChat = true;
+		}
+		
+		chatBox.onblur = function() {
+			inChat = false;
+		}
+		
+		chatBox.onkeydown = function(e) {
+			e = window.event || e;
+			if (e.keyCode == 13) {
+				sendMessage();
+			}
+		}
+		
+		var chatSubmit = document.createElement("input");
+		chatSubmit.type = "button";
+		chatSubmit.value = "Send";
+		
+		chatSubmit.onclick = function() {
+			sendMessage();
+		};
+		
+		chatForm.appendChild(chatBox);
+		chatForm.appendChild(chatSubmit);
+		document.body.appendChild(chatForm);
+	}
 	
 	$q(document).on('touchstart',	function(e){e.preventDefault();return false;});
 	$q(document).on('touchmove',	function(e){e.preventDefault();return false;});
@@ -866,6 +974,19 @@ window.initGame = function($canvas){
 		chr.tick();
 		
 		console.log('Invalid move!');
+	});
+	
+	socket.on('receiveMessage', function(data) {
+		if (chatLog.length == 64) {
+			chatLog = chatLog.slice(1);
+			if (chatOffset > 0)
+				--chatOffset;
+		}
+		chatLog.push(data.username + ': ' + data.str);
+		if (chatOffset > 0) {
+			++newMessages;
+			++chatOffset;
+		}
 	});
 	
 	socket.on('update', function(data){
