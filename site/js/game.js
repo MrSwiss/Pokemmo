@@ -1,9 +1,8 @@
-(function(window){
+(function(window, $q){
 "use strict";
 
 var serverHost = 'http://localhost:2828';
 
-var $q = jQuery;
 var canvas, ctx;
 var gameCanvas;
 var gameCtx;
@@ -46,9 +45,8 @@ var CHAR_HEIGHT = 64;
 var cameraX = 0;
 var cameraY = 0;
 
+var chatBox;
 var chatLog = [];
-var chatOffset = 0;
-var newMessages = 0;
 var inChat = false;
 
 var lastAckMove = 0;
@@ -361,20 +359,50 @@ function drawPokemonParty(){
 }
 
 function drawChat() {
+	if(inChat && chatBox.value.length > 0) filterChatText();
+	
 	var x = 10;
 	var y = 335;
 	
 	ctx.font = '12pt Font1';
 	ctx.drawImage(uiChat, x, y);
-	for (var i=chatLog.length-1; i >= 0 && i > chatLog.length-12;--i) {
-		var str = chatLog[i-chatOffset];
-		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 10, y + 178-(14*(chatLog.length-i)));
+	
+	ctx.fillStyle = 'rgb(0, 0, 0)';
+	
+	var str = chatBox.value;
+	while(true){
+		var w = ctx.measureText(str).width;
+		if(w < 440){
+			ctx.fillText(str, 18, 528);
+			if(inChat){
+				if(+new Date()%1000 < 500){
+					ctx.fillRect(20 + w, 516, 10, 14);
+				}
+			}
+			break;
+		}else{
+			str = str.slice(1);
+		}
 	}
 	
-	if (newMessages > 0) {
-		ctx.fillStyle = 'rgb(200, 0, 0)';
-		ctx.fillText(newMessages + ' NEW', x + 740, y + 164);
+	
+	var i = chatLog.length;
+	for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
+		var str;
+
+		str = chatLog[i].username + ': ';
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillText(str, x + 11, y + 181 - (14 * (chatLog.length - i)));
+		
+		ctx.fillStyle = 'rgb(200, 200, 200)';
+		ctx.fillText(str, x + 10, y + 180 - (14 * (chatLog.length - i)));
+		
+		var usernameWidth = ctx.measureText(str).width;
+		
+		str = chatLog[i].str;
+		
+		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillText(str, x + 10 + usernameWidth, y + 180 - (14 * (chatLog.length - i)));
 	}
 }
 
@@ -382,7 +410,6 @@ function Character(data){
 	var self = this;
 	
 	self.id = data.id || '???';
-	console.log('new char for '+self.id);
 	
 	self.x = data.x || 0;
 	self.y = data.y || 0;
@@ -454,25 +481,6 @@ function Character(data){
 						if(self.direction == DIR_UP) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_UP;
 					}
-				}
-				if (isKeyDown(38)) { // Up arrow
-					if (chatLog.length - chatOffset >= 12)
-						++chatOffset;
-				}
-				if (isKeyDown(40)) { // Down arrow
-					if (chatOffset > 0) {
-						--chatOffset;
-						if (chatOffset == newMessages-1)
-							--newMessages;
-					}
-				}
-				if (isKeyDown(37)) { // Left arrow
-					if (chatLog.length > 11)
-						chatOffset = chatLog.length - 11;
-				}
-				if (isKeyDown(39)) { // Right arrow
-					chatOffset = 0;
-					newMessages = 0;
 				}
 			}else{
 				tickBot();
@@ -590,12 +598,18 @@ function Character(data){
 			self.direction = self.x < self.targetX ? DIR_RIGHT : DIR_LEFT;
 		}else if(Math.abs(self.y - self.targetY) == 1 && self.x == self.targetX){
 			self.direction = self.y < self.targetY ? DIR_DOWN : DIR_UP;
+		}else{
+			self.direction = (self.targetY < self.y) ? DIR_UP : DIR_DOWN;
 		}
 		
 		if(lastDirection != self.direction){
 			self.walkingPerc = 0.0;
 		}
 	}
+}
+
+function filterChatText(){
+	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ ]/, '');
 }
 
 function generateRandomString(len){
@@ -820,41 +834,34 @@ function tick(){
 }
 
 function sendMessage() {
-	var chatBox = document.getElementById("chatBox");
+	filterChatText();
 	socket.emit('sendMessage', {'username':myId, 'str':chatBox.value});
-	chatBox.value = '';	
-	chatOffset = 0;
-	newMessages = 0;
+	chatBox.value = '';
+	inChat = false;
 }
 
-window.initGame = function($canvas){
+window.initGame = function($canvas, $container){
 	onScreenCanvas = $canvas;
 	onScreenCtx = onScreenCanvas.getContext('2d');
 	
 	gameCanvas = document.createElement('canvas');
 	gameCanvas.width = screenWidth;
 	gameCanvas.height = screenHeight;
+	gameCanvas.style.position = 'relative';
 	gameCtx = gameCanvas.getContext('2d');
 	
 	canvas = document.createElement('canvas');
 	ctx = canvas.getContext('2d');
 	
+	var canvasContainer = $container;
+	
 	if (!isPhone) {
 		// not sure if this is the best way to do it, but it's fine for testing
-		var chatForm = document.createElement("div");
-		chatForm.id = "chatForm";
-		chatForm.style.margin = '20px';
 		
-		var chatBox = document.createElement("input");
+		chatBox = document.createElement("input");
 		chatBox.type = "text";
-		chatBox.id = "chatBox";
-		chatBox.maxLength = 48;
-		chatBox.style.width = '450px'
-		chatBox.style.marginRight = '10px'
-		
-		chatBox.onfocus = function() {
-			inChat = true;
-		}
+		chatBox.style.opacity = '0';
+		chatBox.style.position = 'fixed';
 		
 		chatBox.onblur = function() {
 			inChat = false;
@@ -864,20 +871,11 @@ window.initGame = function($canvas){
 			e = window.event || e;
 			if (e.keyCode == 13) {
 				sendMessage();
+				inChat = false;
 			}
 		}
 		
-		var chatSubmit = document.createElement("input");
-		chatSubmit.type = "button";
-		chatSubmit.value = "Send";
-		
-		chatSubmit.onclick = function() {
-			sendMessage();
-		};
-		
-		chatForm.appendChild(chatBox);
-		chatForm.appendChild(chatSubmit);
-		document.body.appendChild(chatForm);
+		document.body.appendChild(chatBox);
 	}
 	
 	$q(document).on('touchstart',	function(e){e.preventDefault();return false;});
@@ -908,6 +906,10 @@ window.initGame = function($canvas){
 	
 	$q(window).keydown(function(e){
 		keysDown[e.keyCode] = true;
+		if (e.keyCode == 13 && !inChat) {
+			inChat = true;
+			$q(chatBox).focus();
+		}
 	});
 	
 	$q(window).keyup(function(e){
@@ -922,9 +924,9 @@ window.initGame = function($canvas){
 			onScreenCanvas.height = canvas.height = $q(window).height();
 			
 		}else{
-			onScreenCanvas.width = canvas.width = 800;
-			onScreenCanvas.height = canvas.height = 600;
-			$q(onScreenCanvas).css({'top':'50%','left':'50%','position':'fixed','margin-top':'-300px','margin-left':'-400px'});
+			canvasContainer.width = onScreenCanvas.width = canvas.width = 800;
+			canvasContainer.height = onScreenCanvas.height = canvas.height = 600;
+			$q(canvasContainer).css({'top':'50%','left':'50%','position':'fixed','margin-top':'-300px','margin-left':'-400px'});
 		}
 		render();
 	}).resize();
@@ -976,19 +978,6 @@ window.initGame = function($canvas){
 		console.log('Invalid move!');
 	});
 	
-	socket.on('receiveMessage', function(data) {
-		if (chatLog.length == 64) {
-			chatLog = chatLog.slice(1);
-			if (chatOffset > 0)
-				--chatOffset;
-		}
-		chatLog.push(data.username + ': ' + data.str);
-		if (chatOffset > 0) {
-			++newMessages;
-			++chatOffset;
-		}
-	});
-	
 	socket.on('update', function(data){
 		if(!loadedChars) return;
 		var chars = data.chars;
@@ -1019,8 +1008,9 @@ window.initGame = function($canvas){
 				|| chr.x + 2 == charData.x && chr.y == charData.y
 				|| chr.x == charData.x && chr.y - 2 == charData.y
 				|| chr.x == charData.x && chr.y + 2 == charData.y){
-					// WOW! It's fucking nothing!
+					// Let the bot move the character
 				}else{
+					// Character too far to be moved by the bot, move him manually
 					chr.direction = charData.direction;
 					chr.x = charData.x;
 					chr.y = charData.y;
@@ -1039,9 +1029,15 @@ window.initGame = function($canvas){
 				}
 			}
 		}
+		
+		chatLog = chatLog.slice(-64 + data.messages.length);
+		for(var i = 0; i < data.messages.length;++i){
+			chatLog.push(data.messages[i]);
+		}
+		
 	});
 }
 
 
 
-})(window);
+})(window, jQuery);

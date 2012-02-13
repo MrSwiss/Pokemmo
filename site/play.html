@@ -34,13 +34,13 @@ body{
 <script>
 jQuery(function(){
 	var canvas = document.getElementById('canvas');
-	initGame(canvas);
+	initGame(canvas, document.getElementById('canvasContainer'));
 });
 
 </script>
 </head>
 <body>
-<canvas id="canvas"></canvas>
+<div id="canvasContainer"><canvas id="canvas"></canvas></div>
 <script>
 
 if((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))){

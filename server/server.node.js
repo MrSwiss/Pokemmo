@@ -150,6 +150,7 @@ console.log('Maps loaded! ('+(end-start)+' ms)');
 io.sockets.on('connection', function (socket) {
 	var client = {
 		id: generateRandomString(16),
+		username: generateRandomString(5),
 		map: 'pallet',
 		char: {
 			get id(){return client.id},
@@ -183,7 +184,6 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('createChars', {arr:maps[client.map].chars});
 	
 	var updateInterval = setInterval(sendUpdate, 250);
-	var messageInterval = setInterval(sendMessages, 250);
 	
 	socket.on('disconnect', function(){
 		var i = maps[client.map].chars.indexOf(client.char);
@@ -235,29 +235,22 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('sendMessage', function(data) {
-		// 48-character limit, half a second cooldown between messages
 		var t = new Date().getTime();
-		var str = data.str.substr(0,48);
-		if (t-client.lastMessage > 500 && str != '') {
+		var str = data.str.substr(0, 128);
+		if(t - client.lastMessage > 100 && str != '') {
 			for (var i=0;i<clients.length;++i) {
-				if (clients[i].map = client.map);
+				if (clients[i].map == client.map){
 					// queue new messages for each client in map
-					clients[i].messageQueue.push({username: client.id, str: str, x: client.x, y: client.y});
+					clients[i].messageQueue.push({username: client.username, str: str, x: client.x, y: client.y});
+				}
 			}
 			client.lastMessage = t;
 		}
 	});
 	
 	function sendUpdate(){
-		socket.volatile.emit('update', {chars:maps[client.map].chars});
-	}
-	
-	function sendMessages() {
-		// dispatch queued messages
-		for (var i=0;i<client.messageQueue.length;++i) {
-			socket.emit('receiveMessage', client.messageQueue[i]);
-		}
-		client.messageQueue = [];
+		socket.volatile.emit('update', {chars:maps[client.map].chars, messages:client.messageQueue});
+		client.messageQueue.length = 0;
 	}
 });
 
@@ -282,6 +275,8 @@ function PlayerPokemon(id, level){
 	self.spAtk = 0;
 	self.spDef = 0;
 	self.speed = 0;
+	
+	self.ability = 0;
 	
 	self.experience = 0;
 	self.experienceNeeded = 0;
