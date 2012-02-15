@@ -609,7 +609,7 @@ function Character(data){
 }
 
 function filterChatText(){
-	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ ]/, '');
+	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
 }
 
 function generateRandomString(len){
@@ -751,8 +751,6 @@ function render(){
 	
 	var realRender = function(){
 		willRender = false;
-		//console.time('render');
-		//console.log('Rendering state '+state);
 		switch(state){
 			case ST_MAP:
 				if(curMap){
@@ -762,7 +760,7 @@ function render(){
 					var chr = getPlayerChar();
 					if(chr){
 						var charRenderPos = chr.getRenderPos();
-						cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth - (screenWidth / curMap.tilewidth) / 2);
+						cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
 						cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
 						
 						if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
@@ -795,7 +793,6 @@ function render(){
 		if(isPhone){
 			ctx.drawImage(iOSUI, 0, 0);
 		}
-		//console.timeEnd('render');
 		
 		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
 		onScreenCtx.drawImage(canvas, 0, 0);
@@ -833,11 +830,15 @@ function tick(){
 	render();
 }
 
+var justSentMessage;
 function sendMessage() {
 	filterChatText();
 	socket.emit('sendMessage', {'username':myId, 'str':chatBox.value});
 	chatBox.value = '';
 	inChat = false;
+	justSentMessage = true;
+	$q(chatBox).blur();
+	$q(onScreenCanvas).focus();
 }
 
 window.initGame = function($canvas, $container){
@@ -856,13 +857,11 @@ window.initGame = function($canvas, $container){
 	var canvasContainer = $container;
 	
 	if (!isPhone) {
-		// not sure if this is the best way to do it, but it's fine for testing
-		
 		chatBox = document.createElement("input");
 		chatBox.type = "text";
 		chatBox.style.opacity = '0';
 		chatBox.style.position = 'fixed';
-		
+		chatBox.maxLength = 128;
 		chatBox.onblur = function() {
 			inChat = false;
 		}
@@ -871,7 +870,6 @@ window.initGame = function($canvas, $container){
 			e = window.event || e;
 			if (e.keyCode == 13) {
 				sendMessage();
-				inChat = false;
 			}
 		}
 		
@@ -906,7 +904,7 @@ window.initGame = function($canvas, $container){
 	
 	$q(window).keydown(function(e){
 		keysDown[e.keyCode] = true;
-		if (e.keyCode == 13 && !inChat) {
+		if (e.keyCode == 13 && !inChat && !justSentMessage) {
 			inChat = true;
 			$q(chatBox).focus();
 		}
@@ -914,6 +912,9 @@ window.initGame = function($canvas, $container){
 	
 	$q(window).keyup(function(e){
 		keysDown[e.keyCode] = false;
+		if(e.keyCode == 13){
+			justSentMessage = false;
+		}
 	});
 	
 	setInterval(tick, 1000 / 30);
