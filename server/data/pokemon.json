@@ -1,4 +1,4 @@
-{
+﻿{
 	"1": {
 		"name":			"Bulbasaur",
 		"type1":		"grass",
@@ -21,7 +21,6 @@
 
 		"evolveTo":		"2",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -72,7 +71,6 @@
 
 		"evolveTo":		"3",
 		"evolveLevel":	"32",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -171,7 +169,6 @@
 
 		"evolveTo":		"5",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -221,7 +218,6 @@
 
 		"evolveTo":		"6",
 		"evolveLevel":	"36",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -321,7 +317,6 @@
 
 		"evolveTo":		"8",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -330,24 +325,20 @@
 			{"level": 7, "move": "bubble"},
 			{"level": 10, "move": "withdraw"},
 			{"level": 13, "move": "water gun"},
-			{"level": 16, "move": "bite"},
-			{"level": 19, "move": "rapid spin"},
-			{"level": 22, "move": "protect"},
-			{"level": 25, "move": "water pulse"},
-			{"level": 28, "move": "aqua tail"},
-			{"level": 31, "move": "skull bash"},
-			{"level": 34, "move": "rain dance"},
-			{"level": 37, "move": "hydro pump"}
+			{"level": 18, "move": "bite"},
+			{"level": 23, "move": "rapid spin"},
+			{"level": 28, "move": "protect"},
+			{"level": 33, "move": "rain dance"},
+			{"level": 40, "move": "skull bash"},
+			{"level": 47, "move": "hydro pump"}
 		],
 
 		"learnableTM": [
 			"TM01", "TM03", "TM06", "TM07", "TM10", 
 			"TM13", "TM14", "TM17", "TM18", "TM21", 
 			"TM23", "TM27", "TM28", "TM31", "TM32", 
-			"TM39", "TM42", "TM43", "TM44", "TM45", 
-			"TM55", "TM56", "TM58", "TM74", "TM78", 
-			"TM82", "TM83", "TM87", "TM90", "HM03", 
-			"HM04", "HM06", "HM07"
+			"TM42", "TM43", "TM44", "TM45", "HM03", 
+			"HM04", "HM06", "HM07", "HM08"
 		],
 
 		"evYield": {
@@ -376,7 +367,6 @@
 
 		"evolveTo":		"9",
 		"evolveLevel":	"36",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -385,24 +375,20 @@
 			{"level": 1, "move": "bubble"},
 			{"level": 10, "move": "withdraw"},
 			{"level": 13, "move": "water gun"},
-			{"level": 16, "move": "bite"},
-			{"level": 20, "move": "rapid spin"},
-			{"level": 24, "move": "protect"},
-			{"level": 28, "move": "water pulse"},
-			{"level": 32, "move": "aqua tail"},
-			{"level": 36, "move": "skull bash"},
-			{"level": 40, "move": "rain dance"},
-			{"level": 44, "move": "hydro pump"}
+			{"level": 19, "move": "bite"},
+			{"level": 25, "move": "rapid spin"},
+			{"level": 31, "move": "protect"},
+			{"level": 37, "move": "rain dance"},
+			{"level": 45, "move": "skull bash"},
+			{"level": 53, "move": "hydro pump"}
 		],
 
 		"learnableTM": [
 			"TM01", "TM03", "TM06", "TM07", "TM10", 
 			"TM13", "TM14", "TM17", "TM18", "TM21", 
 			"TM23", "TM27", "TM28", "TM31", "TM32", 
-			"TM39", "TM42", "TM43", "TM44", "TM45", 
-			"TM55", "TM56", "TM58", "TM74", "TM78", 
-			"TM82", "TM83", "TM87", "TM90", "HM03", 
-			"HM04", "HM06", "HM07"
+			"TM42", "TM43", "TM44", "TM45", "HM03", 
+			"HM04", "HM06", "HM07", "HM08"
 		],
 
 		"evYield": {
@@ -431,31 +417,25 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "flash cannon"},
 			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "bubble"},
 			{"level": 1, "move": "withdraw"},
 			{"level": 13, "move": "water gun"},
-			{"level": 16, "move": "bite"},
-			{"level": 20, "move": "rapid spin"},
-			{"level": 24, "move": "protect"},
-			{"level": 28, "move": "water pulse"},
-			{"level": 32, "move": "aqua tail"},
-			{"level": 39, "move": "skull bash"},
-			{"level": 46, "move": "rain dance"},
-			{"level": 53, "move": "hydro pump"}
+			{"level": 19, "move": "bite"},
+			{"level": 25, "move": "rapid spin"},
+			{"level": 31, "move": "protect"},
+			{"level": 42, "move": "rain dance"},
+			{"level": 55, "move": "skull bash"},
+			{"level": 68, "move": "hydro pump"}
 		],
 
 		"learnableTM": [
 			"TM01", "TM03", "TM05", "TM06", "TM07", 
 			"TM10", "TM13", "TM14", "TM15", "TM17", 
 			"TM18", "TM21", "TM23", "TM26", "TM27", 
-			"TM28", "TM31", "TM32", "TM39", "TM42", 
-			"TM43", "TM44", "TM45", "TM52", "TM55", 
-			"TM56", "TM58", "TM68", "TM72", "TM74", 
-			"TM78", "TM80", "TM82", "TM83", "TM87", 
-			"TM90", "TM91", "HM03", "HM04", "HM06", 
+			"TM28", "TM31", "TM32", "TM42", "TM43", 
+			"TM44", "TM45", "HM03", "HM04", "HM06", 
 			"HM07", "HM08"
 		],
 
@@ -485,7 +465,6 @@
 
 		"evolveTo":		"11",
 		"evolveLevel":	"7",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -523,7 +502,6 @@
 
 		"evolveTo":		"12",
 		"evolveLevel":	"10",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -561,18 +539,15 @@
 
 		"learnset": [
 			{"level": 1, "move": "confusion"},
-			{"level": 12, "move": "poisonpowder"},
-			{"level": 12, "move": "stun spore"},
-			{"level": 12, "move": "sleep powder"},
-			{"level": 16, "move": "gust"},
+			{"level": 13, "move": "poisonpowder"},
+			{"level": 14, "move": "stun spore"},
+			{"level": 15, "move": "sleep powder"},
 			{"level": 18, "move": "supersonic"},
-			{"level": 22, "move": "whirlwind"},
-			{"level": 24, "move": "psybeam"},
-			{"level": 28, "move": "silver wind"},
-			{"level": 30, "move": "tailwind"},
-			{"level": 34, "move": "safeguard"},
-			{"level": 36, "move": "captivate"},
-			{"level": 40, "move": "bug buzz"}
+			{"level": 23, "move": "whirlwind"},
+			{"level": 28, "move": "gust"},
+			{"level": 34, "move": "psybeam"},
+			{"level": 40, "move": "safeguard"},
+			{"level": 47, "move": "silver wind"}
 		],
 
 		"learnableTM": [
@@ -580,10 +555,7 @@
 			"TM18", "TM19", "TM20", "TM21", "TM22", 
 			"TM27", "TM29", "TM30", "TM32", "TM40", 
 			"TM42", "TM43", "TM44", "TM45", "TM46", 
-			"TM48", "TM51", "TM53", "TM58", "TM62", 
-			"TM68", "TM70", "TM77", "TM78", "TM82", 
-			"TM83", "TM85", "TM87", "TM90", "HM05"
-
+			"TM48", "HM05"
 		],
 
 		"evYield": {
@@ -614,7 +586,6 @@
 
 		"evolveTo":		"14",
 		"evolveLevel":	"7",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -653,7 +624,6 @@
 
 		"evolveTo":		"15",
 		"evolveLevel":	"10",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -691,26 +661,20 @@
 
 		"learnset": [
 			{"level": 1, "move": "fury attack"},
-			{"level": 13, "move": "focus energy"},
-			{"level": 16, "move": "twineedle"},
-			{"level": 19, "move": "rage"},
-			{"level": 22, "move": "pursuit"},
-			{"level": 25, "move": "toxic spikes"},
-			{"level": 28, "move": "pin missile"},
-			{"level": 31, "move": "agility"},
-			{"level": 34, "move": "assurance"},
-			{"level": 37, "move": "poison jab"},
-			{"level": 40, "move": "endeavor"}
+			{"level": 15, "move": "focus energy"},
+			{"level": 20, "move": "twineedle"},
+			{"level": 25, "move": "rage"},
+			{"level": 30, "move": "pursuit"},
+			{"level": 35, "move": "pin missile"},
+			{"level": 40, "move": "agility"},
+			{"level": 45, "move": "endeavor"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM15", "TM17", 
 			"TM19", "TM21", "TM22", "TM27", "TM31", 
 			"TM32", "TM36", "TM40", "TM42", "TM43", 
-			"TM44", "TM45", "TM46", "TM51", "TM54", 
-			"TM58", "TM62", "TM66", "TM68", "TM70", 
-			"TM75", "TM78", "TM82", "TM83", "TM84", 
-			"TM87", "TM90", "HM01", "HM05", "HM06"
+			"TM44", "TM45", "TM46", "HM01", "HM06"
 
 		],
 
@@ -743,7 +707,6 @@
 
 		"evolveTo":		"17",
 		"evolveLevel":	"18",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -792,7 +755,6 @@
 
 		"evolveTo":		"18",
 		"evolveLevel":	"36",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -884,7 +846,6 @@
 
 		"evolveTo":		"20",
 		"evolveLevel":	"20",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -978,7 +939,6 @@
 
 		"evolveTo":		"22",
 		"evolveLevel":	"20",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1070,7 +1030,6 @@
 
 		"evolveTo":		"24",
 		"evolveLevel":	"22",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1168,7 +1127,6 @@
 
 		"evolveTo":		"26",
 		"evolveItem":	"Thunderstone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1258,7 +1216,6 @@
 
 		"evolveTo":		"28",
 		"evolveLevel":	"22",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1350,7 +1307,6 @@
 
 		"evolveTo":		"30",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1402,7 +1358,6 @@
 
 		"evolveTo":		"31",
 		"evolveItem":	"Moon Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1500,7 +1455,6 @@
 
 		"evolveTo":		"33",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1526,7 +1480,7 @@
 		],
 
 		"evYield": {
-			"atk": 2
+			"atk": 1
 		}
 	}
 
@@ -1552,7 +1506,6 @@
 
 		"evolveTo":		"34",
 		"evolveItem":	"Moon Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1650,7 +1603,6 @@
 
 		"evolveTo":		"36",
 		"evolveItem":	"Moon Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1748,7 +1700,6 @@
 
 		"evolveTo":		"38",
 		"evolveItem":	"Fire Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1837,7 +1788,6 @@
 
 		"evolveTo":		"40",
 		"evolveItem":	"Moon Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -1931,7 +1881,6 @@
 
 		"evolveTo":		"42",
 		"evolveLevel":	"22",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2029,7 +1978,6 @@
 
 		"evolveTo":		"44",
 		"evolveLevel":	"21",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2077,7 +2025,6 @@
 
 		"evolveTo":		"45",
 		"evolveItem":	"Leaf Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2166,7 +2113,6 @@
 
 		"evolveTo":		"47",
 		"evolveLevel":	"24",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2264,7 +2210,6 @@
 
 		"evolveTo":		"49",
 		"evolveLevel":	"31",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2366,7 +2311,6 @@
 
 		"evolveTo":		"51",
 		"evolveLevel":	"26",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2460,24 +2404,19 @@
 
 		"evolveTo":		"53",
 		"evolveLevel":	"28",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
 			{"level": 1, "move": "scratch"},
 			{"level": 1, "move": "growl"},
-			{"level": 6, "move": "bite"},
-			{"level": 9, "move": "fake out"},
-			{"level": 14, "move": "fury swipes"},
-			{"level": 17, "move": "screech"},
-			{"level": 22, "move": "faint attack"},
-			{"level": 25, "move": "taunt"},
-			{"level": 30, "move": "pay day"},
-			{"level": 33, "move": "slash"},
-			{"level": 38, "move": "nasty plot"},
-			{"level": 41, "move": "assurance"},
-			{"level": 46, "move": "captivate"},
-			{"level": 49, "move": "night slash"}
+			{"level": 10, "move": "bite"},
+			{"level": 18, "move": "pay day"},
+			{"level": 25, "move": "faint attack"},
+			{"level": 31, "move": "screech"},
+			{"level": 36, "move": "fury swipes"},
+			{"level": 40, "move": "slash"},
+			{"level": 43, "move": "fake out"},
+			{"level": 45, "move": "swagger"}
 		],
 
 		"learnableTM": [
@@ -2485,10 +2424,8 @@
 			"TM17", "TM18", "TM21", "TM23", "TM24", 
 			"TM25", "TM27", "TM28", "TM30", "TM32", 
 			"TM34", "TM40", "TM41", "TM42", "TM43", 
-			"TM44", "TM45", "TM46", "TM49", "TM58", 
-			"TM65", "TM66", "TM70", "TM77", "TM78", 
-			"TM79", "TM82", "TM83", "TM85", "TM87", 
-			"TM90", "HM01"
+			"TM44", "TM45", "TM46", "TM49", "HM01", 
+			"HM05"
 		],
 
 		"evYield": {
@@ -2517,21 +2454,16 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "switcheroo"},
 			{"level": 1, "move": "scratch"},
 			{"level": 1, "move": "growl"},
 			{"level": 1, "move": "bite"},
-			{"level": 1, "move": "fake out"},
-			{"level": 14, "move": "fury swipes"},
-			{"level": 17, "move": "screech"},
-			{"level": 22, "move": "faint attack"},
-			{"level": 25, "move": "taunt"},
-			{"level": 32, "move": "power gem"},
-			{"level": 37, "move": "slash"},
-			{"level": 44, "move": "nasty plot"},
-			{"level": 49, "move": "assurance"},
-			{"level": 56, "move": "captivate"},
-			{"level": 61, "move": "night slash"}
+			{"level": 18, "move": "pay day"},
+			{"level": 25, "move": "faint attack"},
+			{"level": 34, "move": "screech"},
+			{"level": 42, "move": "fury swipes"},
+			{"level": 49, "move": "slash"},
+			{"level": 55, "move": "fake out"},
+			{"level": 61, "move": "swagger"}
 		],
 
 		"learnableTM": [
@@ -2540,10 +2472,7 @@
 			"TM23", "TM24", "TM25", "TM27", "TM28", 
 			"TM30", "TM32", "TM34", "TM40", "TM41", 
 			"TM42", "TM43", "TM44", "TM45", "TM46", 
-			"TM49", "TM58", "TM63", "TM65", "TM66", 
-			"TM68", "TM70", "TM77", "TM78", "TM79", 
-			"TM82", "TM83", "TM85", "TM87", "TM90", 
-			"HM01"
+			"TM49", "HM01", "HM05"
 		],
 
 		"evYield": {
@@ -2573,7 +2502,6 @@
 
 		"evolveTo":		"55",
 		"evolveLevel":	"33",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2626,28 +2554,21 @@
 			{"level": 1, "move": "water sport"},
 			{"level": 1, "move": "scratch"},
 			{"level": 1, "move": "tail whip"},
-			{"level": 1, "move": "water gun"},
-			{"level": 14, "move": "disable"},
-			{"level": 18, "move": "confusion"},
-			{"level": 22, "move": "water pulse"},
-			{"level": 27, "move": "fury swipes"},
-			{"level": 31, "move": "screech"},
-			{"level": 37, "move": "psych up"},
-			{"level": 44, "move": "zen headbutt"},
-			{"level": 50, "move": "amnesia"},
-			{"level": 56, "move": "hydro pump"}
+			{"level": 1, "move": "disable"},
+			{"level": 16, "move": "confusion"},
+			{"level": 23, "move": "screech"},
+			{"level": 31, "move": "psych up"},
+			{"level": 44, "move": "fury swipes"},
+			{"level": 58, "move": "hydro pump"}
 		],
 
 		"learnableTM": [
 			"TM01", "TM03", "TM04", "TM06", "TM07", 
 			"TM10", "TM13", "TM14", "TM15", "TM17", 
 			"TM18", "TM21", "TM23", "TM27", "TM28", 
-			"TM29", "TM31", "TM32", "TM40", "TM42", 
-			"TM43", "TM44", "TM45", "TM52", "TM55", 
-			"TM56", "TM58", "TM65", "TM68", "TM70", 
-			"TM77", "TM78", "TM82", "TM83", "TM87", 
-			"TM90", "HM03", "HM04", "HM06", "HM07", 
-			"HM08"
+			"TM31", "TM32", "TM40", "TM42", "TM43", 
+			"TM44", "TM45", "HM03", "HM04", "HM05", 
+			"HM06", "HM07", "HM08"
 		],
 
 		"evYield": {
@@ -2677,7 +2598,6 @@
 
 		"evolveTo":		"57",
 		"evolveLevel":	"28",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2779,7 +2699,6 @@
 
 		"evolveTo":		"59",
 		"evolveItem":	"Fire Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2871,7 +2790,6 @@
 
 		"evolveTo":		"61",
 		"evolveLevel":	"25",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -2920,7 +2838,6 @@
 
 		"evolveTo":		"62",
 		"evolveItem":	"Water Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3013,7 +2930,6 @@
 
 		"evolveTo":		"64",
 		"evolveLevel":	"16",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3157,7 +3073,6 @@
 
 		"evolveTo":		"67",
 		"evolveLevel":	"28",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3311,7 +3226,6 @@
 
 		"evolveTo":		"70",
 		"evolveLevel":	"21",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3361,7 +3275,6 @@
 
 		"evolveTo":		"71",
 		"evolveItem":	"Leaf Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3411,22 +3324,19 @@
 
 		"learnset": [
 			{"level": 1, "move": "stockpile"},
-			{"level": 1, "move": "swallow"},
 			{"level": 1, "move": "spit up"},
+			{"level": 1, "move": "swallow"},
 			{"level": 1, "move": "vine whip"},
 			{"level": 1, "move": "sleep powder"},
 			{"level": 1, "move": "sweet scent"},
-			{"level": 1, "move": "razor leaf"},
-			{"level": 47, "move": "leaf storm"}
+			{"level": 1, "move": "razor leaf"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM09", "TM10", "TM11", "TM15", 
 			"TM17", "TM19", "TM21", "TM22", "TM27", 
 			"TM32", "TM36", "TM42", "TM43", "TM44", 
-			"TM45", "TM46", "TM53", "TM58", "TM68", 
-			"TM70", "TM75", "TM78", "TM82", "TM83", 
-			"TM86", "TM87", "TM90", "HM01"
+			"TM45", "TM46", "HM01", "HM05"
 		],
 
 		"evYield": {
@@ -3457,7 +3367,6 @@
 
 		"evolveTo":		"73",
 		"evolveLevel":	"30",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3554,7 +3463,6 @@
 
 		"evolveTo":		"75",
 		"evolveLevel":	"25",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3704,29 +3612,26 @@
 
 		"evolveTo":		"78",
 		"evolveLevel":	"40",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
-			{"level": 1, "move": "tackle"},
-			{"level": 7, "move": "growl"},
-			{"level": 10, "move": "tail whip"},
-			{"level": 16, "move": "ember"},
+			{"level": 1, "move": "quick attack"},
+			{"level": 5, "move": "growl"},
+			{"level": 9, "move": "tail whip"},
+			{"level": 14, "move": "ember"},
 			{"level": 19, "move": "stomp"},
 			{"level": 25, "move": "fire spin"},
-			{"level": 28, "move": "take down"},
-			{"level": 34, "move": "agility"},
-			{"level": 38, "move": "fire blast"},
-			{"level": 44, "move": "bounce"},
-			{"level": 48, "move": "flare blitz"}
+			{"level": 31, "move": "take down"},
+			{"level": 38, "move": "agility"},
+			{"level": 45, "move": "bounce"},
+			{"level": 53, "move": "fire blast"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM17", "TM21", 
 			"TM22", "TM23", "TM27", "TM32", "TM35", 
 			"TM38", "TM42", "TM43", "TM44", "TM45", 
-			"TM50", "TM58", "TM78", "TM82", "TM83", 
-			"TM87", "TM90", "HM04"
+			"TM50", "HM04"
 		],
 
 		"evYield": {
@@ -3755,29 +3660,24 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "poison jab"},
-			{"level": 1, "move": "megahorn"},
 			{"level": 1, "move": "quick attack"},
 			{"level": 1, "move": "growl"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "ember"},
 			{"level": 19, "move": "stomp"},
 			{"level": 25, "move": "fire spin"},
-			{"level": 28, "move": "take down"},
-			{"level": 34, "move": "agility"},
-			{"level": 38, "move": "fire blast"},
+			{"level": 31, "move": "take down"},
+			{"level": 38, "move": "agility"},
 			{"level": 40, "move": "fury attack"},
-			{"level": 49, "move": "bounce"},
-			{"level": 58, "move": "flare blitz"}
+			{"level": 50, "move": "bounce"},
+			{"level": 63, "move": "fire blast"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM15", "TM17", 
 			"TM21", "TM22", "TM23", "TM27", "TM32", 
 			"TM35", "TM38", "TM42", "TM43", "TM44", 
-			"TM45", "TM50", "TM58", "TM68", "TM78", 
-			"TM82", "TM83", "TM84", "TM87", "TM90", 
-			"HM04"
+			"TM45", "TM50", "HM04"
 		],
 
 		"evYield": {
@@ -3808,7 +3708,6 @@
 
 		"evolveTo":		"80",
 		"evolveLevel":	"37",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -3914,7 +3813,6 @@
 
 		"evolveTo":		"82",
 		"evolveLevel":	"30",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4010,30 +3908,22 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "poison jab"},
 			{"level": 1, "move": "peck"},
-			{"level": 1, "move": "leer"},
-			{"level": 1, "move": "fury cutter"},
-			{"level": 7, "move": "fury attack"},
-			{"level": 9, "move": "knock off"},
-			{"level": 13, "move": "aerial ace"},
-			{"level": 19, "move": "slash"},
-			{"level": 21, "move": "air cutter"},
-			{"level": 25, "move": "swords dance"},
-			{"level": 31, "move": "agility"},
-			{"level": 33, "move": "night slash"},
-			{"level": 37, "move": "air slash"},
-			{"level": 43, "move": "false swipe"}
+			{"level": 11, "move": "leer"},
+			{"level": 16, "move": "fury attack"},
+			{"level": 21, "move": "knock off"},
+			{"level": 26, "move": "fury cutter"},
+			{"level": 31, "move": "swords dance"},
+			{"level": 36, "move": "agility"},
+			{"level": 41, "move": "slash"},
+			{"level": 46, "move": "false swipe"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM17", "TM21", 
 			"TM23", "TM27", "TM32", "TM40", "TM42", 
 			"TM43", "TM44", "TM45", "TM46", "TM47", 
-			"TM51", "TM54", "TM58", "TM75", "TM77", 
-			"TM78", "TM82", "TM83", "TM84", "TM87", 
-			"TM88", "TM90", "HM01", "HM02", "HM05"
-
+			"HM01", "HM02"
 		],
 
 		"evYield": {
@@ -4064,7 +3954,6 @@
 
 		"evolveTo":		"85",
 		"evolveLevel":	"31",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4158,7 +4047,6 @@
 
 		"evolveTo":		"87",
 		"evolveLevel":	"34",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4254,7 +4142,6 @@
 
 		"evolveTo":		"89",
 		"evolveLevel":	"38",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4353,7 +4240,6 @@
 
 		"evolveTo":		"91",
 		"evolveItem":	"Water Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4444,7 +4330,6 @@
 
 		"evolveTo":		"93",
 		"evolveLevel":	"25",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4646,7 +4531,6 @@
 
 		"evolveTo":		"97",
 		"evolveLevel":	"26",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4748,7 +4632,6 @@
 
 		"evolveTo":		"99",
 		"evolveLevel":	"28",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4846,7 +4729,6 @@
 
 		"evolveTo":		"101",
 		"evolveLevel":	"30",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -4943,7 +4825,6 @@
 
 		"evolveTo":		"103",
 		"evolveItem":	"Leaf Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5035,7 +4916,6 @@
 
 		"evolveTo":		"105",
 		"evolveLevel":	"28",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5136,7 +5016,6 @@
 
 		"evolveTo":		"107",
 		"evolveLevel":	"20",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5286,7 +5165,6 @@
 
 		"evolveTo":		"110",
 		"evolveLevel":	"35",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5383,7 +5261,6 @@
 
 		"evolveTo":		"112",
 		"evolveLevel":	"42",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5631,7 +5508,6 @@
 
 		"evolveTo":		"117",
 		"evolveLevel":	"32",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5723,7 +5599,6 @@
 
 		"evolveTo":		"119",
 		"evolveLevel":	"33",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5820,7 +5695,6 @@
 
 		"evolveTo":		"121",
 		"evolveItem":	"Water Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -5895,7 +5769,7 @@
 	}
 
 	"122": {
-		"name":			"Mr. Mime",
+		"name":			"Mr. mime",
 		"type":			"psychic",
 		"ability1":		"soundproof",
 		"ability2":		"filter",
@@ -5972,29 +5846,22 @@
 		"learnset": [
 			{"level": 1, "move": "quick attack"},
 			{"level": 1, "move": "leer"},
-			{"level": 5, "move": "focus energy"},
-			{"level": 9, "move": "pursuit"},
-			{"level": 13, "move": "false swipe"},
-			{"level": 17, "move": "agility"},
-			{"level": 21, "move": "wing attack"},
-			{"level": 25, "move": "fury cutter"},
-			{"level": 29, "move": "slash"},
-			{"level": 33, "move": "razor wind"},
-			{"level": 37, "move": "double team"},
-			{"level": 45, "move": "night slash"},
-			{"level": 49, "move": "double hit"},
-			{"level": 53, "move": "air slash"},
-			{"level": 57, "move": "swords dance"}
+			{"level": 6, "move": "focus energy"},
+			{"level": 11, "move": "pursuit"},
+			{"level": 16, "move": "false swipe"},
+			{"level": 21, "move": "agility"},
+			{"level": 26, "move": "wing attack"},
+			{"level": 31, "move": "slash"},
+			{"level": 36, "move": "swords dance"},
+			{"level": 41, "move": "double team"},
+			{"level": 46, "move": "fury cutter"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM15", "TM17", 
-			"TM18", "TM21", "TM27", "TM31", "TM32", 
-			"TM40", "TM42", "TM43", "TM44", "TM45", 
-			"TM46", "TM47", "TM51", "TM54", "TM58", 
-			"TM62", "TM68", "TM75", "TM78", "TM82", 
-			"TM83", "TM87", "TM90", "HM01", "HM05", 
-			"HM06"
+			"TM18", "TM21", "TM27", "TM32", "TM40", 
+			"TM42", "TM43", "TM44", "TM45", "TM46", 
+			"TM47", "HM01", "HM06"
 		],
 
 		"evYield": {
@@ -6253,7 +6120,6 @@
 
 		"evolveTo":		"130",
 		"evolveLevel":	"20",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -6422,28 +6288,24 @@
 
 		"evolveTo":		"134",
 		"evolveItem":	"Water Stone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
 			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "helping hand"},
-			{"level": 15, "move": "growl"},
-			{"level": 22, "move": "quick attack"},
-			{"level": 29, "move": "bite"},
+			{"level": 16, "move": "growl"},
+			{"level": 23, "move": "quick attack"},
+			{"level": 30, "move": "bite"},
 			{"level": 36, "move": "baton pass"},
-			{"level": 43, "move": "take down"},
-			{"level": 50, "move": "last resort"},
-			{"level": 57, "move": "trump card"}
+			{"level": 42, "move": "take down"}
 		],
 
 		"learnableTM": [
 			"TM06", "TM10", "TM11", "TM17", "TM18", 
 			"TM21", "TM23", "TM27", "TM28", "TM30", 
-			"TM32", "TM42", "TM43", "TM44", "TM45", 
-			"TM58", "TM78", "TM82", "TM83", "TM87", 
-			"TM90"
+			"TM32", "TM42", "TM43", "TM44", "TM45"
+
 		],
 
 		"evYield": {
@@ -6472,22 +6334,19 @@
 
 		"evolveTo":		"135",
 		"evolveItem":	"Thunderstone",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
 			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "helping hand"},
-			{"level": 15, "move": "water gun"},
-			{"level": 22, "move": "quick attack"},
-			{"level": 29, "move": "bite"},
+			{"level": 16, "move": "water gun"},
+			{"level": 23, "move": "quick attack"},
+			{"level": 30, "move": "bite"},
 			{"level": 36, "move": "aurora beam"},
-			{"level": 43, "move": "aqua ring"},
-			{"level": 50, "move": "last resort"},
-			{"level": 57, "move": "haze"},
-			{"level": 64, "move": "acid armor"},
-			{"level": 71, "move": "hydro pump"}
+			{"level": 42, "move": "haze"},
+			{"level": 47, "move": "acid armor"},
+			{"level": 52, "move": "hydro pump"}
 		],
 
 		"learnableTM": [
@@ -6495,9 +6354,7 @@
 			"TM11", "TM13", "TM14", "TM15", "TM17", 
 			"TM18", "TM21", "TM23", "TM27", "TM28", 
 			"TM30", "TM32", "TM42", "TM43", "TM44", 
-			"TM45", "TM55", "TM58", "TM68", "TM78", 
-			"TM82", "TM83", "TM87", "TM90", "HM03", 
-			"HM04", "HM06", "HM07"
+			"TM45", "HM03", "HM07", "HM08"
 		],
 
 		"evYield": {
@@ -6528,25 +6385,21 @@
 			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "helping hand"},
-			{"level": 15, "move": "thundershock"},
-			{"level": 22, "move": "quick attack"},
-			{"level": 29, "move": "double kick"},
+			{"level": 16, "move": "thundershock"},
+			{"level": 23, "move": "quick attack"},
+			{"level": 30, "move": "double kick"},
 			{"level": 36, "move": "pin missile"},
-			{"level": 43, "move": "thunder fang"},
-			{"level": 50, "move": "last resort"},
-			{"level": 57, "move": "thunder wave"},
-			{"level": 64, "move": "agility"},
-			{"level": 71, "move": "thunder"}
+			{"level": 42, "move": "thunder wave"},
+			{"level": 47, "move": "agility"},
+			{"level": 52, "move": "thunder"}
 		],
 
 		"learnableTM": [
 			"TM05", "TM06", "TM10", "TM11", "TM15", 
-			"TM16", "TM17", "TM18", "TM21", "TM23", 
-			"TM24", "TM25", "TM27", "TM28", "TM30", 
-			"TM32", "TM34", "TM42", "TM43", "TM44", 
-			"TM45", "TM57", "TM58", "TM68", "TM70", 
-			"TM73", "TM78", "TM82", "TM83", "TM87", 
-			"TM90", "HM04", "HM06"
+			"TM17", "TM18", "TM21", "TM23", "TM24", 
+			"TM25", "TM27", "TM28", "TM30", "TM32", 
+			"TM34", "TM42", "TM43", "TM44", "TM45", 
+			"HM05"
 		],
 
 		"evYield": {
@@ -6577,24 +6430,21 @@
 			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "tail whip"},
 			{"level": 1, "move": "helping hand"},
-			{"level": 15, "move": "ember"},
-			{"level": 22, "move": "quick attack"},
-			{"level": 29, "move": "bite"},
+			{"level": 16, "move": "ember"},
+			{"level": 23, "move": "quick attack"},
+			{"level": 30, "move": "bite"},
 			{"level": 36, "move": "fire spin"},
-			{"level": 43, "move": "fire fang"},
-			{"level": 50, "move": "last resort"},
-			{"level": 57, "move": "smog"},
-			{"level": 64, "move": "scary face"},
-			{"level": 71, "move": "fire blast"}
+			{"level": 42, "move": "smog"},
+			{"level": 47, "move": "leer"},
+			{"level": 52, "move": "flamethrower"}
 		],
 
 		"learnableTM": [
 			"TM05", "TM06", "TM10", "TM11", "TM15", 
 			"TM17", "TM18", "TM21", "TM23", "TM27", 
 			"TM28", "TM30", "TM32", "TM35", "TM38", 
-			"TM42", "TM43", "TM44", "TM45", "TM50", 
-			"TM58", "TM68", "TM78", "TM82", "TM83", 
-			"TM87", "TM90", "HM04", "HM06"
+			"TM42", "TM43", "TM44", "TM45", "TM50"
+
 		],
 
 		"evYield": {
@@ -6671,7 +6521,6 @@
 
 		"evolveTo":		"139",
 		"evolveLevel":	"40",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -6771,7 +6620,6 @@
 
 		"evolveTo":		"141",
 		"evolveLevel":	"40",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -6821,19 +6669,17 @@
 
 
 		"learnset": [
+			{"level": 1, "move": "fury cutter"},
 			{"level": 1, "move": "scratch"},
 			{"level": 1, "move": "harden"},
 			{"level": 1, "move": "absorb"},
-			{"level": 11, "move": "leer"},
-			{"level": 16, "move": "mud shot"},
-			{"level": 26, "move": "endure"},
-			{"level": 31, "move": "aqua jet"},
-			{"level": 36, "move": "mega drain"},
+			{"level": 1, "move": "leer"},
+			{"level": 25, "move": "mud shot"},
+			{"level": 37, "move": "endure"},
 			{"level": 40, "move": "slash"},
-			{"level": 45, "move": "metal sound"},
-			{"level": 54, "move": "ancientpower"},
-			{"level": 63, "move": "wring out"},
-			{"level": 72, "move": "night slash"}
+			{"level": 46, "move": "metal sound"},
+			{"level": 55, "move": "mega drain"},
+			{"level": 65, "move": "ancientpower"}
 		],
 
 		"learnableTM": [
@@ -6841,11 +6687,8 @@
 			"TM14", "TM15", "TM17", "TM18", "TM19", 
 			"TM21", "TM27", "TM28", "TM31", "TM32", 
 			"TM37", "TM39", "TM40", "TM42", "TM43", 
-			"TM44", "TM45", "TM46", "TM55", "TM58", 
-			"TM68", "TM69", "TM71", "TM75", "TM76", 
-			"TM78", "TM80", "TM82", "TM83", "TM87", 
-			"TM90", "HM01", "HM03", "HM06", "HM07", 
-			"HM08"
+			"TM44", "TM45", "TM46", "HM01", "HM03", 
+			"HM06", "HM07", "HM08"
 		],
 
 		"evYield": {
@@ -7107,7 +6950,6 @@
 
 		"evolveTo":		"148",
 		"evolveLevel":	"30",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -7158,7 +7000,6 @@
 
 		"evolveTo":		"149",
 		"evolveLevel":	"55",
-		"tradeToEvolve":"false",
 
 
 		"learnset": [
@@ -7209,23 +7050,17 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "fire punch"},
-			{"level": 1, "move": "thunderpunch"},
-			{"level": 1, "move": "roost"},
 			{"level": 1, "move": "wrap"},
 			{"level": 1, "move": "thunder wave"},
 			{"level": 1, "move": "leer"},
 			{"level": 1, "move": "twister"},
-			{"level": 15, "move": "dragon rage"},
-			{"level": 21, "move": "slam"},
-			{"level": 25, "move": "agility"},
-			{"level": 33, "move": "aqua tail"},
-			{"level": 39, "move": "dragon rush"},
+			{"level": 22, "move": "dragon rage"},
+			{"level": 29, "move": "slam"},
+			{"level": 38, "move": "agility"},
 			{"level": 47, "move": "safeguard"},
-			{"level": 53, "move": "dragon dance"},
 			{"level": 55, "move": "wing attack"},
-			{"level": 64, "move": "outrage"},
-			{"level": 73, "move": "hyper beam"}
+			{"level": 61, "move": "outrage"},
+			{"level": 75, "move": "hyper beam"}
 		],
 
 		"learnableTM": [
@@ -7235,11 +7070,9 @@
 			"TM23", "TM24", "TM25", "TM26", "TM27", 
 			"TM31", "TM32", "TM34", "TM35", "TM37", 
 			"TM38", "TM39", "TM40", "TM42", "TM43", 
-			"TM44", "TM45", "TM47", "TM51", "TM52", 
-			"TM56", "TM58", "TM59", "TM68", "TM71", 
-			"TM73", "TM78", "TM80", "TM82", "TM83", 
-			"TM87", "TM90", "HM01", "HM02", "HM03", 
-			"HM04", "HM05", "HM06", "HM07"
+			"TM44", "TM45", "TM47", "HM01", "HM02", 
+			"HM03", "HM04", "HM06", "HM07", "HM08"
+
 		],
 
 		"evYield": {
