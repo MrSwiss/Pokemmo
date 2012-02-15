@@ -1,0 +1,268 @@
+tackle
+growl
+leech seed
+vine whip
+poisonpowder
+sleep powder
+razor leaf
+sweet scent
+growth
+synthesis
+solarbeam
+scratch
+ember
+metal claw
+smokescreen
+scary face
+flamethrower
+slash
+dragon rage
+fire spin
+heat wave
+wing attack
+tail whip
+bubble
+withdraw
+water gun
+bite
+rapid spin
+protect
+rain dance
+skull bash
+hydro pump
+string shot
+harden
+confusion
+stun spore
+supersonic
+whirlwind
+gust
+psybeam
+safeguard
+silver wind
+poison sting
+fury attack
+focus energy
+twineedle
+rage
+pursuit
+pin missile
+agility
+endeavor
+quick attack
+featherdance
+mirror move
+hyper fang
+super fang
+peck
+leer
+aerial ace
+drill peck
+wrap
+glare
+screech
+acid
+stockpile
+swallow
+spit up
+haze
+thundershock
+thunder wave
+double team
+slam
+thunderbolt
+thunder
+light screen
+defense curl
+swift
+fury swipes
+sand tomb
+sandstorm
+double kick
+helping hand
+flatter
+crunch
+body slam
+superpower
+horn attack
+horn drill
+thrash
+megahorn
+pound
+encore
+sing
+doubleslap
+follow me
+minimize
+metronome
+cosmic power
+moonlight
+meteor mash
+roar
+confuse ray
+imprison
+grudge
+disable
+rollout
+rest
+mimic
+hyper voice
+leech life
+astonish
+air cutter
+mean look
+poison fang
+absorb
+petal dance
+aromatherapy
+mega drain
+spore
+giga drain
+foresight
+psychic
+magnitude
+dig
+earthquake
+fissure
+tri attack
+pay day
+faint attack
+fake out
+swagger
+water sport
+psych up
+low kick
+karate chop
+seismic toss
+cross chop
+odor sleuth
+take down
+flame wheel
+extremespeed
+hypnosis
+belly drum
+submission
+mind reader
+teleport
+kinesis
+reflect
+recover
+future sight
+role play
+trick
+calm mind
+revenge
+vital throw
+dynamicpunch
+constrict
+bubblebeam
+barrier
+mud sport
+rock throw
+selfdestruct
+rock blast
+explosion
+stomp
+bounce
+fire blast
+curse
+yawn
+headbutt
+amnesia
+metal sound
+sonicboom
+spark
+zap cannon
+knock off
+fury cutter
+swords dance
+false swipe
+uproar
+icy wind
+aurora beam
+ice beam
+signal beam
+sheer cold
+poison gas
+sludge
+acid armor
+sludge bomb
+memento
+icicle spear
+clamp
+spikes
+spike cannon
+lick
+spite
+night shade
+dream eater
+destiny bond
+shadow ball
+nightmare
+shadow punch
+bind
+dragonbreath
+iron tail
+meditate
+vicegrip
+mud shot
+guillotine
+crabhammer
+flail
+charge
+mirror coat
+barrage
+egg bomb
+bone club
+bonemerang
+bone rush
+rolling kick
+jump kick
+brick break
+hi jump kick
+endure
+mega kick
+reversal
+comet punch
+mach punch
+thunderpunch
+ice punch
+fire punch
+sky uppercut
+mega punch
+detect
+counter
+refresh
+smog
+softboiled
+ingrain
+tickle
+dizzy punch
+twister
+dragon dance
+waterfall
+camouflage
+substitute
+magical leaf
+recycle
+baton pass
+lovely kiss
+powder snow
+fake tears
+perish song
+blizzard
+sunny day
+splash
+hyper beam
+mist
+transform
+conversion 2
+conversion
+sharpen
+ancientpower
+snore
+sleep talk
+block
+covet
+sky attack
+outrage
