@@ -1,4 +1,4 @@
-﻿{
+{
 	"1": {
 		"name":			"Bulbasaur",
 		"type1":		"grass",
@@ -47,7 +47,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"2": {
 		"name":			"Ivysaur",
@@ -95,10 +95,10 @@
 		],
 
 		"evYield": {
-			"spAtk": 1
+			"spAtk": 1,
 			"spDef": 1
 		}
-	}
+	},
 
 	"3": {
 		"name":			"Venusaur",
@@ -143,10 +143,10 @@
 		],
 
 		"evYield": {
-			"spAtk": 2
+			"spAtk": 2,
 			"spDef": 1
 		}
-	}
+	},
 
 	"4": {
 		"name":			"Charmander",
@@ -195,7 +195,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"5": {
 		"name":			"Charmeleon",
@@ -242,10 +242,10 @@
 		],
 
 		"evYield": {
-			"spAtk": 1
+			"spAtk": 1,
 			"speed": 1
 		}
-	}
+	},
 
 	"6": {
 		"name":			"Charizard",
@@ -294,7 +294,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"7": {
 		"name":			"Squirtle",
@@ -344,7 +344,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"8": {
 		"name":			"Wartortle",
@@ -392,10 +392,10 @@
 		],
 
 		"evYield": {
-			"def": 1
+			"def": 1,
 			"spDef": 1
 		}
-	}
+	},
 
 	"9": {
 		"name":			"Blastoise",
@@ -442,7 +442,7 @@
 		"evYield": {
 			"spDef": 3
 		}
-	}
+	},
 
 	"10": {
 		"name":			"Caterpie",
@@ -479,7 +479,7 @@
 		"evYield": {
 			"hp": 1
 		}
-	}
+	},
 
 	"11": {
 		"name":			"Metapod",
@@ -515,7 +515,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"12": {
 		"name":			"Butterfree",
@@ -559,10 +559,10 @@
 		],
 
 		"evYield": {
-			"spAtk": 2
+			"spAtk": 2,
 			"spDef": 1
 		}
-	}
+	},
 
 	"13": {
 		"name":			"Weedle",
@@ -600,7 +600,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"14": {
 		"name":			"Kakuna",
@@ -637,7 +637,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"15": {
 		"name":			"Beedrill",
@@ -679,10 +679,10 @@
 		],
 
 		"evYield": {
-			"atk": 2
+			"atk": 2,
 			"spDef": 1
 		}
-	}
+	},
 
 	"16": {
 		"name":			"Pidgey",
@@ -730,7 +730,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"17": {
 		"name":			"Pidgeotto",
@@ -778,7 +778,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"18": {
 		"name":			"Pidgeot",
@@ -822,7 +822,7 @@
 		"evYield": {
 			"speed": 3
 		}
-	}
+	},
 
 	"19": {
 		"name":			"Rattata",
@@ -870,7 +870,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"20": {
 		"name":			"Raticate",
@@ -915,7 +915,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"21": {
 		"name":			"Spearow",
@@ -963,7 +963,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"22": {
 		"name":			"Fearow",
@@ -1006,7 +1006,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"23": {
 		"name":			"Ekans",
@@ -1057,7 +1057,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"24": {
 		"name":			"Arbok",
@@ -1104,7 +1104,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"25": {
 		"name":			"Pikachu",
@@ -1154,7 +1154,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"26": {
 		"name":			"Raichu",
@@ -1193,7 +1193,7 @@
 		"evYield": {
 			"speed": 3
 		}
-	}
+	},
 
 	"27": {
 		"name":			"Sandshrew",
@@ -1240,7 +1240,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"28": {
 		"name":			"Sandslash",
@@ -1283,7 +1283,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"29": {
 		"name":			"Nidoran♀",
@@ -1334,7 +1334,7 @@
 		"evYield": {
 			"hp": 1
 		}
-	}
+	},
 
 	"30": {
 		"name":			"Nidorina",
@@ -1385,7 +1385,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"31": {
 		"name":			"Nidoqueen",
@@ -1431,7 +1431,7 @@
 		"evYield": {
 			"hp": 3
 		}
-	}
+	},
 
 	"32": {
 		"name":			"Nidoran♂",
@@ -1482,7 +1482,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"33": {
 		"name":			"Nidorino",
@@ -1533,7 +1533,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"34": {
 		"name":			"Nidoking",
@@ -1579,7 +1579,7 @@
 		"evYield": {
 			"atk": 3
 		}
-	}
+	},
 
 	"35": {
 		"name":			"Clefairy",
@@ -1634,7 +1634,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"36": {
 		"name":			"Clefable",
@@ -1677,7 +1677,7 @@
 		"evYield": {
 			"hp": 3
 		}
-	}
+	},
 
 	"37": {
 		"name":			"Vulpix",
@@ -1725,7 +1725,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"38": {
 		"name":			"Ninetales",
@@ -1762,10 +1762,10 @@
 		],
 
 		"evYield": {
-			"spDef": 1
+			"spDef": 1,
 			"speed": 1
 		}
-	}
+	},
 
 	"39": {
 		"name":			"Jigglypuff",
@@ -1816,7 +1816,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"40": {
 		"name":			"Wigglytuff",
@@ -1857,7 +1857,7 @@
 		"evYield": {
 			"hp": 3
 		}
-	}
+	},
 
 	"41": {
 		"name":			"Zubat",
@@ -1907,7 +1907,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"42": {
 		"name":			"Golbat",
@@ -1954,7 +1954,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"43": {
 		"name":			"Oddish",
@@ -2001,7 +2001,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"44": {
 		"name":			"Gloom",
@@ -2048,7 +2048,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"45": {
 		"name":			"Vileplume",
@@ -2088,7 +2088,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"46": {
 		"name":			"Paras",
@@ -2138,7 +2138,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"47": {
 		"name":			"Parasect",
@@ -2182,10 +2182,10 @@
 		],
 
 		"evYield": {
-			"atk": 2
+			"atk": 2,
 			"def": 1
 		}
-	}
+	},
 
 	"48": {
 		"name":			"Venonat",
@@ -2236,7 +2236,7 @@
 		"evYield": {
 			"spDef": 1
 		}
-	}
+	},
 
 	"49": {
 		"name":			"Venomoth",
@@ -2284,10 +2284,10 @@
 		],
 
 		"evYield": {
-			"spAtk": 1
+			"spAtk": 1,
 			"speed": 1
 		}
-	}
+	},
 
 	"50": {
 		"name":			"Diglett",
@@ -2334,7 +2334,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"51": {
 		"name":			"Dugtrio",
@@ -2380,7 +2380,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"52": {
 		"name":			"Meowth",
@@ -2431,7 +2431,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"53": {
 		"name":			"Persian",
@@ -2478,7 +2478,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"54": {
 		"name":			"Psyduck",
@@ -2528,7 +2528,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"55": {
 		"name":			"Golduck",
@@ -2574,7 +2574,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"56": {
 		"name":			"Mankey",
@@ -2626,7 +2626,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"57": {
 		"name":			"Primeape",
@@ -2675,7 +2675,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"58": {
 		"name":			"Growlithe",
@@ -2725,7 +2725,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"59": {
 		"name":			"Arcanine",
@@ -2766,7 +2766,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"60": {
 		"name":			"Poliwag",
@@ -2814,7 +2814,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"61": {
 		"name":			"Poliwhirl",
@@ -2863,7 +2863,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"62": {
 		"name":			"Poliwrath",
@@ -2906,7 +2906,7 @@
 		"evYield": {
 			"def": 3
 		}
-	}
+	},
 
 	"63": {
 		"name":			"Abra",
@@ -2948,7 +2948,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"64": {
 		"name":			"Kadabra",
@@ -3001,7 +3001,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"65": {
 		"name":			"Alakazam",
@@ -3049,7 +3049,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"66": {
 		"name":			"Machop",
@@ -3101,7 +3101,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"67": {
 		"name":			"Machoke",
@@ -3154,7 +3154,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"68": {
 		"name":			"Machamp",
@@ -3202,7 +3202,7 @@
 		"evYield": {
 			"atk": 3
 		}
-	}
+	},
 
 	"69": {
 		"name":			"Bellsprout",
@@ -3251,7 +3251,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"70": {
 		"name":			"Weepinbell",
@@ -3300,7 +3300,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"71": {
 		"name":			"Victreebel",
@@ -3342,7 +3342,7 @@
 		"evYield": {
 			"atk": 3
 		}
-	}
+	},
 
 	"72": {
 		"name":			"Tentacool",
@@ -3392,7 +3392,7 @@
 		"evYield": {
 			"spDef": 1
 		}
-	}
+	},
 
 	"73": {
 		"name":			"Tentacruel",
@@ -3438,7 +3438,7 @@
 		"evYield": {
 			"spDef": 2
 		}
-	}
+	},
 
 	"74": {
 		"name":			"Geodude",
@@ -3489,7 +3489,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"75": {
 		"name":			"Graveler",
@@ -3541,7 +3541,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"76": {
 		"name":			"Golem",
@@ -3588,7 +3588,7 @@
 		"evYield": {
 			"def": 3
 		}
-	}
+	},
 
 	"77": {
 		"name":			"Ponyta",
@@ -3637,7 +3637,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"78": {
 		"name":			"Rapidash",
@@ -3683,7 +3683,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"79": {
 		"name":			"Slowpoke",
@@ -3737,7 +3737,7 @@
 		"evYield": {
 			"hp": 1
 		}
-	}
+	},
 
 	"80": {
 		"name":			"Slowbro",
@@ -3788,7 +3788,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"81": {
 		"name":			"Magnemite",
@@ -3838,7 +3838,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"82": {
 		"name":			"Magneton",
@@ -3884,7 +3884,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"83": {
 		"name":			"Farfetch'd",
@@ -3929,7 +3929,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"84": {
 		"name":			"Doduo",
@@ -3978,7 +3978,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"85": {
 		"name":			"Dodrio",
@@ -4023,7 +4023,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"86": {
 		"name":			"Seel",
@@ -4071,7 +4071,7 @@
 		"evYield": {
 			"spDef": 1
 		}
-	}
+	},
 
 	"87": {
 		"name":			"Dewgong",
@@ -4118,7 +4118,7 @@
 		"evYield": {
 			"spDef": 2
 		}
-	}
+	},
 
 	"88": {
 		"name":			"Grimer",
@@ -4168,7 +4168,7 @@
 		"evYield": {
 			"hp": 1
 		}
-	}
+	},
 
 	"89": {
 		"name":			"Muk",
@@ -4213,10 +4213,10 @@
 		],
 
 		"evYield": {
-			"hp": 1
+			"hp": 1,
 			"atk": 1
 		}
-	}
+	},
 
 	"90": {
 		"name":			"Shellder",
@@ -4264,7 +4264,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"91": {
 		"name":			"Cloyster",
@@ -4306,7 +4306,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"92": {
 		"name":			"Gastly",
@@ -4357,7 +4357,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"93": {
 		"name":			"Haunter",
@@ -4410,7 +4410,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"94": {
 		"name":			"Gengar",
@@ -4459,7 +4459,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"95": {
 		"name":			"Onix",
@@ -4507,7 +4507,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"96": {
 		"name":			"Drowzee",
@@ -4559,7 +4559,7 @@
 		"evYield": {
 			"spDef": 1
 		}
-	}
+	},
 
 	"97": {
 		"name":			"Hypno",
@@ -4608,7 +4608,7 @@
 		"evYield": {
 			"spDef": 2
 		}
-	}
+	},
 
 	"98": {
 		"name":			"Krabby",
@@ -4658,7 +4658,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"99": {
 		"name":			"Kingler",
@@ -4705,7 +4705,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"100": {
 		"name":			"Voltorb",
@@ -4755,7 +4755,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"101": {
 		"name":			"Electrode",
@@ -4801,7 +4801,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"102": {
 		"name":			"Exeggcute",
@@ -4851,7 +4851,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"103": {
 		"name":			"Exeggutor",
@@ -4892,7 +4892,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"104": {
 		"name":			"Cubone",
@@ -4944,7 +4944,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"105": {
 		"name":			"Marowak",
@@ -4992,7 +4992,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"106": {
 		"name":			"Hitmonlee",
@@ -5045,7 +5045,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"107": {
 		"name":			"Hitmonchan",
@@ -5093,7 +5093,7 @@
 		"evYield": {
 			"spDef": 2
 		}
-	}
+	},
 
 	"108": {
 		"name":			"Lickitung",
@@ -5142,7 +5142,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"109": {
 		"name":			"Koffing",
@@ -5191,7 +5191,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"110": {
 		"name":			"Weezing",
@@ -5236,7 +5236,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"111": {
 		"name":			"Rhyhorn",
@@ -5288,7 +5288,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"112": {
 		"name":			"Rhydon",
@@ -5337,7 +5337,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"113": {
 		"name":			"Chansey",
@@ -5387,7 +5387,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"114": {
 		"name":			"Tangela",
@@ -5435,7 +5435,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"115": {
 		"name":			"Kangaskhan",
@@ -5484,7 +5484,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"116": {
 		"name":			"Horsea",
@@ -5531,7 +5531,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"117": {
 		"name":			"Seadra",
@@ -5572,10 +5572,10 @@
 		],
 
 		"evYield": {
-			"def": 1
+			"def": 1,
 			"spAtk": 1
 		}
-	}
+	},
 
 	"118": {
 		"name":			"Goldeen",
@@ -5625,7 +5625,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"119": {
 		"name":			"Seaking",
@@ -5671,7 +5671,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"120": {
 		"name":			"Staryu",
@@ -5723,7 +5723,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"121": {
 		"name":			"Starmie",
@@ -5766,7 +5766,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"122": {
 		"name":			"Mr. mime",
@@ -5820,7 +5820,7 @@
 		"evYield": {
 			"spDef": 2
 		}
-	}
+	},
 
 	"123": {
 		"name":			"Scyther",
@@ -5867,7 +5867,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"124": {
 		"name":			"Jynx",
@@ -5916,7 +5916,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"125": {
 		"name":			"Electabuzz",
@@ -5959,7 +5959,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"126": {
 		"name":			"Magmar",
@@ -6003,7 +6003,7 @@
 		"evYield": {
 			"spAtk": 2
 		}
-	}
+	},
 
 	"127": {
 		"name":			"Pinsir",
@@ -6049,7 +6049,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"128": {
 		"name":			"Tauros",
@@ -6094,10 +6094,10 @@
 		],
 
 		"evYield": {
-			"atk": 1
+			"atk": 1,
 			"speed": 1
 		}
-	}
+	},
 
 	"129": {
 		"name":			"Magikarp",
@@ -6135,7 +6135,7 @@
 		"evYield": {
 			"speed": 1
 		}
-	}
+	},
 
 	"130": {
 		"name":			"Gyarados",
@@ -6182,7 +6182,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"131": {
 		"name":			"Lapras",
@@ -6232,7 +6232,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"132": {
 		"name":			"Ditto",
@@ -6264,7 +6264,7 @@
 		"evYield": {
 			"hp": 1
 		}
-	}
+	},
 
 	"133": {
 		"name":			"Eevee",
@@ -6311,7 +6311,7 @@
 		"evYield": {
 			"spDef": 1
 		}
-	}
+	},
 
 	"134": {
 		"name":			"Vaporeon",
@@ -6360,7 +6360,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"135": {
 		"name":			"Jolteon",
@@ -6405,7 +6405,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"136": {
 		"name":			"Flareon",
@@ -6450,7 +6450,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"137": {
 		"name":			"Porygon",
@@ -6496,7 +6496,7 @@
 		"evYield": {
 			"spAtk": 1
 		}
-	}
+	},
 
 	"138": {
 		"name":			"Omanyte",
@@ -6547,7 +6547,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"139": {
 		"name":			"Omastar",
@@ -6595,7 +6595,7 @@
 		"evYield": {
 			"def": 2
 		}
-	}
+	},
 
 	"140": {
 		"name":			"Kabuto",
@@ -6645,7 +6645,7 @@
 		"evYield": {
 			"def": 1
 		}
-	}
+	},
 
 	"141": {
 		"name":			"Kabutops",
@@ -6694,7 +6694,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"142": {
 		"name":			"Aerodactyl",
@@ -6740,7 +6740,7 @@
 		"evYield": {
 			"speed": 2
 		}
-	}
+	},
 
 	"143": {
 		"name":			"Snorlax",
@@ -6792,7 +6792,7 @@
 		"evYield": {
 			"hp": 2
 		}
-	}
+	},
 
 	"144": {
 		"name":			"Articuno",
@@ -6837,7 +6837,7 @@
 		"evYield": {
 			"spDef": 3
 		}
-	}
+	},
 
 	"145": {
 		"name":			"Zapdos",
@@ -6882,7 +6882,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"146": {
 		"name":			"Moltres",
@@ -6927,7 +6927,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"147": {
 		"name":			"Dratini",
@@ -6977,7 +6977,7 @@
 		"evYield": {
 			"atk": 1
 		}
-	}
+	},
 
 	"148": {
 		"name":			"Dragonair",
@@ -7027,7 +7027,7 @@
 		"evYield": {
 			"atk": 2
 		}
-	}
+	},
 
 	"149": {
 		"name":			"Dragonite",
@@ -7078,7 +7078,7 @@
 		"evYield": {
 			"atk": 3
 		}
-	}
+	},
 
 	"150": {
 		"name":			"Mewtwo",
@@ -7128,7 +7128,7 @@
 		"evYield": {
 			"spAtk": 3
 		}
-	}
+	},
 
 	"151": {
 		"name":			"Mew",

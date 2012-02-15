@@ -745,7 +745,8 @@ var willRender = false;
 
 function render(){
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+	ctx.fillStyle = '#66BBFF';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	
 	

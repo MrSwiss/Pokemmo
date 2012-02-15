@@ -16,7 +16,12 @@ var DIR_LEFT = 1;
 var DIR_UP = 2;
 var DIR_RIGHT = 3;
 
+start = +new Date();
+console.log('Loading pokemon...');
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
+end = +new Date();
+console.log('Done ('+(end-start)+' ms)');
+
 var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
 
 var experienceRequired = {};
