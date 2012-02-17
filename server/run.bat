@@ -1,7 +1,5 @@
 @echo off
-:lol
 
-node server.node.js
+"./compile.bat" & node main.out.node.js
+
 pause
-
-GOTO lol

@@ -105,6 +105,114 @@ function Map(data){
 	}
 }
 
+function loadMap(id){
+	state = ST_LOADING;
+	curMap = null;
+	
+	characters = [];
+	loadedChars = false;
+	
+	var pending = 0;
+	var completed = 0;
+	var error = false;
+	
+	++pending;
+	miscSprites = new Image();
+	miscSprites.onload = function(){--pending;++completed;};
+	miscSprites.onerror = function(){--pending;error = true;refresh();};
+	miscSprites.src = 'resources/tilesets/misc.png';
+	
+	++pending;
+	uiPokemon = new Image();
+	uiPokemon.onload = function(){--pending;++completed;};
+	uiPokemon.onerror = function(){--pending;error = true;refresh();};
+	uiPokemon.src = 'resources/ui/pokemon.png';
+	
+	++pending;
+	uiChat = new Image();
+	uiChat.onload = function(){--pending;++completed;};
+	uiChat.onerror = function(){--pending;error = true;refresh();};
+	uiChat.src = 'resources/ui/chat.png';
+	
+	++pending;
+	$q.ajax('resources/data/pokemon.json', {
+		'cache': true,
+		'dataType': 'json',
+		'success': function(data, textStatus, jqXHR){
+			--pending;
+			++completed;
+			pokemonData = data;
+		},
+		'error': function(jqXHR, textStatus, errorThrown){
+			--pending;
+			error = true;
+			refresh();
+		}
+	});
+	
+	++pending;
+	$q.ajax('resources/maps/'+id+'.json', {
+		'dataType': 'json',
+		'success': function(data, textStatus, jqXHR){
+			--pending;
+			++completed;
+			var map = parseMap(data);
+			
+			
+			for(var i=0;i<map.tilesets.length;++i){
+				var tileset = map.tilesets[i];
+				if(tileset.loaded){
+					++completed;
+				}else if(tileset.error){
+					error = true;
+					break;
+				}else{
+					++pending;
+					tileset.onload = function(tileset){
+						--pending;
+						refresh();
+					}
+					
+					tileset.onerror = function(tileset){
+						error = true;
+						refresh();
+					}
+				}
+			}
+			
+			curMap = map;
+			
+			refresh();
+		},
+		'error': function(jqXHR, textStatus, errorThrown){
+			--pending;
+			error = true;
+			refresh();
+		}
+	});
+	
+	function refresh(){
+		if(state != ST_LOADING) return;
+		
+		ctx.fillStyle = 'rgb(0,0,0)';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		if(error){
+			console.log('Error loading map');
+		}else{
+			if(pending == 0){
+				console.log('Map loaded');
+				state = ST_MAP;
+				render();
+			}else{
+				console.log('Pending: '+pending);
+			}
+		}
+		
+	}
+	
+	loadingMapRender = refresh;
+	render();
+}
 function Tileset(data){
 	var self = this;
 	
@@ -145,6 +253,55 @@ function Tileset(data){
 	}
 }
 
+function getTilesetOfTile(map, n){
+	var tilesets = map.tilesets;
+	var i = tilesets.length;
+	while(i--){
+		if(n >= tilesets[i].firstgid) return tilesets[i];
+	}
+	return null;
+}
+
+function isTileSolid(map, x, y){
+	return hasTileProp(map, x, y, 'solid');
+}
+
+function isTileWater(map, x, y){
+	return hasTileProp(map, x, y, 'water');
+}
+
+function isTileGrass(map, x, y){
+	return hasTileProp(map, x, y, 'grass');
+}
+
+function isTileLedge(map, x, y){
+	return hasTileProp(map, x, y, 'ledge');
+}
+
+function hasTileProp(map, x, y, prop){
+	for(var i=0;i<map.layers.length;++i){
+		var layer = map.layers[i];
+		
+		if(layer.type != 'tilelayer') continue;
+		
+		if(layer.properties.solid == '0') continue;
+		
+		var j = y * layer.width + x;
+		
+		var tileid = layer.data[j];
+		if(!tileid) continue;
+		
+		var tileset = getTilesetOfTile(map, tileid);
+		
+		if(!tileset) throw new Error("Tileset is null");
+		
+		var curTilesetTileid = tileid - tileset.firstgid;
+		
+		if(tileset.tileproperties[curTilesetTileid][prop] == '1') return true;
+	}
+	
+	return false;
+}
 function Layer(data){
 	this.data = data.data;
 	this.width = data.width;
@@ -152,9 +309,8 @@ function Layer(data){
 	this.x = data.x;
 	this.y = data.y;
 	this.type = data.type;
-	this.properties = data.properties || {};
+	this.properties = data.properties  {};
 }
-
 function renderMap(ctx, map){
 	for(var i=0;i<map.layers.length;++i){
 		var layer = map.layers[i];
@@ -173,15 +329,6 @@ function renderMapOver(ctx, map){
 		
 		drawLayer(ctx, map, layer);
 	}
-}
-
-function getTilesetOfTile(map, n){
-	var tilesets = map.tilesets;
-	var i = tilesets.length;
-	while(i--){
-		if(n >= tilesets[i].firstgid) return tilesets[i];
-	}
-	return null;
 }
 
 function drawLayer(ctx, map, layer){
@@ -226,50 +373,6 @@ function drawLayer(ctx, map, layer){
 		}
 	}
 }
-
-function isTileSolid(map, x, y){
-	return hasTileProp(map, x, y, 'solid');
-}
-
-function isTileWater(map, x, y){
-	return hasTileProp(map, x, y, 'water');
-}
-
-function isTileGrass(map, x, y){
-	return hasTileProp(map, x, y, 'grass');
-}
-
-function isTileLedge(map, x, y){
-	return hasTileProp(map, x, y, 'ledge');
-}
-
-function hasTileProp(map, x, y, prop){
-	for(var i=0;i<map.layers.length;++i){
-		var layer = map.layers[i];
-		
-		if(layer.type != 'tilelayer') continue;
-		
-		if(layer.properties.solid == '0') continue;
-		
-		var j = y * layer.width + x;
-		
-		var tileid = layer.data[j];
-		if(!tileid) continue;
-		
-		var tileset = getTilesetOfTile(map, tileid);
-		
-		if(!tileset) throw new Error("Tileset is null");
-		
-		var curTilesetTileid = tileid - tileset.firstgid;
-		
-		if(tileset.tileproperties[curTilesetTileid][prop] == '1') return true;
-	}
-	
-	return false;
-}
-
-function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
-function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
 function renderChars(ctx){
 	var offsetX = getRenderOffsetX();
@@ -418,6 +521,167 @@ function drawChat() {
 	}
 }
 
+function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
+function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
+
+function renderTransition(){
+	
+	
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	if(transitionStep < 70){
+		if(isPhone){
+			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.drawImage(gameCanvas, 10, 10);
+		}
+		ctx.globalAlpha = 1.0;
+		ctx.fillStyle = 'rgba(0, 0, 0, ' + Math.min(transitionStep/50, 1) + ')';
+		if(isPhone){
+			ctx.fillRect(0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.fillRect(10, 10, screenWidth, screenHeight);
+		}
+	}else if(transitionStep < 100){
+		if(transitionStep == 70){
+			render(true, true);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+		
+		if(isPhone){
+			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.drawImage(gameCanvas, 10, 10);
+		}
+		
+		ctx.fillStyle = 'rgba(0, 0, 0, ' + ((30 - (transitionStep - 70)) / 30) + ')';
+		if(isPhone){
+			ctx.fillRect(0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.fillRect(10, 10, screenWidth, screenHeight);
+		}
+	}else{
+		inTransition = false;
+		if(transitionOnComplete) transitionOnComplete();
+		return;
+	}
+	
+	
+	transitionStep += 2;
+	
+	if(transitionDrawParty && !isPhone){
+		drawPokemonParty();
+	}
+}
+
+var willRender = false;
+
+
+function render(forceNoTransition, onlyRender){
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+	ctx.fillStyle = '#66BBFF';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	
+	
+	var realRender = function(){
+		willRender = false;
+		
+		if(inTransition && !forceNoTransition){
+			renderTransition();
+		}else{
+			switch(state){
+				case ST_MAP:
+					if(curMap){
+						
+						gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+						
+						var chr = getPlayerChar();
+						if(chr){
+							var charRenderPos = chr.getRenderPos();
+							cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
+							cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
+							
+							if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
+							if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
+						}
+						
+						renderMap(gameCtx, curMap);
+						renderChars(gameCtx);
+						renderMapOver(gameCtx, curMap);
+						
+						if(isPhone){
+							ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+						}else{
+							ctx.drawImage(gameCanvas, 10, 10);
+						}
+					}else{
+						throw new Error('No map in memory');
+					}
+					
+					if(!isPhone){
+						drawPokemonParty();
+						drawChat();
+					}
+				break;
+				case ST_LOADING:
+					loadingMapRender();
+				break;
+				case ST_BATTLE:
+					gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+					
+					if(battleBackground.width != 0){
+						gameCtx.drawImage(battleBackground, 0, 0);
+					}
+					
+					if(battleTextBackground.width != 0){
+						gameCtx.drawImage(battleTextBackground, 2, 228);
+					}
+					
+					gameCtx.drawImage(battleCurPokemonSprite, 60, 96);
+					
+					gameCtx.drawImage(battleEnemyPokemonSprite, 290, 30);
+					
+					if(isPhone){
+						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+					}else{
+						ctx.drawImage(gameCanvas, 10, 10);
+					}
+					
+					if(!isPhone){
+						drawPokemonParty();
+					}
+				break;
+			}
+			
+			if(isPhone){
+				ctx.drawImage(iOSUI, 0, 0);
+			}
+		}
+		
+		if(!onlyRender){
+			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
+			onScreenCtx.drawImage(canvas, 0, 0);
+		}
+	}
+	
+	if(!willRender){
+		willRender = true;
+		
+		if(window.requestAnimationFrame){
+			window.requestAnimationFrame(realRender);
+		}else if(window.mozRequestAnimationFrame){
+			window.mozRequestAnimationFrame(realRender);
+		}else if(window.msRequestAnimationFrame){
+			window.msRequestAnimationFrame(realRender);
+		}else if(window.webkitRequestAnimationFrame){
+			window.webkitRequestAnimationFrame(realRender);
+		}else if(window.oRequestAnimationFrame){
+			window.oRequestAnimationFrame(realRender);
+		}else{
+			realRender();
+		}
+	}
+}
 function Character(data){
 	var self = this;
 	
@@ -619,7 +883,6 @@ function Character(data){
 		}
 	}
 }
-
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
 }
@@ -643,279 +906,13 @@ function getCharById(id){
 	return null;
 }
 
-function loadMap(id){
-	state = ST_LOADING;
-	curMap = null;
-	
-	characters = [];
-	loadedChars = false;
-	
-	var pending = 0;
-	var completed = 0;
-	var error = false;
-	
-	++pending;
-	miscSprites = new Image();
-	miscSprites.onload = function(){--pending;++completed;};
-	miscSprites.onerror = function(){--pending;error = true;refresh();};
-	miscSprites.src = 'resources/tilesets/misc.png';
-	
-	++pending;
-	uiPokemon = new Image();
-	uiPokemon.onload = function(){--pending;++completed;};
-	uiPokemon.onerror = function(){--pending;error = true;refresh();};
-	uiPokemon.src = 'resources/ui/pokemon.png';
-	
-	++pending;
-	uiChat = new Image();
-	uiChat.onload = function(){--pending;++completed;};
-	uiChat.onerror = function(){--pending;error = true;refresh();};
-	uiChat.src = 'resources/ui/chat.png';
-	
-	++pending;
-	$q.ajax('resources/data/pokemon.json', {
-		'cache': true,
-		'dataType': 'json',
-		'success': function(data, textStatus, jqXHR){
-			--pending;
-			++completed;
-			pokemonData = data;
-		},
-		'error': function(jqXHR, textStatus, errorThrown){
-			--pending;
-			error = true;
-			refresh();
-		}
-	});
-	
-	++pending;
-	$q.ajax('resources/maps/'+id+'.json', {
-		'dataType': 'json',
-		'success': function(data, textStatus, jqXHR){
-			--pending;
-			++completed;
-			var map = parseMap(data);
-			
-			
-			for(var i=0;i<map.tilesets.length;++i){
-				var tileset = map.tilesets[i];
-				if(tileset.loaded){
-					++completed;
-				}else if(tileset.error){
-					error = true;
-					break;
-				}else{
-					++pending;
-					tileset.onload = function(tileset){
-						--pending;
-						refresh();
-					}
-					
-					tileset.onerror = function(tileset){
-						error = true;
-						refresh();
-					}
-				}
-			}
-			
-			curMap = map;
-			
-			refresh();
-		},
-		'error': function(jqXHR, textStatus, errorThrown){
-			--pending;
-			error = true;
-			refresh();
-		}
-	});
-	
-	function refresh(){
-		if(state != ST_LOADING) return;
-		
-		ctx.fillStyle = 'rgb(0,0,0)';
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		if(error){
-			console.log('Error loading map');
-		}else{
-			if(pending == 0){
-				console.log('Map loaded');
-				state = ST_MAP;
-				render();
-			}else{
-				console.log('Pending: '+pending);
-			}
-		}
-		
-	}
-	
-	loadingMapRender = refresh;
-	render();
-}
+
 
 function transition(onComplete, drawParty){
 	transitionStep = 0;
 	inTransition = true;
 	transitionDrawParty = !!drawParty;
 	transitionOnComplete = onComplete;
-}
-
-function renderTransition(){
-	
-	
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	if(transitionStep < 70){
-		if(isPhone){
-			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.drawImage(gameCanvas, 10, 10);
-		}
-		ctx.globalAlpha = 1.0;
-		ctx.fillStyle = 'rgba(0, 0, 0, ' + Math.min(transitionStep/50, 1) + ')';
-		if(isPhone){
-			ctx.fillRect(0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.fillRect(10, 10, screenWidth, screenHeight);
-		}
-	}else if(transitionStep < 100){
-		if(transitionStep == 70){
-			render(true, true);
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-		}
-		
-		if(isPhone){
-			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.drawImage(gameCanvas, 10, 10);
-		}
-		
-		ctx.fillStyle = 'rgba(0, 0, 0, ' + ((30 - (transitionStep - 70)) / 30) + ')';
-		if(isPhone){
-			ctx.fillRect(0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.fillRect(10, 10, screenWidth, screenHeight);
-		}
-	}else{
-		inTransition = false;
-		if(transitionOnComplete) transitionOnComplete();
-		return;
-	}
-	
-	
-	transitionStep += 2;
-	
-	if(transitionDrawParty && !isPhone){
-		drawPokemonParty();
-	}
-}
-
-var willRender = false;
-
-
-function render(forceNoTransition, onlyRender){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
-	ctx.fillStyle = '#66BBFF';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
-	
-	var realRender = function(){
-		willRender = false;
-		
-		if(inTransition && !forceNoTransition){
-			renderTransition();
-		}else{
-			switch(state){
-				case ST_MAP:
-					if(curMap){
-						
-						gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-						
-						var chr = getPlayerChar();
-						if(chr){
-							var charRenderPos = chr.getRenderPos();
-							cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
-							cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
-							
-							if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
-							if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
-						}
-						
-						renderMap(gameCtx, curMap);
-						renderChars(gameCtx);
-						renderMapOver(gameCtx, curMap);
-						
-						if(isPhone){
-							ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-						}else{
-							ctx.drawImage(gameCanvas, 10, 10);
-						}
-					}else{
-						throw new Error('No map in memory');
-					}
-					
-					if(!isPhone){
-						drawPokemonParty();
-						drawChat();
-					}
-				break;
-				case ST_LOADING:
-					loadingMapRender();
-				break;
-				case ST_BATTLE:
-					gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-					
-					if(battleBackground.width != 0){
-						gameCtx.drawImage(battleBackground, 0, 0);
-					}
-					
-					if(battleTextBackground.width != 0){
-						gameCtx.drawImage(battleTextBackground, 2, 228);
-					}
-					
-					gameCtx.drawImage(battleCurPokemonSprite, 60, 96);
-					
-					gameCtx.drawImage(battleEnemyPokemonSprite, 290, 30);
-					
-					if(isPhone){
-						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-					}else{
-						ctx.drawImage(gameCanvas, 10, 10);
-					}
-					
-					if(!isPhone){
-						drawPokemonParty();
-					}
-				break;
-			}
-			
-			if(isPhone){
-				ctx.drawImage(iOSUI, 0, 0);
-			}
-		}
-		
-		if(!onlyRender){
-			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
-			onScreenCtx.drawImage(canvas, 0, 0);
-		}
-	}
-	
-	if(!willRender){
-		willRender = true;
-		
-		if(window.requestAnimationFrame){
-			window.requestAnimationFrame(realRender);
-		}else if(window.mozRequestAnimationFrame){
-			window.mozRequestAnimationFrame(realRender);
-		}else if(window.msRequestAnimationFrame){
-			window.msRequestAnimationFrame(realRender);
-		}else if(window.webkitRequestAnimationFrame){
-			window.webkitRequestAnimationFrame(realRender);
-		}else if(window.oRequestAnimationFrame){
-			window.oRequestAnimationFrame(realRender);
-		}else{
-			realRender();
-		}
-	}
 }
 
 function tick(){

@@ -30,318 +30,6 @@ var GENDER_FEMALE = 2;
 var BALL_MULT = 0;
 var BALL_ADD = 1;
 
-start = +new Date();
-console.log('Loading pokemon...');
-var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
-end = +new Date();
-console.log('Done ('+(end-start)+' ms)');
-
-var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
-
-var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
-
-var experienceRequired = {};
-
-console.log('Loading maps...');
-start = +new Date();
-for(var i=0;i<mapsNames.length;++i){
-	var mapName = mapsNames[i];
-	console.log('Loading: '+mapName+'...');
-	
-	var map = {};
-	maps[mapName] = map;
-	
-	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
-	map.chars = [];
-	
-	
-	
-	var solidData = new Array(map.data.width);
-	var tilesets = map.data.tilesets;
-	
-	map.encounterAreas = [];
-	
-	
-	function getTilesetOfTile(n){
-		var i = tilesets.length;
-		while(i--){
-			if(n >= tilesets[i].firstgid) return tilesets[i];
-		}
-		return null;
-	}
-	
-	for(var x=0;x<solidData.length;++x){
-		solidData[x] = new Array(map.data.height);
-		for(var y=0;y<solidData[0].length;++y){
-			solidData[x][y] = SD_NONE;
-		}
-	}
-	
-	for(var n=0;n<map.data.layers.length;++n){
-		var layer = map.data.layers[n];
-		if(layer.type == 'tilelayer'){
-			if(layer.properties && layer.properties.solid == '0') continue;
-			
-			var j = 0;
-			
-			for(var y=0;y<solidData[0].length;++y){
-				for(var x=0;x<solidData.length;++x, ++j){
-					
-					var tileid = layer.data[j];
-					if(!tileid) continue;
-					
-					var tileset = getTilesetOfTile(tileid);
-					if(!tileset) throw new Error("Tileset is null");
-					
-					var curTilesetTileid = tileid - tileset.firstgid;
-					
-					if(tileset.tileproperties[curTilesetTileid] && tileset.tileproperties[curTilesetTileid].solid == '1'){
-						solidData[x][y] = SD_SOLID;
-					}
-				}
-			}
-		}else if(layer.type == 'objectgroup'){
-			for(var i = 0; i < layer.objects.length; ++i){
-				var obj = layer.objects[i];
-				var x1 = Math.round(obj.x / map.data.tilewidth);
-				var y1 = Math.round(obj.y / map.data.tileheight);
-				var x2 = Math.round((obj.x + obj.width) / map.data.tilewidth);
-				var y2 = Math.round((obj.y + obj.height) / map.data.tileheight);
-				switch(obj.type){
-					case 'tall_grass':
-						var encounters = JSON.parse('{"tmp":['+ obj.properties.encounters + ']}').tmp;
-						map.encounterAreas.push({x1:x1, y1:y1, x2:x2, y2:y2, encounters: encounters});
-					break;
-				}
-			}
-		}
-	}
-	
-	
-	
-	map.solidData = solidData;
-}
-
-end = +new Date();
-console.log('Maps loaded! ('+(end-start)+' ms)');
-
-// Generate experience lookup table
-// The table works as this: experienceRequired.fast[100] would be
-// the experience that a level 99 pokémon needs to acquire to reach level 100
-// (experience needed at level 99, not total)
-(function(){
-	var arr;
-	
-	experienceRequired.erratic = arr = [0];
-	for(var i=1;i<=100;++i){
-		if(i <= 50){
-			arr[i] = i * i * i * (100 - i) / 50;
-		}else if(n <= 68){
-			arr[i] = i * i * i * (150 - i) / 100;
-		}else if(n <= 98){
-			arr[i] = i * i * i * ((1911 - 10 * i) / 3) / 500
-		}else{
-			arr[i] = i * i * i * (160 - n) / 100;
-		}
-	}
-	
-	experienceRequired.fast = arr = [0];
-	for(var i=1;i<=100;++i){
-		arr[i] = 4 * i * i * i / 5 - arr[i - 1];
-		
-		arr[i] = Math.floor(arr[i]);
-	}
-	
-	experienceRequired.mediumFast = arr = [0];
-	for(var i=1;i<=100;++i){
-		arr[i] = i * i * i - arr[i - 1];
-		
-		arr[i] = Math.floor(arr[i]);
-	}
-	
-	experienceRequired.mediumSlow = arr = [0];
-	for(var i=1;i<=100;++i){
-		arr[i] = 6 / 5 * i * i * i - 15 * i * i + 100 * i - 140 - arr[i - 1];
-		
-		arr[i] = Math.floor(arr[i]);
-	}
-	
-	experienceRequired.slow = arr = [0];
-	for(var i=1;i<=100;++i){
-		arr[i] = 5 * i * i * i / 4 - arr[i - 1];
-		
-		arr[i] = Math.floor(arr[i]);
-	}
-	
-	experienceRequired.fluctuating = arr = [0];
-	for(var i=1;i<=100;++i){
-		if(n <= 15){
-			arr[i] = i * i * i * (((n + 1) / 3 + 24) / 50);
-		}else if(n <= 36){
-			arr[i] = i * i * i * ((n + 14) / 50);
-		}else{
-			arr[i] = i * i * i * ((n / 2 + 32) / 50)
-		}
-		
-		arr[i] = Math.floor(arr[i]);
-	}
-})();
-
-io.sockets.on('connection', function (socket) {
-	var client = {
-		id: generateRandomString(16),
-		username: generateRandomString(5),
-		map: 'pallet',
-		char: {
-			get id(){return client.id},
-			get inBattle(){return client.inBattle},
-			type: 'red',
-			x: 6,
-			y: 48,
-			direction: DIR_DOWN
-		},
-		lastAckMove: 0,
-		inBattle: false,
-		lastPokecenter: ["pallet", 6, 48],
-		pokemon: [],
-		messageQueue: [],
-		lastMessage: 0
-	};
-	
-	clients.push(client);
-	
-	client.pokemon.push(new Pokemon("1", 5));
-	client.pokemon.push(new Pokemon("1", 5));
-	client.pokemon.push(new Pokemon("1", 5));
-	client.pokemon.push(new Pokemon("1", 5));
-	client.pokemon.push(new Pokemon("1", 5));
-	client.pokemon.push(new Pokemon("1", 5));
-	
-	maps[client.map].chars.push(client.char);
-	
-	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon});
-	socket.emit('loadMap', {mapid: client.map});
-	socket.emit('createChars', {arr:maps[client.map].chars});
-	
-	var updateInterval = setInterval(sendUpdate, 250);
-	
-	socket.on('disconnect', function(){
-		var i = maps[client.map].chars.indexOf(client.char);
-		if(i != -1){
-			maps[client.map].chars.splice(i, 1);
-		}else{
-			console.log("Couldn't remove character!");
-		}
-	});
-	
-	socket.on('walk', function(data){
-		if(client.inBattle) return;
-		if(data.ack != client.lastAckMove) return;
-		
-		var chr = client.char;
-		
-		if(chr.x - 1 == data.x && chr.y == data.y){
-			chr.x -= 1;
-			chr.direction = DIR_LEFT;
-			onPlayerStep()
-		}else if(chr.x + 1== data.x && chr.y == data.y){
-			chr.x += 1;
-			chr.direction = DIR_RIGHT;
-			onPlayerStep()
-		}else if(chr.x == data.x && chr.y - 1 == data.y){
-			chr.y -= 1;
-			chr.direction = DIR_UP;
-			onPlayerStep()
-		}else if(chr.x == data.x && chr.y + 1 == data.y){
-			chr.y += 1;
-			chr.direction = DIR_DOWN;
-			onPlayerStep()
-		}
-		
-		chr.direction = data.dir;
-		
-		if(chr.x == data.x && chr.y == data.y || ((Math.abs(chr.x - data.x) <= 1 && Math.abs(chr.y - data.y) <= 1)
-		|| chr.x - 2 == data.x && chr.y == data.y
-		|| chr.x + 2 == data.x && chr.y == data.y
-		|| chr.x == data.x && chr.y - 2 == data.y
-		|| chr.x == data.x && chr.y + 2 == data.y)){
-			// WOW! It's fucking nothing!
-			// The player isn't far enough to be considerated an invalid move
-			// Maybe one of his 'walk' messages is delayed
-			
-		}else{
-			client.lastAckMove = +new Date();
-			socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
-		}
-	});
-	
-	socket.on('turn', function(data){
-		if(client.inBattle) return;
-		
-		if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
-		client.char.direction = data.dir
-	});
-	
-	socket.on('sendMessage', function(data) {
-		if(client.inBattle) return;
-		
-		var t = new Date().getTime();
-		var str = data.str.substr(0, 128);
-		if(t - client.lastMessage > 100 && str != '') {
-			for (var i=0;i<clients.length;++i) {
-				if (clients[i].map == client.map){
-					// queue new messages for each client in map
-					clients[i].messageQueue.push({username: client.username, str: str, x: client.x, y: client.y});
-				}
-			}
-			client.lastMessage = t;
-		}
-	});
-	
-	function sendUpdate(){
-		if(client.inBattle){
-			client.messageQueue.length = 0;
-			return;
-		}
-		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
-		client.messageQueue.length = 0;
-	}
-	
-	function onPlayerStep(){
-		if(client.inBattle) return;
-		var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
-		for(var i=0;i<encounterAreas.length;++i){
-			var area = encounterAreas[i];
-			for(var j=0;j<area.encounters.length;++j){
-				var areaEncounter = area.encounters[j];
-				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
-					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
-					var enemy = new Pokemon(areaEncounter.id, level);
-					
-					socket.emit('encounter', {enemy: enemy.publicInfo, x: client.char.x, y: client.char.y});
-					client.inBattle = true;
-					return;
-				}
-			}
-		}
-	}
-});
-
-function getEncounterAreasAt(mapName, x, y){
-	var map = maps[mapName];
-	var arr = [];
-	var i = map.encounterAreas.length;
-	while(i--){
-		var area = map.encounterAreas[i];
-		if(x >= area.x1 && y >= area.y1 && x < area.x2 && y < area.y2){
-			arr.push(area);
-		}
-	}
-	
-	return arr;
-}
-
-
 function Pokemon(id, level){
 	var self = this;
 	
@@ -549,6 +237,315 @@ function Pokemon(id, level){
 	self.calculateStats();
 	self.hp = self.maxHp;
 }
+start = +new Date();
+console.log('Loading pokemon...');
+var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
+end = +new Date();
+console.log('Done ('+(end-start)+' ms)');
+
+var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
+
+var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
+
+var experienceRequired = {};
+
+console.log('Loading maps...');
+start = +new Date();
+for(var i=0;i<mapsNames.length;++i){
+	var mapName = mapsNames[i];
+	console.log('Loading: '+mapName+'...');
+	
+	var map = {};
+	maps[mapName] = map;
+	
+	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
+	map.chars = [];
+	
+	
+	
+	var solidData = new Array(map.data.width);
+	var tilesets = map.data.tilesets;
+	
+	map.encounterAreas = [];
+	
+	
+	function getTilesetOfTile(n){
+		var i = tilesets.length;
+		while(i--){
+			if(n >= tilesets[i].firstgid) return tilesets[i];
+		}
+		return null;
+	}
+	
+	for(var x=0;x<solidData.length;++x){
+		solidData[x] = new Array(map.data.height);
+		for(var y=0;y<solidData[0].length;++y){
+			solidData[x][y] = SD_NONE;
+		}
+	}
+	
+	for(var n=0;n<map.data.layers.length;++n){
+		var layer = map.data.layers[n];
+		if(layer.type == 'tilelayer'){
+			if(layer.properties && layer.properties.solid == '0') continue;
+			
+			var j = 0;
+			
+			for(var y=0;y<solidData[0].length;++y){
+				for(var x=0;x<solidData.length;++x, ++j){
+					
+					var tileid = layer.data[j];
+					if(!tileid) continue;
+					
+					var tileset = getTilesetOfTile(tileid);
+					if(!tileset) throw new Error("Tileset is null");
+					
+					var curTilesetTileid = tileid - tileset.firstgid;
+					
+					if(tileset.tileproperties[curTilesetTileid] && tileset.tileproperties[curTilesetTileid].solid == '1'){
+						solidData[x][y] = SD_SOLID;
+					}
+				}
+			}
+		}else if(layer.type == 'objectgroup'){
+			for(var i = 0; i < layer.objects.length; ++i){
+				var obj = layer.objects[i];
+				var x1 = Math.round(obj.x / map.data.tilewidth);
+				var y1 = Math.round(obj.y / map.data.tileheight);
+				var x2 = Math.round((obj.x + obj.width) / map.data.tilewidth);
+				var y2 = Math.round((obj.y + obj.height) / map.data.tileheight);
+				switch(obj.type){
+					case 'tall_grass':
+						var encounters = JSON.parse('{"tmp":['+ obj.properties.encounters + ']}').tmp;
+						map.encounterAreas.push({x1:x1, y1:y1, x2:x2, y2:y2, encounters: encounters});
+					break;
+				}
+			}
+		}
+	}
+	
+	
+	
+	map.solidData = solidData;
+}
+
+end = +new Date();
+console.log('Maps loaded! ('+(end-start)+' ms)');
+// Generate experience lookup table
+// The table works as this: experienceRequired.fast[100] would be
+// the experience that a level 99 pokémon needs to acquire to reach level 100
+// (experience needed at level 99, not total)
+(function(){
+	var arr;
+	
+	experienceRequired.erratic = arr = [0];
+	for(var i=1;i<=100;++i){
+		if(i <= 50){
+			arr[i] = i * i * i * (100 - i) / 50;
+		}else if(n <= 68){
+			arr[i] = i * i * i * (150 - i) / 100;
+		}else if(n <= 98){
+			arr[i] = i * i * i * ((1911 - 10 * i) / 3) / 500
+		}else{
+			arr[i] = i * i * i * (160 - n) / 100;
+		}
+	}
+	
+	experienceRequired.fast = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 4 * i * i * i / 5 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.mediumFast = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = i * i * i - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.mediumSlow = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 6 / 5 * i * i * i - 15 * i * i + 100 * i - 140 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.slow = arr = [0];
+	for(var i=1;i<=100;++i){
+		arr[i] = 5 * i * i * i / 4 - arr[i - 1];
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+	
+	experienceRequired.fluctuating = arr = [0];
+	for(var i=1;i<=100;++i){
+		if(n <= 15){
+			arr[i] = i * i * i * (((n + 1) / 3 + 24) / 50);
+		}else if(n <= 36){
+			arr[i] = i * i * i * ((n + 14) / 50);
+		}else{
+			arr[i] = i * i * i * ((n / 2 + 32) / 50)
+		}
+		
+		arr[i] = Math.floor(arr[i]);
+	}
+})();
+io.sockets.on('connection', function (socket) {
+	var client = {
+		id: generateRandomString(16),
+		username: generateRandomString(5),
+		map: 'pallet',
+		char: {
+			get id(){return client.id},
+			get inBattle(){return client.inBattle},
+			type: 'red',
+			x: 6,
+			y: 48,
+			direction: DIR_DOWN
+		},
+		lastAckMove: 0,
+		inBattle: false,
+		lastPokecenter: ["pallet", 6, 48],
+		pokemon: [],
+		messageQueue: [],
+		lastMessage: 0
+	};
+	
+	clients.push(client);
+	
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	
+	maps[client.map].chars.push(client.char);
+	
+	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon});
+	socket.emit('loadMap', {mapid: client.map});
+	socket.emit('createChars', {arr:maps[client.map].chars});
+	
+	var updateInterval = setInterval(sendUpdate, 250);
+	
+	socket.on('disconnect', function(){
+		var i = maps[client.map].chars.indexOf(client.char);
+		if(i != -1){
+			maps[client.map].chars.splice(i, 1);
+		}else{
+			console.log("Couldn't remove character!");
+		}
+	});
+	
+	socket.on('walk', function(data){
+		if(client.inBattle) return;
+		if(data.ack != client.lastAckMove) return;
+		
+		var chr = client.char;
+		
+		if(chr.x - 1 == data.x && chr.y == data.y){
+			chr.x -= 1;
+			chr.direction = DIR_LEFT;
+			onPlayerStep()
+		}else if(chr.x + 1== data.x && chr.y == data.y){
+			chr.x += 1;
+			chr.direction = DIR_RIGHT;
+			onPlayerStep()
+		}else if(chr.x == data.x && chr.y - 1 == data.y){
+			chr.y -= 1;
+			chr.direction = DIR_UP;
+			onPlayerStep()
+		}else if(chr.x == data.x && chr.y + 1 == data.y){
+			chr.y += 1;
+			chr.direction = DIR_DOWN;
+			onPlayerStep()
+		}
+		
+		chr.direction = data.dir;
+		
+		if(chr.x == data.x && chr.y == data.y || ((Math.abs(chr.x - data.x) <= 1 && Math.abs(chr.y - data.y) <= 1)
+		|| chr.x - 2 == data.x && chr.y == data.y
+		|| chr.x + 2 == data.x && chr.y == data.y
+		|| chr.x == data.x && chr.y - 2 == data.y
+		|| chr.x == data.x && chr.y + 2 == data.y)){
+			// WOW! It's fucking nothing!
+			// The player isn't far enough to be considerated an invalid move
+			// Maybe one of his 'walk' messages is delayed
+			
+		}else{
+			client.lastAckMove = +new Date();
+			socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
+		}
+	});
+	
+	socket.on('turn', function(data){
+		if(client.inBattle) return;
+		
+		if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
+		client.char.direction = data.dir
+	});
+	
+	socket.on('sendMessage', function(data) {
+		if(client.inBattle) return;
+		
+		var t = new Date().getTime();
+		var str = data.str.substr(0, 128);
+		if(t - client.lastMessage > 100 && str != '') {
+			for (var i=0;i<clients.length;++i) {
+				if (clients[i].map == client.map){
+					// queue new messages for each client in map
+					clients[i].messageQueue.push({username: client.username, str: str, x: client.x, y: client.y});
+				}
+			}
+			client.lastMessage = t;
+		}
+	});
+	
+	function sendUpdate(){
+		if(client.inBattle){
+			client.messageQueue.length = 0;
+			return;
+		}
+		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
+		client.messageQueue.length = 0;
+	}
+	
+	function onPlayerStep(){
+		if(client.inBattle) return;
+		var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
+		for(var i=0;i<encounterAreas.length;++i){
+			var area = encounterAreas[i];
+			for(var j=0;j<area.encounters.length;++j){
+				var areaEncounter = area.encounters[j];
+				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
+					var enemy = new Pokemon(areaEncounter.id, level);
+					
+					socket.emit('encounter', {enemy: enemy.publicInfo, x: client.char.x, y: client.char.y});
+					client.inBattle = true;
+					return;
+				}
+			}
+		}
+	}
+});
+
+function getEncounterAreasAt(mapName, x, y){
+	var map = maps[mapName];
+	var arr = [];
+	var i = map.encounterAreas.length;
+	while(i--){
+		var area = map.encounterAreas[i];
+		if(x >= area.x1 && y >= area.y1 && x < area.x2 && y < area.y2){
+			arr.push(area);
+		}
+	}
+	
+	return arr;
+}
+
 
 function generateRandomString(len){
 	var i = len;
