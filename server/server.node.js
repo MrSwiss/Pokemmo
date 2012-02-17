@@ -16,6 +16,20 @@ var DIR_LEFT = 1;
 var DIR_UP = 2;
 var DIR_RIGHT = 3;
 
+var STATUS_NONE = 0;
+var STATUS_SLEEP = 1;
+var STATUS_FREEZE = 2;
+var STATUS_PARALYZE = 3;
+var STATUS_POISON = 4;
+var STATUS_BURN = 5;
+
+var GENDER_UNKNOWN = 0;
+var GENDER_MALE = 1;
+var GENDER_FEMALE = 2;
+
+var BALL_MULT = 0;
+var BALL_ADD = 1;
+
 start = +new Date();
 console.log('Loading pokemon...');
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
@@ -23,6 +37,8 @@ end = +new Date();
 console.log('Done ('+(end-start)+' ms)');
 
 var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
+
+var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
 
 var experienceRequired = {};
 
@@ -43,6 +59,9 @@ for(var i=0;i<mapsNames.length;++i){
 	var solidData = new Array(map.data.width);
 	var tilesets = map.data.tilesets;
 	
+	map.encounterAreas = [];
+	
+	
 	function getTilesetOfTile(n){
 		var i = tilesets.length;
 		while(i--){
@@ -60,29 +79,45 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	for(var n=0;n<map.data.layers.length;++n){
 		var layer = map.data.layers[n];
-		if(layer.type != 'tileLayer') continue;
-		
-		if(layer.properties && layer.properties.solid == '0') continue;
-		
-		var j = 0;
-		
-		for(var y=0;y<solidData[0].length;++y){
-			for(var x=0;x<solidData.length;++x, ++j){
-				
-				var tileid = layer.data[j];
-				if(!tileid) continue;
-				
-				var tileset = getTilesetOfTile(tileid);
-				if(!tileset) throw new Error("Tileset is null");
-				
-				var curTilesetTileid = tileid - tileset.firstgid;
-				
-				if(tileset.tileproperties[curTilesetTileid] && tileset.tileproperties[curTilesetTileid].solid == '1'){
-					solidData[x][y] = SD_SOLID;
+		if(layer.type == 'tilelayer'){
+			if(layer.properties && layer.properties.solid == '0') continue;
+			
+			var j = 0;
+			
+			for(var y=0;y<solidData[0].length;++y){
+				for(var x=0;x<solidData.length;++x, ++j){
+					
+					var tileid = layer.data[j];
+					if(!tileid) continue;
+					
+					var tileset = getTilesetOfTile(tileid);
+					if(!tileset) throw new Error("Tileset is null");
+					
+					var curTilesetTileid = tileid - tileset.firstgid;
+					
+					if(tileset.tileproperties[curTilesetTileid] && tileset.tileproperties[curTilesetTileid].solid == '1'){
+						solidData[x][y] = SD_SOLID;
+					}
+				}
+			}
+		}else if(layer.type == 'objectgroup'){
+			for(var i = 0; i < layer.objects.length; ++i){
+				var obj = layer.objects[i];
+				var x1 = Math.round(obj.x / map.data.tilewidth);
+				var y1 = Math.round(obj.y / map.data.tileheight);
+				var x2 = Math.round((obj.x + obj.width) / map.data.tilewidth);
+				var y2 = Math.round((obj.y + obj.height) / map.data.tileheight);
+				switch(obj.type){
+					case 'tall_grass':
+						var encounters = JSON.parse('{"tmp":['+ obj.properties.encounters + ']}').tmp;
+						map.encounterAreas.push({x1:x1, y1:y1, x2:x2, y2:y2, encounters: encounters});
+					break;
 				}
 			}
 		}
 	}
+	
+	
 	
 	map.solidData = solidData;
 }
@@ -175,12 +210,12 @@ io.sockets.on('connection', function (socket) {
 	
 	clients.push(client);
 	
-	client.pokemon.push(new PlayerPokemon("1", 5));
-	client.pokemon.push(new PlayerPokemon("1", 5));
-	client.pokemon.push(new PlayerPokemon("1", 5));
-	client.pokemon.push(new PlayerPokemon("1", 5));
-	client.pokemon.push(new PlayerPokemon("1", 5));
-	client.pokemon.push(new PlayerPokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon("1", 5));
 	
 	maps[client.map].chars.push(client.char);
 	
@@ -200,6 +235,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('walk', function(data){
+		if(client.inBattle) return;
 		if(data.ack != client.lastAckMove) return;
 		
 		var chr = client.char;
@@ -207,15 +243,19 @@ io.sockets.on('connection', function (socket) {
 		if(chr.x - 1 == data.x && chr.y == data.y){
 			chr.x -= 1;
 			chr.direction = DIR_LEFT;
+			onPlayerStep()
 		}else if(chr.x + 1== data.x && chr.y == data.y){
 			chr.x += 1;
 			chr.direction = DIR_RIGHT;
+			onPlayerStep()
 		}else if(chr.x == data.x && chr.y - 1 == data.y){
 			chr.y -= 1;
 			chr.direction = DIR_UP;
+			onPlayerStep()
 		}else if(chr.x == data.x && chr.y + 1 == data.y){
 			chr.y += 1;
 			chr.direction = DIR_DOWN;
+			onPlayerStep()
 		}
 		
 		chr.direction = data.dir;
@@ -228,6 +268,7 @@ io.sockets.on('connection', function (socket) {
 			// WOW! It's fucking nothing!
 			// The player isn't far enough to be considerated an invalid move
 			// Maybe one of his 'walk' messages is delayed
+			
 		}else{
 			client.lastAckMove = +new Date();
 			socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
@@ -235,11 +276,15 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('turn', function(data){
+		if(client.inBattle) return;
+		
 		if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
 		client.char.direction = data.dir
 	});
 	
 	socket.on('sendMessage', function(data) {
+		if(client.inBattle) return;
+		
 		var t = new Date().getTime();
 		var str = data.str.substr(0, 128);
 		if(t - client.lastMessage > 100 && str != '') {
@@ -254,13 +299,50 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	function sendUpdate(){
-		socket.volatile.emit('update', {chars:maps[client.map].chars, messages:client.messageQueue});
+		if(client.inBattle){
+			client.messageQueue.length = 0;
+			return;
+		}
+		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
+	}
+	
+	function onPlayerStep(){
+		if(client.inBattle) return;
+		var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
+		for(var i=0;i<encounterAreas.length;++i){
+			var area = encounterAreas[i];
+			for(var j=0;j<area.encounters.length;++j){
+				var areaEncounter = area.encounters[j];
+				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
+					var enemy = new Pokemon(areaEncounter.id, level);
+					
+					socket.emit('encounter', {enemy: enemy.publicInfo, x: client.char.x, y: client.char.y});
+					client.inBattle = true;
+					return;
+				}
+			}
+		}
 	}
 });
 
+function getEncounterAreasAt(mapName, x, y){
+	var map = maps[mapName];
+	var arr = [];
+	var i = map.encounterAreas.length;
+	while(i--){
+		var area = map.encounterAreas[i];
+		if(x >= area.x1 && y >= area.y1 && x < area.x2 && y < area.y2){
+			arr.push(area);
+		}
+	}
+	
+	return arr;
+}
 
-function PlayerPokemon(id, level){
+
+function Pokemon(id, level){
 	var self = this;
 	
 	var MAX_EV = 510;
@@ -272,6 +354,11 @@ function PlayerPokemon(id, level){
 	self.unique = generateRandomString(16);
 	
 	self.nickname = null;
+	self.gender = GENDER_UNKNOWN;
+	
+	if(Number(pokemonData[self.id].genderRatio) != -1){
+		self.gender = (Math.random() < Number(pokemonData[self.id].genderRatio)) ? GENDER_MALE : GENDER_FEMALE;
+	}
 	
 	self.hp = 0;
 	self.maxHp = 0;
@@ -282,6 +369,13 @@ function PlayerPokemon(id, level){
 	self.speed = 0;
 	
 	self.ability = 0;
+	
+	// If it has 2 available abilities, choose one of them randomly
+	if(pokemonData[self.id].ability2){
+		self.ability = Math.floor(Math.random() * 2) + 1;
+	}else if(pokemonData[self.id].ability1){
+		self.ability = 1;
+	}
 	
 	self.experience = 0;
 	self.experienceNeeded = 0;
@@ -300,10 +394,27 @@ function PlayerPokemon(id, level){
 	self.ivSpDef = Math.floor(Math.random() * 32);
 	self.ivSpeed = Math.floor(Math.random() * 32);
 	
+	self.status = STATUS_NONE;
+	
 	self.shiny = (1/8192 > Math.random());
 	self.moves = [null, null, null, null];
 	self.movesPP = [0, 0, 0, 0];
 	self.movesMaxPP = [0, 0, 0, 0];
+	
+	
+	// Data to be sent to clients battling this pokemon
+	self.publicInfo = {
+		get id(){return self.id},
+		get level(){return self.level},
+		get hp(){return self.hp},
+		get hpMax(){return self.hpMax},
+		get unique(){return self.unique},
+		get shiny(){return self.shiny},
+		get gender(){return self.gender},
+		get nickname(){return self.nickname},
+		get status(){return self.status}
+	}
+	
 	
 	self.calculateExpGain = function(isTrainer){
 		return ((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7;
@@ -357,11 +468,77 @@ function PlayerPokemon(id, level){
 		}
 	}
 	
+	self.getAbility = function(){
+		if(self.ability == 0) return '';
+		return pokemonData[self.id]['ability'+self.ability];
+	}
+	
+	self.calculateCatch = function(ballValue, ballType){
+		var chance = (3 * self.maxHp - 2 * self.hp) * pokemonData[self.id].catchRate;
+		switch(ballType){
+			case BALL_MULT:
+				chance *= ballValue;
+			break;
+			case BALL_ADD:
+				chance += ballValue;
+			break;
+		}
+		chance /= 3 * self.maxHp;
+		switch(self.status){
+			case STATUS_SLEEP:
+			case STATUS_FREEZE:
+				chance *= 2;
+			break;
+			case STATUS_PARALYZE:
+			case STATUS_POISON:
+			case STATUS_BURN:
+				chance *= 1.5;
+			break;
+		}
+		
+		return chance;
+	}
+	
+	self.calculateDamageTo = function(target, move){
+		var isMoveSpecial = false;
+		var moveObj = movesData[move];
+		
+		switch(moveObj.type){
+			case "water": case "grass": case "fire":
+			case "ice": case "electric": case "psychic": 
+			case "dragon": case "dark":
+				isMoveSpecial = true;
+			break;
+		}
+		
+		var damage = ((2 * self.level + 10) / 250) * (self.atk / target.def) * moveObj.power + 2;
+		var modifier = 1.0;
+		if(moveObj.type == pokemonData[self.id].type1 || moveObj.type == pokemonData[self.id].type2){
+			modifier *= 1.5;
+		}
+		
+		modifier *= getTypeEffectiveness(moveObj.type, target.type1);
+		modifier *= getTypeEffectiveness(moveObj.type, target.type2);
+		
+		//if(isCritical) modifier *= 2;
+		
+		modifier *= 1.0 - Math.random() * 0.15;
+		
+		return damage * modifier;
+	}
+	
+	self.restore = function(){
+		self.hp = self.maxHp;
+		for(var i = 0; i < 4; ++i){
+			self.moves[i] = self.movesMaxPP[i];
+		}
+	}
 	
 	// Make it learn the 4 highest level moves for his level
 	var j = 0;
 	var learnset = pokemonData[self.id].learnset;
 	for(var i=0;i<learnset.length;++i){
+		if(movesData[learnset[i].move] == null) continue;
 		if(learnset[i].level > self.level) break;
 		self.moves[j] = learnset[i].move;
 		self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
@@ -379,4 +556,10 @@ function generateRandomString(len){
 	var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	while(i--) str += chars[Math.floor(Math.random()*chars.length)];
 	return str;
+}
+
+function getTypeEffectiveness(type, other){
+	if(type == null || other == null) return 1.0;
+	if(typeData[type][other] == null) return 1.0;
+	return typeData[type][other];
 }

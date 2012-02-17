@@ -3,7 +3,7 @@
 		"name":			"Bulbasaur",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"overgrow",
+		"ability1":		"overgrow",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -53,7 +53,7 @@
 		"name":			"Ivysaur",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"overgrow",
+		"ability1":		"overgrow",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -104,7 +104,7 @@
 		"name":			"Venusaur",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"overgrow",
+		"ability1":		"overgrow",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -150,8 +150,8 @@
 
 	"4": {
 		"name":			"Charmander",
-		"type":			"fire",
-		"ability":		"blaze",
+		"type1":			"fire",
+		"ability1":		"blaze",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -199,8 +199,8 @@
 
 	"5": {
 		"name":			"Charmeleon",
-		"type":			"fire",
-		"ability":		"blaze",
+		"type1":			"fire",
+		"ability1":		"blaze",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -251,7 +251,7 @@
 		"name":			"Charizard",
 		"type1":		"fire",
 		"type2":		"flying",
-		"ability":		"blaze",
+		"ability1":		"blaze",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -298,8 +298,8 @@
 
 	"7": {
 		"name":			"Squirtle",
-		"type":			"water",
-		"ability":		"torrent",
+		"type1":			"water",
+		"ability1":		"torrent",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -348,8 +348,8 @@
 
 	"8": {
 		"name":			"Wartortle",
-		"type":			"water",
-		"ability":		"torrent",
+		"type1":			"water",
+		"ability1":		"torrent",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -399,8 +399,8 @@
 
 	"9": {
 		"name":			"Blastoise",
-		"type":			"water",
-		"ability":		"torrent",
+		"type1":			"water",
+		"ability1":		"torrent",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumSlow",
@@ -446,8 +446,8 @@
 
 	"10": {
 		"name":			"Caterpie",
-		"type":			"bug",
-		"ability":		"shielddust",
+		"type1":			"bug",
+		"ability1":		"shielddust",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -483,8 +483,8 @@
 
 	"11": {
 		"name":			"Metapod",
-		"type":			"bug",
-		"ability":		"shedskin",
+		"type1":			"bug",
+		"ability1":		"shedskin",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -521,7 +521,7 @@
 		"name":			"Butterfree",
 		"type1":		"bug",
 		"type2":		"flying",
-		"ability":		"compoundeyes",
+		"ability1":		"compoundeyes",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -568,7 +568,7 @@
 		"name":			"Weedle",
 		"type1":		"bug",
 		"type2":		"poison",
-		"ability":		"shielddust",
+		"ability1":		"shielddust",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -606,7 +606,7 @@
 		"name":			"Kakuna",
 		"type1":		"bug",
 		"type2":		"poison",
-		"ability":		"shedskin",
+		"ability1":		"shedskin",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -643,7 +643,7 @@
 		"name":			"Beedrill",
 		"type1":		"bug",
 		"type2":		"poison",
-		"ability":		"swarm",
+		"ability1":		"swarm",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -826,7 +826,7 @@
 
 	"19": {
 		"name":			"Rattata",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"guts",
 		"genderRatio":	"0.5",
@@ -874,7 +874,7 @@
 
 	"20": {
 		"name":			"Raticate",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"guts",
 		"genderRatio":	"0.5",
@@ -921,7 +921,7 @@
 		"name":			"Spearow",
 		"type1":		"normal",
 		"type2":		"flying",
-		"ability":		"keeneye",
+		"ability1":		"keeneye",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -969,7 +969,7 @@
 		"name":			"Fearow",
 		"type1":		"normal",
 		"type2":		"flying",
-		"ability":		"keeneye",
+		"ability1":		"keeneye",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1010,7 +1010,7 @@
 
 	"23": {
 		"name":			"Ekans",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"intimidate",
 		"ability2":		"shedskin",
 		"genderRatio":	"0.5",
@@ -1061,7 +1061,7 @@
 
 	"24": {
 		"name":			"Arbok",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"intimidate",
 		"ability2":		"shedskin",
 		"genderRatio":	"0.5",
@@ -1108,8 +1108,8 @@
 
 	"25": {
 		"name":			"Pikachu",
-		"type":			"electric",
-		"ability":		"static",
+		"type1":			"electric",
+		"ability1":		"static",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1158,8 +1158,8 @@
 
 	"26": {
 		"name":			"Raichu",
-		"type":			"electric",
-		"ability":		"static",
+		"type1":			"electric",
+		"ability1":		"static",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1197,8 +1197,8 @@
 
 	"27": {
 		"name":			"Sandshrew",
-		"type":			"ground",
-		"ability":		"sandveil",
+		"type1":			"ground",
+		"ability1":		"sandveil",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1244,8 +1244,8 @@
 
 	"28": {
 		"name":			"Sandslash",
-		"type":			"ground",
-		"ability":		"sandveil",
+		"type1":			"ground",
+		"ability1":		"sandveil",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1287,7 +1287,7 @@
 
 	"29": {
 		"name":			"Nidoran♀",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
 		"genderRatio":	"0.0",
@@ -1338,7 +1338,7 @@
 
 	"30": {
 		"name":			"Nidorina",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
 		"genderRatio":	"0.0",
@@ -1435,7 +1435,7 @@
 
 	"32": {
 		"name":			"Nidoran♂",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
 		"genderRatio":	"1.0",
@@ -1486,7 +1486,7 @@
 
 	"33": {
 		"name":			"Nidorino",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
 		"genderRatio":	"1.0",
@@ -1583,7 +1583,7 @@
 
 	"35": {
 		"name":			"Clefairy",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"cutecharm",
 		"ability2":		"magicguard",
 		"genderRatio":	"0.25",
@@ -1638,7 +1638,7 @@
 
 	"36": {
 		"name":			"Clefable",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"cutecharm",
 		"ability2":		"magicguard",
 		"genderRatio":	"0.25",
@@ -1681,8 +1681,8 @@
 
 	"37": {
 		"name":			"Vulpix",
-		"type":			"fire",
-		"ability":		"flashfire",
+		"type1":			"fire",
+		"ability1":		"flashfire",
 		"genderRatio":	"0.25",
 
 		"experienceCurve":	"mediumFast",
@@ -1729,8 +1729,8 @@
 
 	"38": {
 		"name":			"Ninetales",
-		"type":			"fire",
-		"ability":		"flashfire",
+		"type1":			"fire",
+		"ability1":		"flashfire",
 		"genderRatio":	"0.25",
 
 		"experienceCurve":	"mediumFast",
@@ -1769,8 +1769,8 @@
 
 	"39": {
 		"name":			"Jigglypuff",
-		"type":			"normal",
-		"ability":		"cutecharm",
+		"type1":			"normal",
+		"ability1":		"cutecharm",
 		"genderRatio":	"0.25",
 
 		"experienceCurve":	"",
@@ -1820,8 +1820,8 @@
 
 	"40": {
 		"name":			"Wigglytuff",
-		"type":			"normal",
-		"ability":		"cutecharm",
+		"type1":			"normal",
+		"ability1":		"cutecharm",
 		"genderRatio":	"0.25",
 
 		"experienceCurve":	"",
@@ -1863,7 +1863,7 @@
 		"name":			"Zubat",
 		"type1":		"poison",
 		"type2":		"flying",
-		"ability":		"innerfocus",
+		"ability1":		"innerfocus",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1913,7 +1913,7 @@
 		"name":			"Golbat",
 		"type1":		"poison",
 		"type2":		"flying",
-		"ability":		"innerfocus",
+		"ability1":		"innerfocus",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -1960,7 +1960,7 @@
 		"name":			"Oddish",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -2007,7 +2007,7 @@
 		"name":			"Gloom",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -2054,7 +2054,7 @@
 		"name":			"Vileplume",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -2291,7 +2291,7 @@
 
 	"50": {
 		"name":			"Diglett",
-		"type":			"ground",
+		"type1":			"ground",
 		"ability1":		"sandveil",
 		"ability2":		"arenatrap",
 		"genderRatio":	"0.5",
@@ -2338,7 +2338,7 @@
 
 	"51": {
 		"name":			"Dugtrio",
-		"type":			"ground",
+		"type1":			"ground",
 		"ability1":		"sandveil",
 		"ability2":		"arenatrap",
 		"genderRatio":	"0.5",
@@ -2384,7 +2384,7 @@
 
 	"52": {
 		"name":			"Meowth",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"pickup",
 		"ability2":		"technician",
 		"genderRatio":	"0.5",
@@ -2435,7 +2435,7 @@
 
 	"53": {
 		"name":			"Persian",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"limber",
 		"ability2":		"technician",
 		"genderRatio":	"0.5",
@@ -2482,7 +2482,7 @@
 
 	"54": {
 		"name":			"Psyduck",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"damp",
 		"ability2":		"aftermath",
 		"genderRatio":	"0.5",
@@ -2532,7 +2532,7 @@
 
 	"55": {
 		"name":			"Golduck",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"damp",
 		"ability2":		"aftermath",
 		"genderRatio":	"0.5",
@@ -2578,7 +2578,7 @@
 
 	"56": {
 		"name":			"Mankey",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"vitalspirit",
 		"ability2":		"angerpoint",
 		"genderRatio":	"0.5",
@@ -2630,7 +2630,7 @@
 
 	"57": {
 		"name":			"Primeape",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"vitalspirit",
 		"ability2":		"angerpoint",
 		"genderRatio":	"0.5",
@@ -2679,7 +2679,7 @@
 
 	"58": {
 		"name":			"Growlithe",
-		"type":			"fire",
+		"type1":			"fire",
 		"ability1":		"intimidate",
 		"ability2":		"flashfire",
 		"genderRatio":	"0.75",
@@ -2729,7 +2729,7 @@
 
 	"59": {
 		"name":			"Arcanine",
-		"type":			"fire",
+		"type1":			"fire",
 		"ability1":		"intimidate",
 		"ability2":		"flashfire",
 		"genderRatio":	"0.75",
@@ -2770,7 +2770,7 @@
 
 	"60": {
 		"name":			"Poliwag",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"waterabsorb",
 		"ability2":		"damp",
 		"genderRatio":	"0.5",
@@ -2818,7 +2818,7 @@
 
 	"61": {
 		"name":			"Poliwhirl",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"waterabsorb",
 		"ability2":		"damp",
 		"genderRatio":	"0.5",
@@ -2910,7 +2910,7 @@
 
 	"63": {
 		"name":			"Abra",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
 		"genderRatio":	"0.75",
@@ -2952,7 +2952,7 @@
 
 	"64": {
 		"name":			"Kadabra",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
 		"genderRatio":	"0.75",
@@ -3005,7 +3005,7 @@
 
 	"65": {
 		"name":			"Alakazam",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
 		"genderRatio":	"0.75",
@@ -3053,7 +3053,7 @@
 
 	"66": {
 		"name":			"Machop",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
 		"genderRatio":	"0.75",
@@ -3105,7 +3105,7 @@
 
 	"67": {
 		"name":			"Machoke",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
 		"genderRatio":	"0.75",
@@ -3158,7 +3158,7 @@
 
 	"68": {
 		"name":			"Machamp",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
 		"genderRatio":	"0.75",
@@ -3208,7 +3208,7 @@
 		"name":			"Bellsprout",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -3257,7 +3257,7 @@
 		"name":			"Weepinbell",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -3306,7 +3306,7 @@
 		"name":			"Victreebel",
 		"type1":		"grass",
 		"type2":		"poison",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -3592,7 +3592,7 @@
 
 	"77": {
 		"name":			"Ponyta",
-		"type":			"fire",
+		"type1":			"fire",
 		"ability1":		"runaway",
 		"ability2":		"flashfire",
 		"genderRatio":	"0.5",
@@ -3641,7 +3641,7 @@
 
 	"78": {
 		"name":			"Rapidash",
-		"type":			"fire",
+		"type1":			"fire",
 		"ability1":		"runaway",
 		"ability2":		"flashfire",
 		"genderRatio":	"0.5",
@@ -4027,7 +4027,7 @@
 
 	"86": {
 		"name":			"Seel",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"thickfat",
 		"ability2":		"hydration",
 		"genderRatio":	"0.5",
@@ -4122,7 +4122,7 @@
 
 	"88": {
 		"name":			"Grimer",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"stench",
 		"ability2":		"stickyhold",
 		"genderRatio":	"0.5",
@@ -4172,7 +4172,7 @@
 
 	"89": {
 		"name":			"Muk",
-		"type":			"poison",
+		"type1":			"poison",
 		"ability1":		"stench",
 		"ability2":		"stickyhold",
 		"genderRatio":	"0.5",
@@ -4220,7 +4220,7 @@
 
 	"90": {
 		"name":			"Shellder",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"shellarmor",
 		"ability2":		"skilllink",
 		"genderRatio":	"0.5",
@@ -4312,7 +4312,7 @@
 		"name":			"Gastly",
 		"type1":		"ghost",
 		"type2":		"poison",
-		"ability":		"levitate",
+		"ability1":		"levitate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -4363,7 +4363,7 @@
 		"name":			"Haunter",
 		"type1":		"ghost",
 		"type2":		"poison",
-		"ability":		"levitate",
+		"ability1":		"levitate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -4416,7 +4416,7 @@
 		"name":			"Gengar",
 		"type1":		"ghost",
 		"type2":		"poison",
-		"ability":		"levitate",
+		"ability1":		"levitate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumSlow",
@@ -4511,7 +4511,7 @@
 
 	"96": {
 		"name":			"Drowzee",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"insomnia",
 		"ability2":		"forewarn",
 		"genderRatio":	"0.5",
@@ -4563,7 +4563,7 @@
 
 	"97": {
 		"name":			"Hypno",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"insomnia",
 		"ability2":		"forewarn",
 		"genderRatio":	"0.5",
@@ -4612,7 +4612,7 @@
 
 	"98": {
 		"name":			"Krabby",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"hypercutter",
 		"ability2":		"shellarmor",
 		"genderRatio":	"0.5",
@@ -4662,7 +4662,7 @@
 
 	"99": {
 		"name":			"Kingler",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"hypercutter",
 		"ability2":		"shellarmor",
 		"genderRatio":	"0.5",
@@ -4709,7 +4709,7 @@
 
 	"100": {
 		"name":			"Voltorb",
-		"type":			"electric",
+		"type1":			"electric",
 		"ability1":		"soundproof",
 		"ability2":		"static",
 		"genderRatio":	"-1",
@@ -4759,7 +4759,7 @@
 
 	"101": {
 		"name":			"Electrode",
-		"type":			"electric",
+		"type1":			"electric",
 		"ability1":		"soundproof",
 		"ability2":		"static",
 		"genderRatio":	"-1",
@@ -4807,7 +4807,7 @@
 		"name":			"Exeggcute",
 		"type1":		"grass",
 		"type2":		"psychic",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -4857,7 +4857,7 @@
 		"name":			"Exeggutor",
 		"type1":		"grass",
 		"type2":		"psychic",
-		"ability":		"chlorophyll",
+		"ability1":		"chlorophyll",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -4896,7 +4896,7 @@
 
 	"104": {
 		"name":			"Cubone",
-		"type":			"ground",
+		"type1":			"ground",
 		"ability1":		"rockhead",
 		"ability2":		"lightningrod",
 		"genderRatio":	"0.5",
@@ -4948,7 +4948,7 @@
 
 	"105": {
 		"name":			"Marowak",
-		"type":			"ground",
+		"type1":			"ground",
 		"ability1":		"rockhead",
 		"ability2":		"lightningrod",
 		"genderRatio":	"0.5",
@@ -4996,7 +4996,7 @@
 
 	"106": {
 		"name":			"Hitmonlee",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"limber",
 		"ability2":		"reckless",
 		"genderRatio":	"1.0",
@@ -5049,7 +5049,7 @@
 
 	"107": {
 		"name":			"Hitmonchan",
-		"type":			"fighting",
+		"type1":			"fighting",
 		"ability1":		"keeneye",
 		"ability2":		"ironfist",
 		"genderRatio":	"1.0",
@@ -5097,7 +5097,7 @@
 
 	"108": {
 		"name":			"Lickitung",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"owntempo",
 		"ability2":		"oblivious",
 		"genderRatio":	"0.5",
@@ -5146,8 +5146,8 @@
 
 	"109": {
 		"name":			"Koffing",
-		"type":			"poison",
-		"ability":		"levitate",
+		"type1":			"poison",
+		"ability1":		"levitate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -5195,8 +5195,8 @@
 
 	"110": {
 		"name":			"Weezing",
-		"type":			"poison",
-		"ability":		"levitate",
+		"type1":			"poison",
+		"ability1":		"levitate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"mediumFast",
@@ -5341,7 +5341,7 @@
 
 	"113": {
 		"name":			"Chansey",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"naturalcure",
 		"ability2":		"serenegrace",
 		"genderRatio":	"0.0",
@@ -5391,7 +5391,7 @@
 
 	"114": {
 		"name":			"Tangela",
-		"type":			"grass",
+		"type1":			"grass",
 		"ability1":		"chlorophyll",
 		"ability2":		"leafguard",
 		"genderRatio":	"0.5",
@@ -5439,7 +5439,7 @@
 
 	"115": {
 		"name":			"Kangaskhan",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"earlybird",
 		"ability2":		"scrappy",
 		"genderRatio":	"0.0",
@@ -5488,7 +5488,7 @@
 
 	"116": {
 		"name":			"Horsea",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"sniper",
 		"genderRatio":	"0.5",
@@ -5535,7 +5535,7 @@
 
 	"117": {
 		"name":			"Seadra",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"poisonpoint",
 		"ability2":		"sniper",
 		"genderRatio":	"0.5",
@@ -5579,7 +5579,7 @@
 
 	"118": {
 		"name":			"Goldeen",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"waterveil",
 		"genderRatio":	"0.5",
@@ -5629,7 +5629,7 @@
 
 	"119": {
 		"name":			"Seaking",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"waterveil",
 		"genderRatio":	"0.5",
@@ -5675,7 +5675,7 @@
 
 	"120": {
 		"name":			"Staryu",
-		"type":			"water",
+		"type1":			"water",
 		"ability1":		"illuminate",
 		"ability2":		"naturalcure",
 		"genderRatio":	"-1",
@@ -5770,7 +5770,7 @@
 
 	"122": {
 		"name":			"Mr. mime",
-		"type":			"psychic",
+		"type1":			"psychic",
 		"ability1":		"soundproof",
 		"ability2":		"filter",
 		"genderRatio":	"0.5",
@@ -5920,8 +5920,8 @@
 
 	"125": {
 		"name":			"Electabuzz",
-		"type":			"electric",
-		"ability":		"static",
+		"type1":			"electric",
+		"ability1":		"static",
 		"genderRatio":	"0.75",
 
 		"experienceCurve":	"mediumFast",
@@ -5963,8 +5963,8 @@
 
 	"126": {
 		"name":			"Magmar",
-		"type":			"fire",
-		"ability":		"flamebody",
+		"type1":			"fire",
+		"ability1":		"flamebody",
 		"genderRatio":	"0.75",
 
 		"experienceCurve":	"mediumFast",
@@ -6007,7 +6007,7 @@
 
 	"127": {
 		"name":			"Pinsir",
-		"type":			"bug",
+		"type1":			"bug",
 		"ability1":		"hypercutter",
 		"ability2":		"moldbreaker",
 		"genderRatio":	"0.5",
@@ -6053,7 +6053,7 @@
 
 	"128": {
 		"name":			"Tauros",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"intimidate",
 		"ability2":		"angerpoint",
 		"genderRatio":	"1.0",
@@ -6101,8 +6101,8 @@
 
 	"129": {
 		"name":			"Magikarp",
-		"type":			"water",
-		"ability":		"swiftswim",
+		"type1":			"water",
+		"ability1":		"swiftswim",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -6141,7 +6141,7 @@
 		"name":			"Gyarados",
 		"type1":		"water",
 		"type2":		"flying",
-		"ability":		"intimidate",
+		"ability1":		"intimidate",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -6236,8 +6236,8 @@
 
 	"132": {
 		"name":			"Ditto",
-		"type":			"normal",
-		"ability":		"limber",
+		"type1":			"normal",
+		"ability1":		"limber",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"mediumFast",
@@ -6268,7 +6268,7 @@
 
 	"133": {
 		"name":			"Eevee",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"adaptability",
 		"genderRatio":	"0.875",
@@ -6315,8 +6315,8 @@
 
 	"134": {
 		"name":			"Vaporeon",
-		"type":			"water",
-		"ability":		"waterabsorb",
+		"type1":			"water",
+		"ability1":		"waterabsorb",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumFast",
@@ -6364,8 +6364,8 @@
 
 	"135": {
 		"name":			"Jolteon",
-		"type":			"electric",
-		"ability":		"voltabsorb",
+		"type1":			"electric",
+		"ability1":		"voltabsorb",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumFast",
@@ -6409,8 +6409,8 @@
 
 	"136": {
 		"name":			"Flareon",
-		"type":			"fire",
-		"ability":		"flashfire",
+		"type1":			"fire",
+		"ability1":		"flashfire",
 		"genderRatio":	"0.875",
 
 		"experienceCurve":	"mediumFast",
@@ -6454,7 +6454,7 @@
 
 	"137": {
 		"name":			"Porygon",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"trace",
 		"ability2":		"download",
 		"genderRatio":	"-1",
@@ -6744,7 +6744,7 @@
 
 	"143": {
 		"name":			"Snorlax",
-		"type":			"normal",
+		"type1":			"normal",
 		"ability1":		"immunity",
 		"ability2":		"thickfat",
 		"genderRatio":	"0.875",
@@ -6798,7 +6798,7 @@
 		"name":			"Articuno",
 		"type1":		"ice",
 		"type2":		"flying",
-		"ability":		"pressure",
+		"ability1":		"pressure",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"slow",
@@ -6843,7 +6843,7 @@
 		"name":			"Zapdos",
 		"type1":		"electric",
 		"type2":		"flying",
-		"ability":		"pressure",
+		"ability1":		"pressure",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"slow",
@@ -6888,7 +6888,7 @@
 		"name":			"Moltres",
 		"type1":		"fire",
 		"type2":		"flying",
-		"ability":		"pressure",
+		"ability1":		"pressure",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"slow",
@@ -6931,8 +6931,8 @@
 
 	"147": {
 		"name":			"Dratini",
-		"type":			"dragon",
-		"ability":		"shedskin",
+		"type1":			"dragon",
+		"ability1":		"shedskin",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -6981,8 +6981,8 @@
 
 	"148": {
 		"name":			"Dragonair",
-		"type":			"dragon",
-		"ability":		"shedskin",
+		"type1":			"dragon",
+		"ability1":		"shedskin",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -7033,7 +7033,7 @@
 		"name":			"Dragonite",
 		"type1":		"dragon",
 		"type2":		"flying",
-		"ability":		"innerfocus",
+		"ability1":		"innerfocus",
 		"genderRatio":	"0.5",
 
 		"experienceCurve":	"slow",
@@ -7082,8 +7082,8 @@
 
 	"150": {
 		"name":			"Mewtwo",
-		"type":			"psychic",
-		"ability":		"pressure",
+		"type1":			"psychic",
+		"ability1":		"pressure",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"slow",
@@ -7132,8 +7132,8 @@
 
 	"151": {
 		"name":			"Mew",
-		"type":			"psychic",
-		"ability":		"synchronize",
+		"type1":			"psychic",
+		"ability1":		"synchronize",
 		"genderRatio":	"-1",
 
 		"experienceCurve":	"mediumSlow",
