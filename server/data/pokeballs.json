@@ -1,0 +1,26 @@
+{
+	"poke ball": {
+		"value":		1.0,
+		"valueType":	0
+	},
+	
+	"great ball": {
+		"value":		1.5,
+		"valueType":	0
+	},
+	
+	"ultra ball": {
+		"value":		2.0,
+		"valueType":	0
+	},
+	
+	"master ball": {
+		"value":		255,
+		"valueType":	0
+	},
+	
+	"premier ball": {
+		"value":		1,
+		"valueType":	0
+	}
+}

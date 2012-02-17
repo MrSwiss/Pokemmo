@@ -14,6 +14,7 @@ var socket;
 
 var ST_LOADING = 1;
 var ST_MAP = 2;
+var ST_BATTLE = 3;
 
 var DIR_DOWN = 0;
 var DIR_LEFT = 1;
@@ -52,6 +53,10 @@ var inChat = false;
 var lastAckMove = 0;
 var loadedChars = false;
 
+var inTransition = false;
+var transitionStep;
+var transitionDrawParty = false;
+var transitionOnComplete;
 
 var isPhone = (navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i));
 var isLandscape = function(){return canvas.width == 480 && canvas.height == 300};
@@ -67,6 +72,13 @@ if(isPhone){
 
 var uiPokemon;
 var uiChat;
+
+var battleBackground;
+var battleTextBackground = new Image();
+battleTextBackground.src = 'resources/ui/battle_text.png';
+var battleCurPokemonSprite;
+var battleEnemyPokemon;
+var battleEnemyPokemonSprite;
 
 var miscSprites;
 
@@ -740,10 +752,66 @@ function loadMap(id){
 	render();
 }
 
+function transition(onComplete, drawParty){
+	transitionStep = 0;
+	inTransition = true;
+	transitionDrawParty = !!drawParty;
+	transitionOnComplete = onComplete;
+}
+
+function renderTransition(){
+	
+	
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	if(transitionStep < 70){
+		if(isPhone){
+			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.drawImage(gameCanvas, 10, 10);
+		}
+		ctx.globalAlpha = 1.0;
+		ctx.fillStyle = 'rgba(0, 0, 0, ' + Math.min(transitionStep/50, 1) + ')';
+		if(isPhone){
+			ctx.fillRect(0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.fillRect(10, 10, screenWidth, screenHeight);
+		}
+	}else if(transitionStep < 100){
+		if(transitionStep == 70){
+			render(true, true);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+		
+		if(isPhone){
+			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.drawImage(gameCanvas, 10, 10);
+		}
+		
+		ctx.fillStyle = 'rgba(0, 0, 0, ' + ((30 - (transitionStep - 70)) / 30) + ')';
+		if(isPhone){
+			ctx.fillRect(0, -10, screenWidth, screenHeight);
+		}else{
+			ctx.fillRect(10, 10, screenWidth, screenHeight);
+		}
+	}else{
+		inTransition = false;
+		if(transitionOnComplete) transitionOnComplete();
+		return;
+	}
+	
+	
+	transitionStep += 2;
+	
+	if(transitionDrawParty && !isPhone){
+		drawPokemonParty();
+	}
+}
+
 var willRender = false;
 
 
-function render(){
+function render(forceNoTransition, onlyRender){
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
 	ctx.fillStyle = '#66BBFF';
@@ -752,51 +820,83 @@ function render(){
 	
 	var realRender = function(){
 		willRender = false;
-		switch(state){
-			case ST_MAP:
-				if(curMap){
-					
-					gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-					
-					var chr = getPlayerChar();
-					if(chr){
-						var charRenderPos = chr.getRenderPos();
-						cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
-						cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
+		
+		if(inTransition && !forceNoTransition){
+			renderTransition();
+		}else{
+			switch(state){
+				case ST_MAP:
+					if(curMap){
 						
-						if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
-						if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
+						gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+						
+						var chr = getPlayerChar();
+						if(chr){
+							var charRenderPos = chr.getRenderPos();
+							cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
+							cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
+							
+							if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
+							if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
+						}
+						
+						renderMap(gameCtx, curMap);
+						renderChars(gameCtx);
+						renderMapOver(gameCtx, curMap);
+						
+						if(isPhone){
+							ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
+						}else{
+							ctx.drawImage(gameCanvas, 10, 10);
+						}
+					}else{
+						throw new Error('No map in memory');
 					}
 					
-					renderMap(gameCtx, curMap);
-					renderChars(gameCtx);
-					renderMapOver(gameCtx, curMap);
+					if(!isPhone){
+						drawPokemonParty();
+						drawChat();
+					}
+				break;
+				case ST_LOADING:
+					loadingMapRender();
+				break;
+				case ST_BATTLE:
+					gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+					
+					if(battleBackground.width != 0){
+						gameCtx.drawImage(battleBackground, 0, 0);
+					}
+					
+					if(battleTextBackground.width != 0){
+						gameCtx.drawImage(battleTextBackground, 2, 228);
+					}
+					
+					gameCtx.drawImage(battleCurPokemonSprite, 60, 96);
+					
+					gameCtx.drawImage(battleEnemyPokemonSprite, 290, 30);
 					
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
 					}else{
 						ctx.drawImage(gameCanvas, 10, 10);
 					}
-				}else{
-					throw new Error('No map in memory');
-				}
-				
-				if(!isPhone){
-					drawPokemonParty();
-					drawChat();
-				}
-			break;
-			case ST_LOADING:
-				loadingMapRender();
-			break;
+					
+					if(!isPhone){
+						drawPokemonParty();
+					}
+				break;
+			}
+			
+			if(isPhone){
+				ctx.drawImage(iOSUI, 0, 0);
+			}
 		}
 		
-		if(isPhone){
-			ctx.drawImage(iOSUI, 0, 0);
+		if(!onlyRender){
+			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
+			onScreenCtx.drawImage(canvas, 0, 0);
 		}
-		
-		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
-		onScreenCtx.drawImage(canvas, 0, 0);
 	}
 	
 	if(!willRender){
@@ -1037,6 +1137,21 @@ window.initGame = function($canvas, $container){
 			chatLog.push(data.messages[i]);
 		}
 		
+	});
+	
+	socket.on('encounter', function(data){
+		state = ST_BATTLE;
+		battleBackground = new Image();
+		battleBackground.src = 'resources/ui/battle_background1.png';
+		battleEnemyPokemon = data.enemy;
+		battleEnemyPokemonSprite = new Image();
+		battleEnemyPokemonSprite.src = 'resources/sprites/'+data.enemy.id+'.png';
+		battleCurPokemonSprite = new Image();
+		battleCurPokemonSprite.src = 'resources/sprites/'+pokemonParty[0].id+'_back.png';
+		
+		transition(function(){
+		
+		}, true);
 	});
 }
 

@@ -47,9 +47,9 @@
                  "name":"",
                  "properties":
                     {
-
+                     "encounters":"{\"id\": \"16\", \"min_level\": 2, \"max_level\": 5, \"rate\": 8.5}, {\"id\": \"19\", \"min_level\": 2, \"max_level\": 4, \"rate\": 8.5}"
                     },
-                 "type":"",
+                 "type":"tall_grass",
                  "width":64,
                  "x":384,
                  "y":1120
