@@ -101,7 +101,32 @@ function Pokemon(id, level){
 		get gender(){return self.gender},
 		get nickname(){return self.nickname},
 		get status(){return self.status}
-	}
+	};
+	
+	// Information available to the pokemon owner
+	self.ownerInfo = {
+		get id(){return self.id},
+		get level(){return self.level},
+		get hp(){return self.hp},
+		get hpMax(){return self.hpMax},
+		get unique(){return self.unique},
+		get shiny(){return self.shiny},
+		get gender(){return self.gender},
+		get nickname(){return self.nickname},
+		get status(){return self.status},
+		
+		get experience(){return self.experience},
+		get experienceNeeded(){return self.experienceNeeded},
+		get atk(){return self.atk},
+		get def(){return self.def},
+		get spAtk(){return self.spAtk},
+		get spDef(){return self.spDef},
+		get speed(){return self.speed},
+		get ability(){return self.ability},
+		get moves(){return self.moves},
+		get movesPP(){return self.movesPP},
+		get movesMaxPP(){return self.movesMaxPP}
+	};
 	
 	
 	self.calculateExpGain = function(isTrainer){
@@ -424,7 +449,7 @@ io.sockets.on('connection', function (socket) {
 	
 	maps[client.map].chars.push(client.char);
 	
-	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon});
+	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	socket.emit('loadMap', {mapid: client.map});
 	socket.emit('createChars', {arr:maps[client.map].chars});
 	

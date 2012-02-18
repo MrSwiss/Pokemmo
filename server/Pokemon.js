@@ -25,6 +25,7 @@ function Pokemon(id, level){
 	self.speed = 0;
 	
 	self.ability = 0;
+	self.nature = 1 + Math.floor(Math.random() * 25)
 	
 	// If it has 2 available abilities, choose one of them randomly
 	if(pokemonData[self.id].ability2){
@@ -69,7 +70,33 @@ function Pokemon(id, level){
 		get gender(){return self.gender},
 		get nickname(){return self.nickname},
 		get status(){return self.status}
-	}
+	};
+	
+	// Information available to the pokemon owner
+	self.ownerInfo = {
+		get id(){return self.id},
+		get level(){return self.level},
+		get hp(){return self.hp},
+		get hpMax(){return self.hpMax},
+		get unique(){return self.unique},
+		get shiny(){return self.shiny},
+		get gender(){return self.gender},
+		get nickname(){return self.nickname},
+		get status(){return self.status},
+		
+		get experience(){return self.experience},
+		get experienceNeeded(){return self.experienceNeeded},
+		get atk(){return self.atk},
+		get def(){return self.def},
+		get spAtk(){return self.spAtk},
+		get spDef(){return self.spDef},
+		get speed(){return self.speed},
+		get ability(){return self.ability},
+		get nature(){return self.nature},
+		get moves(){return self.moves},
+		get movesPP(){return self.movesPP},
+		get movesMaxPP(){return self.movesMaxPP}
+	};
 	
 	
 	self.calculateExpGain = function(isTrainer){
@@ -155,39 +182,21 @@ function Pokemon(id, level){
 		return chance;
 	}
 	
-	self.calculateDamageTo = function(target, move){
-		var isMoveSpecial = false;
-		var moveObj = movesData[move];
-		
-		switch(moveObj.type){
-			case "water": case "grass": case "fire":
-			case "ice": case "electric": case "psychic": 
-			case "dragon": case "dark":
-				isMoveSpecial = true;
-			break;
-		}
-		
-		var damage = ((2 * self.level + 10) / 250) * (self.atk / target.def) * moveObj.power + 2;
-		var modifier = 1.0;
-		if(moveObj.type == pokemonData[self.id].type1 || moveObj.type == pokemonData[self.id].type2){
-			modifier *= 1.5;
-		}
-		
-		modifier *= getTypeEffectiveness(moveObj.type, target.type1);
-		modifier *= getTypeEffectiveness(moveObj.type, target.type2);
-		
-		//if(isCritical) modifier *= 2;
-		
-		modifier *= 1.0 - Math.random() * 0.15;
-		
-		return damage * modifier;
-	}
-	
 	self.restore = function(){
 		self.hp = self.maxHp;
 		for(var i = 0; i < 4; ++i){
 			self.moves[i] = self.movesMaxPP[i];
 		}
+	}
+	
+	self.getUsableMoves = function(){
+		var list = [];
+		for(var i=0;i<moves.length;++i){
+			if(moves[i] == null) continue;
+			if(movesPP[i] <= 0) continue;
+			list.push(i);
+		}
+		return list;
 	}
 	
 	// Make it learn the 4 highest level moves for his level

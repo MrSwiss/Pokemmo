@@ -1,15 +1,17 @@
 {
 	"tackle": {
-		"type":		"normal",
-		"pp":		35,
-		"pp_max":	56,
-		"power":	35,
-		"accuracy":	0.95,
-		"contact":	true,
-		"attackType": "simple"
+		"name":			"Tackle"
+		"type":			"normal",
+		"pp":			35,
+		"pp_max":		56,
+		"power":		35,
+		"accuracy":		0.95,
+		"contact":		true,
+		"attackType":	"simple"
 	},
 	
 	"growl": {
+		"name":			"Growl"
 		"type":			"normal",
 		"pp":			40,
 		"pp_max":		64,

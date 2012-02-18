@@ -32,6 +32,10 @@ var BALL_ADD = 1;
 
 // #include "Pokemon.js"
 
+// #include "Battle.js"
+
+// #include "movesFunctions.js"
+
 start = +new Date();
 console.log('Loading pokemon...');
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
@@ -50,6 +54,7 @@ var experienceRequired = {};
 
 io.sockets.on('connection', function (socket) {
 	var client = {
+		socket: socket,
 		id: generateRandomString(16),
 		username: generateRandomString(5),
 		map: 'pallet',
@@ -63,6 +68,7 @@ io.sockets.on('connection', function (socket) {
 		},
 		lastAckMove: 0,
 		inBattle: false,
+		battle: null,
 		lastPokecenter: ["pallet", 6, 48],
 		pokemon: [],
 		messageQueue: [],
@@ -80,7 +86,7 @@ io.sockets.on('connection', function (socket) {
 	
 	maps[client.map].chars.push(client.char);
 	
-	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon});
+	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	socket.emit('loadMap', {mapid: client.map});
 	socket.emit('createChars', {arr:maps[client.map].chars});
 	
@@ -178,9 +184,12 @@ io.sockets.on('connection', function (socket) {
 				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
 					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 					var enemy = new Pokemon(areaEncounter.id, level);
+					var battle = new Battle(BATTLE_WILD, client, enemy);
 					
-					socket.emit('encounter', {enemy: enemy.publicInfo, x: client.char.x, y: client.char.y});
+					
 					client.inBattle = true;
+					client.battle = battle;
+					battle.init();
 					return;
 				}
 			}
@@ -209,10 +218,4 @@ function generateRandomString(len){
 	var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	while(i--) str += chars[Math.floor(Math.random()*chars.length)];
 	return str;
-}
-
-function getTypeEffectiveness(type, other){
-	if(type == null || other == null) return 1.0;
-	if(typeData[type][other] == null) return 1.0;
-	return typeData[type][other];
 }

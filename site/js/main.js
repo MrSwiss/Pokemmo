@@ -355,9 +355,12 @@ window.initGame = function($canvas, $container){
 		state = ST_BATTLE;
 		battleBackground = new Image();
 		battleBackground.src = 'resources/ui/battle_background1.png';
-		battleEnemyPokemon = data.enemy;
+		
+		var enemy = data.battle.enemy;
+		
+		battleEnemyPokemon = enemy;
 		battleEnemyPokemonSprite = new Image();
-		battleEnemyPokemonSprite.src = 'resources/sprites/'+data.enemy.id+'.png';
+		battleEnemyPokemonSprite.src = 'resources/sprites/'+enemy.id+'.png';
 		battleCurPokemonSprite = new Image();
 		battleCurPokemonSprite.src = 'resources/sprites/'+pokemonParty[0].id+'_back.png';
 		
