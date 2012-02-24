@@ -64,7 +64,7 @@ function Pokemon(id, level){
 		get id(){return self.id},
 		get level(){return self.level},
 		get hp(){return self.hp},
-		get hpMax(){return self.hpMax},
+		get maxHp(){return self.maxHp},
 		get unique(){return self.unique},
 		get shiny(){return self.shiny},
 		get gender(){return self.gender},
@@ -77,7 +77,7 @@ function Pokemon(id, level){
 		get id(){return self.id},
 		get level(){return self.level},
 		get hp(){return self.hp},
-		get hpMax(){return self.hpMax},
+		get maxHp(){return self.maxHp},
 		get unique(){return self.unique},
 		get shiny(){return self.shiny},
 		get gender(){return self.gender},
@@ -95,7 +95,8 @@ function Pokemon(id, level){
 		get nature(){return self.nature},
 		get moves(){return self.moves},
 		get movesPP(){return self.movesPP},
-		get movesMaxPP(){return self.movesMaxPP}
+		get movesMaxPP(){return self.movesMaxPP},
+		get training(){return (self.evHp + self.evAtk + self.evDef + self.SpAtk + self.evSpDef + self.evSpeed) / MAX_EV}
 	};
 	
 	
@@ -106,7 +107,7 @@ function Pokemon(id, level){
 	self.addEV = function(data){
 		var total = self.evHp + self.evAtk + self.evDef + self.SpAtk + self.evSpDef + self.evSpeed;
 		var tmp;
-		if(total > 510) return;
+		if(total >= MAX_EV) return;
 		
 		var evs = [
 			['hp', 'evHp'],
@@ -149,6 +150,11 @@ function Pokemon(id, level){
 		}else{
 			self.experienceNeeded = experienceRequired[pokemonData[self.id].experienceCurve][self.level + 1];
 		}
+	}
+	
+	self.levelUp = function(){
+		self.level += 1;
+		self.calculateStats();
 	}
 	
 	self.getAbility = function(){

@@ -1,4 +1,6 @@
 function renderMap(ctx, map){
+	ctx.fillStyle = 'rgb(0,0,0)';
+	ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	for(var i=0;i<map.layers.length;++i){
 		var layer = map.layers[i];
 		
@@ -24,13 +26,14 @@ function drawLayer(ctx, map, layer){
 	var tilesets = map.tilesets;
 	var j=0;
 	
+	if(layer.x != 0 || layer.y != 0) throw new Error("Assertion failed");
 	
-	var initialX = Math.floor(cameraX);
-	var initialY = Math.floor(cameraY);
+	var initialX = Math.max(Math.floor(cameraX), layer.x);
+	var initialY = Math.max(Math.floor(cameraY), layer.y);
 	var offsetX = getRenderOffsetX();
 	var offsetY = getRenderOffsetY();
-	var finalX = initialX + Math.floor(screenWidth / curMap.tilewidth) + 1;
-	var finalY = initialY + Math.floor(screenHeight / curMap.tileheight) + 1;
+	var finalX = Math.min(initialX + Math.ceil(screenWidth / curMap.tilewidth) + 1, layer.width);
+	var finalY = Math.min(initialY + Math.ceil(screenHeight / curMap.tileheight) + 1, layer.height);
 	
 	
 	j += initialY * layer.width;
@@ -89,39 +92,49 @@ function renderChars(ctx){
 	}
 }
 
+var tmpPokemonPartyCanvas = (isPhone?null:document.createElement('canvas'));
+if(tmpPokemonPartyCanvas){
+	tmpPokemonPartyCanvas.width = 310;
+	tmpPokemonPartyCanvas.height = 400;
+}
+
 function drawPokemonParty(){
-	var x = 500;
+	if(isPhone) return;
+	
+	var tmpCtx = tmpPokemonPartyCanvas.getContext('2d');
+	tmpCtx.clearRect(0, 0, tmpPokemonPartyCanvas.width, tmpPokemonPartyCanvas.height);
+	var x = 10;
 	var y = 10;
 	var deltaY = 48;
 	if(!pokemonParty || !pokemonData) return;
 	
 	for(var i=0;i<pokemonParty.length;++i){
-		ctx.save();
-		ctx.shadowOffsetX = 4;
-		ctx.shadowOffsetY = 4;
-		ctx.shadowBlur = 0;
-		ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-		ctx.drawImage(uiPokemon, x, y);
-		ctx.restore();
+		tmpCtx.save();
+		tmpCtx.shadowOffsetX = 4;
+		tmpCtx.shadowOffsetY = 4;
+		tmpCtx.shadowBlur = 0;
+		tmpCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+		tmpCtx.drawImage(uiPokemon, x, y);
+		tmpCtx.restore();
 		
 		if(pokemonParty[i].imageSmall.width){
-			ctx.drawImage(pokemonParty[i].imageSmall, x + 8, y + 8);
+			tmpCtx.drawImage(pokemonParty[i].imageSmall, x + 8, y + 8);
 		}
 		
 		
-		ctx.font = '12pt Font1';
-		ctx.fillStyle = 'rgb(255, 255, 255)';
+		tmpCtx.font = '12pt Font1';
+		tmpCtx.fillStyle = 'rgb(255, 255, 255)';
 		
 		// Name
 		drawStyleText((pokemonParty[i].nickname || pokemonData[pokemonParty[i].id].name).toUpperCase(), 45, 21);
 		
 		// Level
-		var lvWidth = ctx.measureText('Lv '+pokemonParty[i].level).width;
+		var lvWidth = tmpCtx.measureText('Lv '+pokemonParty[i].level).width;
 		drawStyleText('Lv '+pokemonParty[i].level, 45, 35);
-		ctx.font = '12pt Font1';
+		tmpCtx.font = '12pt Font1';
 		
 		var hp = pokemonParty[i].hp  +'/' +pokemonParty[i].maxHp;
-		var barWidth = ctx.measureText(hp).width;
+		var barWidth = tmpCtx.measureText(hp).width;
 		drawStyleText(hp, 280 - barWidth, 35);
 		
 		
@@ -130,34 +143,38 @@ function drawPokemonParty(){
 		// Exp bar
 		
 		
-		ctx.strokeStyle = 'rgb(0, 0, 0)';
+		tmpCtx.strokeStyle = 'rgb(0, 0, 0)';
 		
-		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
+		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
+		tmpCtx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
 		
-		ctx.fillStyle = 'rgb(0, 0, 200)';
-		ctx.fillRect(sx + 5, y + 30, Math.ceil((190 - barWidth - lvWidth) * (pokemonParty[i].experience / pokemonParty[i].experienceNeeded)), 5);
-		ctx.strokeRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
+		tmpCtx.fillStyle = 'rgb(0, 0, 200)';
+		tmpCtx.fillRect(sx + 5, y + 30, Math.ceil((190 - barWidth - lvWidth) * (pokemonParty[i].experience / pokemonParty[i].experienceNeeded)), 5);
+		tmpCtx.strokeRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
 		
 		// Hp bar
 		
-		ctx.fillStyle = 'rgb(0, 200, 0)';
-		ctx.strokeStyle = 'rgb(0, 0, 0)';
+		tmpCtx.fillStyle = 'rgb(0, 200, 0)';
+		tmpCtx.strokeStyle = 'rgb(0, 0, 0)';
 		
-		ctx.fillRect(sx, y + 27, Math.ceil((200 - barWidth - lvWidth) * (pokemonParty[i].hp / pokemonParty[i].maxHp)), 5);
-		ctx.strokeRect(sx, y + 27, (200 - barWidth - lvWidth), 5);
+		tmpCtx.fillRect(sx, y + 27, Math.ceil((200 - barWidth - lvWidth) * (pokemonParty[i].hp / pokemonParty[i].maxHp)), 5);
+		tmpCtx.strokeRect(sx, y + 27, (200 - barWidth - lvWidth), 5);
 		
 		
 		y += deltaY;
 	}
 	
 	function drawStyleText(str, $x, $y){
-		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + $x + 1, y + $y + 1);
+		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
+		tmpCtx.fillText(str, x + $x + 1, y + $y + 1);
 		
-		ctx.fillStyle = 'rgb(255, 255, 255)';
-		ctx.fillText(str, x + $x, y + $y);
+		tmpCtx.fillStyle = 'rgb(255, 255, 255)';
+		tmpCtx.fillText(str, x + $x, y + $y);
 	}
+	
+	ctx.globalAlpha = 0.8;
+	ctx.drawImage(tmpPokemonPartyCanvas, 480, 0);
+	ctx.globalAlpha = 1;
 }
 
 function drawChat() {
@@ -167,7 +184,8 @@ function drawChat() {
 	var y = 335;
 	
 	ctx.font = '12pt Font1';
-	ctx.drawImage(uiChat, x, y);
+	
+	if(inChat) ctx.drawImage(uiChat, x, y);
 	
 	ctx.fillStyle = 'rgb(0, 0, 0)';
 	
@@ -285,11 +303,16 @@ function render(forceNoTransition, onlyRender){
 						var chr = getPlayerChar();
 						if(chr){
 							var charRenderPos = chr.getRenderPos();
+							cameraX = charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2;
+							cameraY = charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2;
+							
+							/*
 							cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
 							cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
 							
 							if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
 							if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
+							*/
 						}
 						
 						renderMap(gameCtx, curMap);

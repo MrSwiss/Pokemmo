@@ -1,6 +1,6 @@
 {
 	"tackle": {
-		"name":			"Tackle"
+		"name":			"Tackle",
 		"type":			"normal",
 		"pp":			35,
 		"pp_max":		56,
@@ -11,7 +11,7 @@
 	},
 	
 	"growl": {
-		"name":			"Growl"
+		"name":			"Growl",
 		"type":			"normal",
 		"pp":			40,
 		"pp_max":		64,

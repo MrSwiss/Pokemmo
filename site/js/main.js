@@ -3,6 +3,9 @@
 
 var serverHost = 'http://localhost:2828';
 
+var isPhone = (navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i));
+var isLandscape = function(){return canvas.width == 480 && canvas.height == 300};
+
 var canvas, ctx;
 var gameCanvas;
 var gameCtx;
@@ -36,9 +39,8 @@ var keysDown = [];
 
 var CHAR_MOVE_WAIT = 0.3;
 
-var screenWidth = 480;
-var screenHeight = 320;
-
+var screenWidth = isPhone ? 480 : 780;
+var screenHeight = isPhone ? 320 : 540;
 
 var CHAR_WIDTH = 32;
 var CHAR_HEIGHT = 64;
@@ -58,8 +60,7 @@ var transitionStep;
 var transitionDrawParty = false;
 var transitionOnComplete;
 
-var isPhone = (navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i));
-var isLandscape = function(){return canvas.width == 480 && canvas.height == 300};
+
 var iOSUI;
 var iOSAButtonPos = {x:430, y:200};
 var iOSBButtonPos = {x:370, y:250};

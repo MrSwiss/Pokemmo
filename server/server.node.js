@@ -62,14 +62,14 @@ io.sockets.on('connection', function (socket) {
 			get id(){return client.id},
 			get inBattle(){return client.inBattle},
 			type: 'red',
-			x: 6,
-			y: 48,
+			x: 16,
+			y: 56,
 			direction: DIR_DOWN
 		},
 		lastAckMove: 0,
 		inBattle: false,
 		battle: null,
-		lastPokecenter: ["pallet", 6, 48],
+		respawnLocation: ["pallet", 6, 48],
 		pokemon: [],
 		messageQueue: [],
 		lastMessage: 0
@@ -106,8 +106,13 @@ io.sockets.on('connection', function (socket) {
 		if(data.ack != client.lastAckMove) return;
 		
 		var chr = client.char;
+		var invalidMove = false;
 		
-		if(chr.x - 1 == data.x && chr.y == data.y){
+		var destSolid = maps[client.map].solidData[data.x][data.y];
+		
+		if(destSolid == SD_SOLID || destSolid == SD_WATER){
+			invalidMove = true;
+		}else if(chr.x - 1 == data.x && chr.y == data.y){
 			chr.x -= 1;
 			chr.direction = DIR_LEFT;
 			onPlayerStep()
@@ -127,11 +132,11 @@ io.sockets.on('connection', function (socket) {
 		
 		chr.direction = data.dir;
 		
-		if(chr.x == data.x && chr.y == data.y || ((Math.abs(chr.x - data.x) <= 1 && Math.abs(chr.y - data.y) <= 1)
+		if(!invalidMove && (chr.x == data.x && chr.y == data.y || ((Math.abs(chr.x - data.x) <= 1 && Math.abs(chr.y - data.y) <= 1)
 		|| chr.x - 2 == data.x && chr.y == data.y
 		|| chr.x + 2 == data.x && chr.y == data.y
 		|| chr.x == data.x && chr.y - 2 == data.y
-		|| chr.x == data.x && chr.y + 2 == data.y)){
+		|| chr.x == data.x && chr.y + 2 == data.y))){
 			// WOW! It's fucking nothing!
 			// The player isn't far enough to be considerated an invalid move
 			// Maybe one of his 'walk' messages is delayed

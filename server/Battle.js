@@ -20,20 +20,22 @@ function Battle(type, arg1, arg2){
 	
 	var runAttempts = 0;
 	
+	var winner;
+	
 	switch(type){
 	case BATTLE_WILD:
 		var client = player1.client = arg1;
-		var enemies = [arg2];
+		player1.pokemon = client.pokemon[0];
+		player1.pokemonList = client.pokemon;
 		
-		player1CurPokemon = client.pokemon[0];
-		var enemy = player2CurPokemon = arg2;
-		
+		player2.pokemon = arg2;
+		player2.pokemonList = [arg2];
 		break;
 	}
 	
 	self.wildInfo = {
 		get curPokemon(){return player1.pokemon.ownerInfo},
-		get enemy(){return enemies[0];}
+		get enemy(){return arg2;}
 	};
 	
 	self.init = function(){
@@ -107,6 +109,7 @@ function Battle(type, arg1, arg2){
 		}
 		
 		tmp = processAction(firstPlayer, secondPlayer);
+		
 		if(tmp.battleEnded) return;
 		results.push(tmp);
 		
@@ -115,11 +118,16 @@ function Battle(type, arg1, arg2){
 			if(tmp.battleEnded) return;
 		}
 		
+		checkFainted(player1, player2);
+		checkFainted(player2, player1);
+		
 		player1.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player1)})});
 		
 		if(player2.client){
 			player2.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player2)})});
 		}
+		
+		if(!checkWin()) initTurn();
 	}
 	
 	function canTurnProceed(){
@@ -128,9 +136,58 @@ function Battle(type, arg1, arg2){
 		return true;
 	}
 	
+	function checkFainted(player, enemy){
+		if(type == BATTLE_VERSUS) return;
+		
+		if(enemy.pokemon.hp <= 0){
+			player.pokemon.addEV(pokemonData[enemy.pokemon.id].evYield);
+			
+			var exp = enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER);
+			player.pokemon.experience += exp;
+			
+			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
+				player.pokemon.experience -= player.pokemon.experienceNeeded;
+				player.pokemon.levelUp();
+			}
+		}
+	}
+	
+	function checkWin(){
+		if(winner != undefined) return;
+		
+		var player1Dead = true;
+		var player2Dead = true;
+		for(var i=0;i<player1.pokemon.length;++i){
+			if(player1.pokemon[i].hp > 0) player1Dead = false;
+		}
+		
+		for(var i=0;i<player2.pokemon.length;++i){
+			if(player2.pokemon[i].hp > 0) player2Dead = false;
+		}
+		
+		if(player1Dead){
+			if(player2Dead){
+				self.declareWinner(0);
+			}else{
+				self.declareWinner(2);
+			}
+			return true;
+		}else if(player2Dead){
+			self.declareWinner(1);
+		}
+		
+		return false;
+	}
+	
+	self.declareWinner = function(playerId){
+		winner = playerId;
+		
+		//TOOD
+	}
+	
 	function processAction(player, enemy){
 		if(type == BATTLE_WILD && player.action.type == BATTLE_ACTION_RUN){
-			var chance = ((player.pokemon.speed * 32) / (enemy.pokemon.speed / 4)) 30 * (++runAttempt);
+			var chance = ((player.pokemon.speed * 32) / (enemy.pokemon.speed / 4)) + 30 * (++runAttempt);
 			var success = Math.floor(Math.random() * 256) < chance;
 			
 			if(success){
@@ -157,10 +214,10 @@ function Battle(type, arg1, arg2){
 		
 		switch(moveData.type){
 		case "simple":
-			var damage = calculateDamage(player.pokemon, enemy.pokemon);
-			enemy.pokemon.hp = Math.max(enemy.pokemon.hp - damage, 0);
+			var obj = calculateDamage(player.pokemon, enemy.pokemon);
+			enemy.pokemon.hp = Math.max(enemy.pokemon.hp - obj.damage, 0);
 			
-			return new BattleTurnResult(player, "moveAttack", moveData.name);
+			return new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: obj.isCritical, effec:obj.effec});
 		
 		
 		case "custom": return movesFunctions[moveId](player, enemy);
@@ -180,20 +237,24 @@ function Battle(type, arg1, arg2){
 			modifier *= 1.5;
 		}
 		
-		modifier *= getTypeEffectiveness(moveData.type, enemyPokemon.type1);
-		modifier *= getTypeEffectiveness(moveData.type, enemyPokemon.type2);
+		var typeEffectiveness = getTypeEffectiveness(moveData.type, enemyPokemon.type1) * getTypeEffectiveness(moveData.type, enemyPokemon.type2);
+		modifier *= typeEffectiveness;
 		
 		var criticalChance = [0, 0.065, 0.125, 0.25, 0.333, 0.5];
 		var criticalStage = 1;
+		var isCritical;
 		
 		if(moveData.highCritical) criticalStage += 2;
 		
 		if(criticalStage > 5) criticalStage = 5;
-		if((Math.random() < criticalChance[criticalStage])) modifier *= 2;
+		
+		isCritical = (Math.random() < criticalChance[criticalStage]);
+		
+		if(isCritical) modifier *= 2;
 		
 		modifier *= 1.0 - Math.random() * 0.15;
 		
-		return Math.ceil(damage * modifier);
+		return {damage:Math.ceil(damage * modifier), isCritical: isCritical, effec:typeEffectiveness};
 	}
 	
 	function determineFirstAction(){
