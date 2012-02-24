@@ -19,7 +19,7 @@ def trimBottom(filename) :
 		paddingRows += 1
 		
 	i = image.size[1] - paddingRows
-	while i > 0 :
+	while i > 0 and i < image.size[1] :
 		for j in range(image.size[0]) :
 			pxl = image.getpixel((j, i))
 			if pxl[3] != 0 :
