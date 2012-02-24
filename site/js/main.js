@@ -262,7 +262,7 @@ window.initGame = function($canvas, $container){
 		
 		for(var i=0;i<pokemonParty.length;++i){
 			pokemonParty[i].imageSmall = new Image();
-			pokemonParty[i].imageSmall.src = 'resources/sprites/'+pokemonParty[i].id+'_small.png';
+			pokemonParty[i].imageSmall.src = 'resources/picons/'+pokemonParty[i].id+'.png';
 		}
 	});
 	
