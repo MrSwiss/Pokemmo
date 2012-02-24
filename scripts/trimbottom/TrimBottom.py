@@ -1,4 +1,4 @@
-import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import sys, time, os
 import re
 
@@ -27,7 +27,6 @@ def trimBottom(filename) :
 				image.putpixel((j,i+paddingRows), pxl)
 		i -= 1
 	
-	print paddingRows
 	outfile = pathOut + map + ".png"
 	image.save(outfile)
 
@@ -38,4 +37,5 @@ listing = os.listdir(pathIn)
 for file in listing :
 	m = re.search("\.png$", file)
 	if m != None :
+		print file
 		trimBottom(file)
