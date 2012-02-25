@@ -431,8 +431,8 @@ function drawPokemonParty(){
 		tmpCtx.drawImage(uiPokemon, x, y);
 		tmpCtx.restore();
 		
-		if(pokemonParty[i].imageSmall.width){
-			tmpCtx.drawImage(pokemonParty[i].imageSmall, x + 8, y + 8);
+		if(pokemonParty[i].icon.width){
+			tmpCtx.drawImage(pokemonParty[i].icon, x + 8, y + 8);
 		}
 		
 		
@@ -455,8 +455,6 @@ function drawPokemonParty(){
 		var sx = x + 60 + lvWidth;
 		
 		// Exp bar
-		
-		
 		tmpCtx.strokeStyle = 'rgb(0, 0, 0)';
 		
 		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
@@ -494,23 +492,27 @@ function drawPokemonParty(){
 function drawChat() {
 	if(inChat && chatBox.value.length > 0) filterChatText();
 	
-	var x = 10;
+	var x = 20;
 	var y = 335;
 	
 	ctx.font = '12pt Font1';
 	
-	if(inChat) ctx.drawImage(uiChat, x, y);
+	if(inChat){
+		ctx.globalAlpha = 0.5;
+		ctx.drawImage(uiChat, x, y);
+	}
 	
+	ctx.globalAlpha = 1;
 	ctx.fillStyle = 'rgb(0, 0, 0)';
 	
 	var str = chatBox.value;
 	while(true){
 		var w = ctx.measureText(str).width;
 		if(w < 440){
-			ctx.fillText(str, 18, 528);
+			ctx.fillText(str, x + 8, 528);
 			if(inChat){
 				if(+new Date()%1000 < 500){
-					ctx.fillRect(20 + w, 516, 10, 14);
+					ctx.fillRect(x + 10 + w, 516, 10, 14);
 				}
 			}
 			break;
@@ -521,7 +523,9 @@ function drawChat() {
 	
 	
 	var i = chatLog.length;
+	var now = +new Date();
 	for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
+		if(!inChat) ctx.globalAlpha = clamp(3 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
 		var str;
 
 		str = chatLog[i].username + ': ';
@@ -536,8 +540,16 @@ function drawChat() {
 		str = chatLog[i].str;
 		
 		ctx.fillStyle = 'rgb(0, 0, 0)';
+		ctx.fillText(str, x + 11 + usernameWidth, y + 181 - (14 * (chatLog.length - i)));
+		
+		
+		ctx.fillStyle = 'rgb(255, 255, 255)';
 		ctx.fillText(str, x + 10 + usernameWidth, y + 180 - (14 * (chatLog.length - i)));
+		
+		
 	}
+	
+	ctx.globalAlpha = 1;
 }
 
 function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
@@ -930,7 +942,16 @@ function getCharById(id){
 	return null;
 }
 
-
+function clamp(n, min, max){
+	if(min > max){
+		var tmp = max;
+		max = min;
+		min = tmp;
+	}
+	if(n < min) n = min;
+	if(n > max) n = max;
+	return n;
+}
 
 function transition(onComplete, drawParty){
 	transitionStep = 0;
@@ -986,6 +1007,12 @@ window.initGame = function($canvas, $container){
 		chatBox.maxLength = 128;
 		chatBox.onblur = function() {
 			inChat = false;
+			
+			// Force the messages to fade out again, a little faster though
+			var now = +new Date();
+			for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
+				chatLog[i].timestamp = Math.max(now - 2000, chatLog[i].timestamp);
+			}
 		}
 		
 		chatBox.onkeydown = function(e) {
@@ -1069,8 +1096,8 @@ window.initGame = function($canvas, $container){
 		pokemonParty = data.pokemon;
 		
 		for(var i=0;i<pokemonParty.length;++i){
-			pokemonParty[i].imageSmall = new Image();
-			pokemonParty[i].imageSmall.src = 'resources/picons/'+pokemonParty[i].id+'.png';
+			pokemonParty[i].icon = new Image();
+			pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'.png';
 		}
 	});
 	
@@ -1155,7 +1182,9 @@ window.initGame = function($canvas, $container){
 		
 		chatLog = chatLog.slice(-64 + data.messages.length);
 		for(var i = 0; i < data.messages.length;++i){
-			chatLog.push(data.messages[i]);
+			var m = data.messages[i];
+			m.timestamp = +new Date();
+			chatLog.push(m);
 		}
 		
 	});

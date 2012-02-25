@@ -122,7 +122,16 @@ function getCharById(id){
 	return null;
 }
 
-
+function clamp(n, min, max){
+	if(min > max){
+		var tmp = max;
+		max = min;
+		min = tmp;
+	}
+	if(n < min) n = min;
+	if(n > max) n = max;
+	return n;
+}
 
 function transition(onComplete, drawParty){
 	transitionStep = 0;
@@ -178,6 +187,12 @@ window.initGame = function($canvas, $container){
 		chatBox.maxLength = 128;
 		chatBox.onblur = function() {
 			inChat = false;
+			
+			// Force the messages to fade out again, a little faster though
+			var now = +new Date();
+			for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
+				chatLog[i].timestamp = Math.max(now - 2500, chatLog[i].timestamp);
+			}
 		}
 		
 		chatBox.onkeydown = function(e) {
@@ -261,8 +276,8 @@ window.initGame = function($canvas, $container){
 		pokemonParty = data.pokemon;
 		
 		for(var i=0;i<pokemonParty.length;++i){
-			pokemonParty[i].imageSmall = new Image();
-			pokemonParty[i].imageSmall.src = 'resources/picons/'+pokemonParty[i].id+'.png';
+			pokemonParty[i].icon = new Image();
+			pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'.png';
 		}
 	});
 	
@@ -347,7 +362,9 @@ window.initGame = function($canvas, $container){
 		
 		chatLog = chatLog.slice(-64 + data.messages.length);
 		for(var i = 0; i < data.messages.length;++i){
-			chatLog.push(data.messages[i]);
+			var m = data.messages[i];
+			m.timestamp = +new Date();
+			chatLog.push(m);
 		}
 		
 	});
