@@ -1,3 +1,11 @@
+var inBattleTransition = false;
+var transitionStep = 0;
+var battleTextBackground = new Image();
+battleTextBackground.src = 'resources/ui/battle_text.png';
+var battleIntroPokeball = new Image();
+battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
+
+
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
 	ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -92,17 +100,10 @@ function renderChars(ctx){
 	}
 }
 
-var tmpPokemonPartyCanvas = (isPhone?null:document.createElement('canvas'));
-if(tmpPokemonPartyCanvas){
-	tmpPokemonPartyCanvas.width = 310;
-	tmpPokemonPartyCanvas.height = 400;
-}
-
 function drawPokemonParty(){
 	if(isPhone) return;
 	
-	var tmpCtx = tmpPokemonPartyCanvas.getContext('2d');
-	tmpCtx.clearRect(0, 0, tmpPokemonPartyCanvas.width, tmpPokemonPartyCanvas.height);
+	clearTmpCanvas();
 	var x = 10;
 	var y = 10;
 	var deltaY = 48;
@@ -171,7 +172,7 @@ function drawPokemonParty(){
 	}
 	
 	ctx.globalAlpha = 0.8;
-	ctx.drawImage(tmpPokemonPartyCanvas, 480, 0);
+	ctx.drawImage(tmpCanvas, 480, 0);
 	ctx.globalAlpha = 1;
 }
 
@@ -241,53 +242,85 @@ function drawChat() {
 function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
 function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
-function renderTransition(){
+function renderBattle(){
+	var x = isPhone ? 0 : 160;
+	var y = isPhone ? 0 : 140;
+	
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = 'rgb(0,0,0)';
+	ctx.strokeRect(x - 1, y - 1, 482, 226);
+	if(battle.background.width != 0){
+		ctx.drawImage(battle.background, x, y);
+	}
+	
+	if(battleTextBackground.width != 0){
+		ctx.drawImage(battleTextBackground, x + 2, y + 228);
+	}
+	
+	ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
+	ctx.drawImage(battle.enemyPokemon.sprite, x + 290, y + 30);
+}
+
+function battleTransition(){
+	inBattleTransition = true;
+	transitionStep = 0;
+}
+
+function renderBattleTransition(){
+	var BAR_HEIGHT = 80;
+	
+	ctx.fillStyle = 'rgb(0,0,0)';
+	
+	if(transitionStep >= 30){
+		renderBattle();
+	}
 	
 	
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	if(transitionStep < 70){
-		if(isPhone){
-			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.drawImage(gameCanvas, 10, 10);
-		}
-		ctx.globalAlpha = 1.0;
-		ctx.fillStyle = 'rgba(0, 0, 0, ' + Math.min(transitionStep/50, 1) + ')';
-		if(isPhone){
-			ctx.fillRect(0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.fillRect(10, 10, screenWidth, screenHeight);
-		}
-	}else if(transitionStep < 100){
-		if(transitionStep == 70){
-			render(true, true);
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-		}
+	
+	if(transitionStep < 18){
+		var h = transitionStep * transitionStep;
+		ctx.fillRect(0, 0, canvas.width, h);
+		ctx.fillRect(0, canvas.height - h, canvas.width, h);
+	}else if(transitionStep < 30){
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+	}else if(transitionStep < 50){
+		var perc = ((transitionStep - 30) / 20);
+		if(perc > 1) perc = 1;
+		perc *= perc;
 		
-		if(isPhone){
-			ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.drawImage(gameCanvas, 10, 10);
-		}
+		ctx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
 		
-		ctx.fillStyle = 'rgba(0, 0, 0, ' + ((30 - (transitionStep - 70)) / 30) + ')';
-		if(isPhone){
-			ctx.fillRect(0, -10, screenWidth, screenHeight);
-		}else{
-			ctx.fillRect(10, 10, screenWidth, screenHeight);
-		}
+		var h = (canvas.height / 2 - BAR_HEIGHT / 2) * (1 - perc);
+		ctx.fillRect(0, (canvas.height / 2 - BAR_HEIGHT / 2) - h, canvas.width, h);
+		ctx.fillRect(0, (canvas.height / 2 + BAR_HEIGHT / 2), canvas.width, h);
+		
+		ctx.save();
+		
+		ctx.translate(canvas.width / 2, canvas.height / 2);
+		ctx.rotate(Math.PI * 2 * perc);
+		ctx.scale(perc, perc);
+		
+		ctx.drawImage(battleIntroPokeball, -60, -60);
+		ctx.restore();
+	}else if(transitionStep < 80){
+		var perc = ((transitionStep - 60) / 20);
+		
+		clearTmpCanvas();
+		
+		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
+		tmpCtx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
+		tmpCtx.drawImage(battleIntroPokeball, canvas.width / 2 - 60, canvas.height / 2 - 60);
+		
+		
+		ctx.globalAlpha = clamp(1 - perc, 0, 1);
+		ctx.drawImage(tmpCanvas, 0, 0);
+		ctx.globalAlpha = 1;
 	}else{
-		inTransition = false;
-		if(transitionOnComplete) transitionOnComplete();
-		return;
+		inBattleTransition = false;
 	}
 	
 	
-	transitionStep += 2;
-	
-	if(transitionDrawParty && !isPhone){
-		drawPokemonParty();
-	}
+	++transitionStep;
 }
 
 var willRender = false;
@@ -303,65 +336,30 @@ function render(forceNoTransition, onlyRender){
 	var realRender = function(){
 		willRender = false;
 		
-		if(inTransition && !forceNoTransition){
-			renderTransition();
-		}else{
-			switch(state){
-				case ST_MAP:
-					if(curMap){
-						
-						gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-						
-						var chr = getPlayerChar();
-						if(chr){
-							var charRenderPos = chr.getRenderPos();
-							cameraX = charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2;
-							cameraY = charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2;
-							
-							/*
-							cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
-							cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
-							
-							if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
-							if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
-							*/
-						}
-						
-						renderMap(gameCtx, curMap);
-						renderChars(gameCtx);
-						renderMapOver(gameCtx, curMap);
-						
-						if(isPhone){
-							ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
-						}else{
-							ctx.drawImage(gameCanvas, 10, 10);
-						}
-					}else{
-						throw new Error('No map in memory');
-					}
+		switch(state){
+			case ST_MAP:
+				if(curMap){
 					
-					if(!isPhone){
-						drawPokemonParty();
-						drawChat();
-					}
-				break;
-				case ST_LOADING:
-					loadingMapRender();
-				break;
-				case ST_BATTLE:
 					gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 					
-					if(battleBackground.width != 0){
-						gameCtx.drawImage(battleBackground, 0, 0);
+					var chr = getPlayerChar();
+					if(chr){
+						var charRenderPos = chr.getRenderPos();
+						cameraX = charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2;
+						cameraY = charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2;
+						
+						/*
+						cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
+						cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
+						
+						if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
+						if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
+						*/
 					}
 					
-					if(battleTextBackground.width != 0){
-						gameCtx.drawImage(battleTextBackground, 2, 228);
-					}
-					
-					gameCtx.drawImage(battleCurPokemonSprite, 60, 96);
-					
-					gameCtx.drawImage(battleEnemyPokemonSprite, 290, 30);
+					renderMap(gameCtx, curMap);
+					renderChars(gameCtx);
+					renderMapOver(gameCtx, curMap);
 					
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
@@ -369,17 +367,30 @@ function render(forceNoTransition, onlyRender){
 						ctx.drawImage(gameCanvas, 10, 10);
 					}
 					
-					if(!isPhone){
-						drawPokemonParty();
+					if(inBattleTransition){
+						renderBattleTransition();
+					}else if(inBattle){
+						renderBattle();
 					}
-				break;
-			}
-			
-			if(isPhone){
-				ctx.drawImage(iOSUI, 0, 0);
-			}
+					
+				}else{
+					throw new Error('No map in memory');
+				}
+				
+				if(!isPhone && !inBattle){
+					drawPokemonParty();
+					drawChat();
+				}
+			break;
+			case ST_LOADING:
+				loadingMapRender();
+			break;
 		}
 		
+		if(isPhone){
+			ctx.drawImage(iOSUI, 0, 0);
+		}
+	
 		if(!onlyRender){
 			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
 			onScreenCtx.drawImage(canvas, 0, 0);

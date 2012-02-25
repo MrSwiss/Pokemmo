@@ -14,7 +14,6 @@ var PLAYER_ENEMY = 1;
 
 function Battle(type, arg1, arg2){
 	var self = this;
-	var pendingMoves = 0;
 	
 	var player1 = {}, player2 = {};
 	
@@ -27,21 +26,24 @@ function Battle(type, arg1, arg2){
 		var client = player1.client = arg1;
 		player1.pokemon = client.pokemon[0];
 		player1.pokemonList = client.pokemon;
+		player1.pending = false;
 		
 		player2.pokemon = arg2;
 		player2.pokemonList = [arg2];
+		player2.pending = false;
 		break;
 	}
 	
 	self.wildInfo = {
 		get curPokemon(){return player1.pokemon.ownerInfo},
-		get enemy(){return arg2;}
+		get enemy(){return player2.pokemon;}
 	};
 	
 	self.init = function(){
 		switch(type){
 		case BATTLE_WILD:
 			client.socket.on('battleMove', onBattleMoveWild);
+			
 			client.socket.emit('battleWild', {battle: self.wildInfo, x: client.char.x, y: client.char.y});
 			
 			break;
@@ -59,6 +61,10 @@ function Battle(type, arg1, arg2){
 	}
 	
 	function onBattleMoveWild(data){
+		if(!player1.pending) return;
+		
+		player1.pending = false;
+		
 		var tmp = Number(data.move);
 		if(isNaN(tmp) || tmp < 0 || tmp > player1.pokemon.moves[tmp] == null){
 			tmp = 0;
@@ -87,7 +93,7 @@ function Battle(type, arg1, arg2){
 		switch(type){
 		case BATTLE_WILD:
 			if(!dontSendMessage) client.socket.emit('battleInitTurn', {battle: self.wildInfo});
-			
+			player1.pending = true;
 			break;
 		}
 	}

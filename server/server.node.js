@@ -186,7 +186,7 @@ io.sockets.on('connection', function (socket) {
 			var area = encounterAreas[i];
 			for(var j=0;j<area.encounters.length;++j){
 				var areaEncounter = area.encounters[j];
-				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+				if(1 || Math.random() < 1 / (187.5 / areaEncounter.rate)){
 					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 					var enemy = new Pokemon(areaEncounter.id, level);
 					var battle = new Battle(BATTLE_WILD, client, enemy);
