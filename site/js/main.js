@@ -70,17 +70,12 @@ if(isPhone){
 	iOSUI.src = 'resources/ui/ios_ui.png';
 }
 
-var uiPokemon;
-var uiChat;
-var uiCharInBattle;
-
 var battleBackground;
 
 
 var battle;
 
-
-var miscSprites;
+var res = {};
 
 function isKeyDown(n){return !!keysDown[n];};
 

@@ -94,14 +94,14 @@ function renderChars(ctx){
 		
 		if(!chr.walking && isTileGrass(curMap, chr.x, chr.y)){
 			//TODO Actually make it look like how it is in game
-			ctx.drawImage(miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
+			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
 		if(chr.inBattle){
 			ctx.save();
 			var ly = 0;
 			
-			ly = (numRTicks % 31) / 30;
+			ly = ((numRTicks + chr.randInt) % 31) / 30;
 			ly *= 2;
 			
 			if(ly > 1) ly = 1 - (ly - 1);
@@ -109,8 +109,8 @@ function renderChars(ctx){
 			ly *= 10;
 			
 			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
-			ctx.rotate((numRTicks % 11) / 10 * Math.PI * 2);
-			ctx.drawImage(uiCharInBattle, -10, -10);
+			ctx.rotate(((numRTicks + chr.randInt) % 11) / 10 * Math.PI * 2);
+			ctx.drawImage(res.uiCharInBattle, -10, -10);
 			ctx.restore();
 		}
 	}
@@ -131,7 +131,7 @@ function drawPokemonParty(){
 		tmpCtx.shadowOffsetY = 4;
 		tmpCtx.shadowBlur = 0;
 		tmpCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-		tmpCtx.drawImage(uiPokemon, x, y);
+		tmpCtx.drawImage(res.uiPokemon, x, y);
 		tmpCtx.restore();
 		
 		if(pokemonParty[i].icon.width){
@@ -202,7 +202,7 @@ function drawChat() {
 	
 	if(inChat){
 		ctx.globalAlpha = 0.5;
-		ctx.drawImage(uiChat, x, y);
+		ctx.drawImage(res.uiChat, x, y);
 	}
 	
 	ctx.globalAlpha = 1;

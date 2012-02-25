@@ -26,94 +26,77 @@ function loadMap(id){
 	var completed = 0;
 	var error = false;
 	
-	++pending;
-	miscSprites = new Image();
-	miscSprites.onload = function(){--pending;++completed;};
-	miscSprites.onerror = function(){--pending;error = true;refresh();};
-	miscSprites.src = 'resources/tilesets/misc.png';
+	loadImage('miscSprites', 'resources/tilesets/misc.png');
+	loadImage('uiPokemon', 'resources/ui/pokemon.png');
+	loadImage('uiChat', 'resources/ui/chat.png');
+	loadImage('uiCharInBattle', 'resources/ui/char_in_battle.png');
 	
-	++pending;
-	uiPokemon = new Image();
-	uiPokemon.onload = function(){--pending;++completed;};
-	uiPokemon.onerror = function(){--pending;error = true;refresh();};
-	uiPokemon.src = 'resources/ui/pokemon.png';
-	
-	++pending;
-	uiChat = new Image();
-	uiChat.onload = function(){--pending;++completed;};
-	uiChat.onerror = function(){--pending;error = true;refresh();};
-	uiChat.src = 'resources/ui/chat.png';
-	
-	++pending;
-	uiCharInBattle = new Image();
-	uiCharInBattle.onload = function(){--pending;++completed;};
-	uiCharInBattle.onerror = function(){--pending;error = true;refresh();};
-	uiCharInBattle.src = 'resources/ui/char_in_battle.png';
-	
-	++pending;
-	$q.ajax('resources/data/pokemon.json', {
-		'cache': true,
-		'dataType': 'json',
-		'success': function(data, textStatus, jqXHR){
-			--pending;
-			++completed;
-			pokemonData = data;
-		},
-		'error': function(jqXHR, textStatus, errorThrown){
-			--pending;
-			error = true;
-			refresh();
-		}
-	});
-	
-	++pending;
-	$q.ajax('resources/maps/'+id+'.json', {
-		'dataType': 'json',
-		'success': function(data, textStatus, jqXHR){
-			--pending;
-			++completed;
-			var map = parseMap(data);
-			
-			
-			for(var i=0;i<map.tilesets.length;++i){
-				var tileset = map.tilesets[i];
-				if(tileset.loaded){
-					++completed;
-				}else if(tileset.error){
+	loadJSON('data/pokemon.json', function(data){pokemonData = data});
+	loadJSON('resources/maps/'+id+'.json', function(data){
+		var map = parseMap(data);
+		for(var i=0;i<map.tilesets.length;++i){
+			var tileset = map.tilesets[i];
+			if(tileset.loaded){
+				++completed;
+			}else if(tileset.error){
+				error = true;
+				break;
+			}else{
+				++pending;
+				tileset.onload = function(tileset){
+					--pending;
+					refresh();
+				}
+				
+				tileset.onerror = function(tileset){
 					error = true;
-					break;
-				}else{
-					++pending;
-					tileset.onload = function(tileset){
-						--pending;
-						refresh();
-					}
-					
-					tileset.onerror = function(tileset){
-						error = true;
-						refresh();
-					}
+					refresh();
 				}
 			}
-			
-			curMap = map;
-			
-			refresh();
-		},
-		'error': function(jqXHR, textStatus, errorThrown){
-			--pending;
-			error = true;
-			refresh();
 		}
+		
+		curMap = map;
+		
+		refresh();
 	});
+	
+	function loadImage(name, src){
+		++pending;
+		res[name] = new Image();
+		res[name].onload = function(){--pending;++completed;};
+		res[name].onerror = function(){--pending;error = true;refresh();};
+		res[name].src = src;
+	}
+	
+	function loadJSON(src, onload){
+		++pending;
+		$q.ajax(src, {
+			'cache': true,
+			'dataType': 'json',
+			'success': function(data, textStatus, jqXHR){
+				--pending;
+				++completed;
+				onload(data);
+			},
+			'error': function(jqXHR, textStatus, errorThrown){
+				--pending;
+				error = true;
+				refresh();
+			}
+		});
+	}
 	
 	function refresh(){
 		if(state != ST_LOADING) return;
 		
 		ctx.fillStyle = 'rgb(0,0,0)';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = 'rgb(255,255,255)';
+		ctx.font = '12pt Courier New';
+		
 		if(error){
 			console.log('Error loading map');
+			ctx.fillText('Failed loading files', 10, 30);
 		}else{
 			if(pending == 0){
 				console.log('Map loaded');
@@ -121,6 +104,7 @@ function loadMap(id){
 				render();
 			}else{
 				console.log('Pending: '+pending);
+				ctx.fillText('Loading... ' + pending, 10, 30);
 			}
 		}
 		
