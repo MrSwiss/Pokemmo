@@ -45,6 +45,12 @@ function loadMap(id){
 	uiChat.src = 'resources/ui/chat.png';
 	
 	++pending;
+	uiCharInBattle = new Image();
+	uiCharInBattle.onload = function(){--pending;++completed;};
+	uiCharInBattle.onerror = function(){--pending;error = true;refresh();};
+	uiCharInBattle.src = 'resources/ui/char_in_battle.png';
+	
+	++pending;
 	$q.ajax('resources/data/pokemon.json', {
 		'cache': true,
 		'dataType': 'json',

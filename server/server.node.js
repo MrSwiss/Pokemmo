@@ -171,10 +171,6 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	function sendUpdate(){
-		if(client.inBattle){
-			client.messageQueue.length = 0;
-			return;
-		}
 		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
 	}

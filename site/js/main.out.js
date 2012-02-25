@@ -58,6 +58,7 @@ var inChat = false;
 var lastAckMove = 0;
 var loadedChars = false;
 
+var numRTicks = 0;
 
 var iOSUI;
 var iOSAButtonPos = {x:430, y:200};
@@ -71,6 +72,7 @@ if(isPhone){
 
 var uiPokemon;
 var uiChat;
+var uiCharInBattle;
 
 var battleBackground;
 
@@ -131,6 +133,12 @@ function loadMap(id){
 	uiChat.onload = function(){--pending;++completed;};
 	uiChat.onerror = function(){--pending;error = true;refresh();};
 	uiChat.src = 'resources/ui/chat.png';
+	
+	++pending;
+	uiCharInBattle = new Image();
+	uiCharInBattle.onload = function(){--pending;++completed;};
+	uiCharInBattle.onerror = function(){--pending;error = true;refresh();};
+	uiCharInBattle.src = 'resources/ui/char_in_battle.png';
 	
 	++pending;
 	$q.ajax('resources/data/pokemon.json', {
@@ -408,6 +416,22 @@ function renderChars(ctx){
 			ctx.drawImage(miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
+		if(chr.inBattle){
+			ctx.save();
+			var ly = 0;
+			
+			ly = (numRTicks % 31) / 30;
+			ly *= 2;
+			
+			if(ly > 1) ly = 1 - (ly - 1);
+			ly *= ly;
+			ly *= 10;
+			
+			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
+			ctx.rotate((numRTicks % 11) / 10 * Math.PI * 2);
+			ctx.drawImage(uiCharInBattle, -10, -10);
+			ctx.restore();
+		}
 	}
 }
 
@@ -594,6 +618,14 @@ function renderBattleTransition(){
 		ctx.fillRect(0, canvas.height - h, canvas.width, h);
 	}else if(transitionStep < 30){
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		if(transitionStep == 18){
+			var chr = getPlayerChar();
+			if(chr){
+				chr.x = battle.x;
+				chr.y = battle.y;
+				chr.walking = false;
+			}
+		}
 	}else if(transitionStep < 50){
 		var perc = ((transitionStep - 30) / 20);
 		if(perc > 1) perc = 1;
@@ -658,14 +690,6 @@ function render(forceNoTransition, onlyRender){
 						var charRenderPos = chr.getRenderPos();
 						cameraX = charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2;
 						cameraY = charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2;
-						
-						/*
-						cameraX = Math.max(0, charRenderPos.x / curMap.tilewidth + 1 - (screenWidth / curMap.tilewidth) / 2);
-						cameraY = Math.max(0, charRenderPos.y / curMap.tileheight - (screenHeight / curMap.tileheight) / 2);
-						
-						if(cameraX > 0 && cameraX + (screenWidth / curMap.tilewidth) > curMap.width) cameraX = curMap.width - screenWidth / curMap.tilewidth;
-						if(cameraY > 0 && cameraY + (screenHeight / curMap.tileheight) > curMap.height) cameraY = curMap.height - screenHeight / curMap.tileheight;
-						*/
 					}
 					
 					renderMap(gameCtx, curMap);
@@ -705,6 +729,8 @@ function render(forceNoTransition, onlyRender){
 		if(!onlyRender){
 			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
 			onScreenCtx.drawImage(canvas, 0, 0);
+			
+			++numRTicks;
 		}
 	}
 	
@@ -741,6 +767,9 @@ function Character(data){
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
+	self.inBattle = false;
+	self.randInt = Math.floor(Math.random() * 100);
+	
 	self.image = new Image();
 	self.image.onload = function(){
 		self.loaded = true;
@@ -750,6 +779,10 @@ function Character(data){
 	self.image.src = 'resources/chars/'+data.type+'.png';
 	self.tickRender = function(){
 		
+	}
+	
+	function isControllable(){
+		return self.id == myId && !inBattle;
 	}
 	
 	self.getRenderPos = function(){
@@ -783,7 +816,7 @@ function Character(data){
 			self.walkingPerc = 0.0;
 			
 			if(self.id == myId){
-				if (!inChat) {
+				if (!inChat && !inBattle) {
 					if(isKeyDown(65)){ // A
 						self.walking = true;
 						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
@@ -808,7 +841,7 @@ function Character(data){
 		}
 		
 		if(self.walking){
-			if(self.id == myId){
+			if(isControllable()){
 				switch(self.direction){
 					case DIR_LEFT:
 						if(!isKeyDown(65)){
@@ -886,10 +919,10 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if((self.direction == DIR_LEFT && isKeyDown(65))
+					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(65))
 					|| (self.direction == DIR_DOWN && isKeyDown(83))
 					|| (self.direction == DIR_RIGHT && isKeyDown(68))
-					|| (self.direction == DIR_UP && isKeyDown(87))){
+					|| (self.direction == DIR_UP && isKeyDown(87)))){
 						self.walkingHasMoved = false;
 						self.walkingPerc = CHAR_MOVE_WAIT;
 					}else{
@@ -1157,6 +1190,7 @@ window.initGame = function($canvas, $container){
 			
 			var chr = getCharById(charData.id);
 			if(chr){
+				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
 				if(chr.x == charData.x && chr.y == charData.y){
@@ -1202,6 +1236,8 @@ window.initGame = function($canvas, $container){
 		
 		
 		battle = {};
+		battle.x = data.x;
+		battle.y = data.y;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
 		

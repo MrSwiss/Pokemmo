@@ -13,6 +13,9 @@ function Character(data){
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
+	self.inBattle = false;
+	self.randInt = Math.floor(Math.random() * 100);
+	
 	self.image = new Image();
 	self.image.onload = function(){
 		self.loaded = true;
@@ -22,6 +25,10 @@ function Character(data){
 	self.image.src = 'resources/chars/'+data.type+'.png';
 	self.tickRender = function(){
 		
+	}
+	
+	function isControllable(){
+		return self.id == myId && !inBattle;
 	}
 	
 	self.getRenderPos = function(){
@@ -55,7 +62,7 @@ function Character(data){
 			self.walkingPerc = 0.0;
 			
 			if(self.id == myId){
-				if (!inChat) {
+				if (!inChat && !inBattle) {
 					if(isKeyDown(65)){ // A
 						self.walking = true;
 						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
@@ -80,7 +87,7 @@ function Character(data){
 		}
 		
 		if(self.walking){
-			if(self.id == myId){
+			if(isControllable()){
 				switch(self.direction){
 					case DIR_LEFT:
 						if(!isKeyDown(65)){
@@ -158,10 +165,10 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if((self.direction == DIR_LEFT && isKeyDown(65))
+					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(65))
 					|| (self.direction == DIR_DOWN && isKeyDown(83))
 					|| (self.direction == DIR_RIGHT && isKeyDown(68))
-					|| (self.direction == DIR_UP && isKeyDown(87))){
+					|| (self.direction == DIR_UP && isKeyDown(87)))){
 						self.walkingHasMoved = false;
 						self.walkingPerc = CHAR_MOVE_WAIT;
 					}else{

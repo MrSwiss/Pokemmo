@@ -58,6 +58,7 @@ var inChat = false;
 var lastAckMove = 0;
 var loadedChars = false;
 
+var numRTicks = 0;
 
 var iOSUI;
 var iOSAButtonPos = {x:430, y:200};
@@ -71,6 +72,7 @@ if(isPhone){
 
 var uiPokemon;
 var uiChat;
+var uiCharInBattle;
 
 var battleBackground;
 
@@ -326,6 +328,7 @@ window.initGame = function($canvas, $container){
 			
 			var chr = getCharById(charData.id);
 			if(chr){
+				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
 				if(chr.x == charData.x && chr.y == charData.y){
@@ -371,6 +374,8 @@ window.initGame = function($canvas, $container){
 		
 		
 		battle = {};
+		battle.x = data.x;
+		battle.y = data.y;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
 		
