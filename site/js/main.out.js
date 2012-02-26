@@ -72,10 +72,15 @@ if(isPhone){
 
 var battleBackground;
 
+var AButtonHooks = [];
+var BButtonHooks = [];
+var fireAHooks = false;
+var fireBHooks = false;
 
 var battle;
 
 var res = {};
+res.playerBacksprite = new Image();
 
 function isKeyDown(n){return !!keysDown[n];};
 
@@ -115,6 +120,12 @@ function loadMap(id){
 	loadImage('uiPokemon', 'resources/ui/pokemon.png');
 	loadImage('uiChat', 'resources/ui/chat.png');
 	loadImage('uiCharInBattle', 'resources/ui/char_in_battle.png');
+	loadImage('battleTextBackground', 'resources/ui/battle_text.png');
+	loadImage('battleMoveMenu', 'resources/ui/battle_move_menu.png');
+	loadImage('battleTrainerStatus', 'resources/ui/battle_trainer_status.png');
+	loadImage('battleMisc', 'resources/ui/battle_misc.png');
+	loadImage('battlePokeballs', 'resources/ui/battle_pokeballs.png');
+	loadImage('battleActionMenu', 'resources/ui/battle_action_menu.png');
 	
 	loadJSON('data/pokemon.json', function(data){pokemonData = data});
 	loadJSON('resources/maps/'+id+'.json', function(data){
@@ -134,6 +145,7 @@ function loadMap(id){
 				}
 				
 				tileset.onerror = function(tileset){
+					--pending;
 					error = true;
 					refresh();
 				}
@@ -298,11 +310,19 @@ function Layer(data){
 }
 var inBattleTransition = false;
 var transitionStep = 0;
-var battleTextBackground = new Image();
-battleTextBackground.src = 'resources/ui/battle_text.png';
 var battleIntroPokeball = new Image();
 battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
 
+
+var battleText = '';
+var battleTextTime = 0;
+var battleTextNeedPress = 0;
+var battleTextDelay;
+var battleTextOnComplete;
+var battleTextCompleted;
+var battleTextCompletedTime;
+
+// exp bar color = rgb(64,200,248)
 
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
@@ -373,6 +393,8 @@ function drawLayer(ctx, map, layer){
 function renderChars(ctx){
 	var offsetX = getRenderOffsetX();
 	var offsetY = getRenderOffsetY();
+	
+	characters.sort(function(a,b){if(a.y<b.y) return -1;if(a.y==b.y) return 0;return 1});
 	
 	for(var i=0;i<characters.length;++i){
 		var chr = characters[i];
@@ -479,7 +501,7 @@ function drawPokemonParty(){
 	
 	function drawStyleText(str, $x, $y){
 		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
-		tmpCtx.fillText(str, x + $x + 1, y + $y + 1);
+		tmpCtx.fillText(str, x + $x + 2, y + $y + 2);
 		
 		tmpCtx.fillStyle = 'rgb(255, 255, 255)';
 		tmpCtx.fillText(str, x + $x, y + $y);
@@ -531,9 +553,9 @@ function drawChat() {
 
 		str = chatLog[i].username + ': ';
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 11, y + 181 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 12, y + 182 - (14 * (chatLog.length - i)));
 		
-		ctx.fillStyle = 'rgb(200, 200, 200)';
+		ctx.fillStyle = 'rgb(255, 255, 0)';
 		ctx.fillText(str, x + 10, y + 180 - (14 * (chatLog.length - i)));
 		
 		var usernameWidth = ctx.measureText(str).width;
@@ -541,7 +563,7 @@ function drawChat() {
 		str = chatLog[i].str;
 		
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 11 + usernameWidth, y + 181 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 12 + usernameWidth, y + 182 - (14 * (chatLog.length - i)));
 		
 		
 		ctx.fillStyle = 'rgb(255, 255, 255)';
@@ -557,9 +579,11 @@ function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
 function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
 function renderBattle(){
+	var now = +new Date();
 	var x = isPhone ? 0 : 160;
 	var y = isPhone ? 0 : 140;
 	
+	ctx.save();
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = 'rgb(0,0,0)';
 	ctx.strokeRect(x - 1, y - 1, 482, 226);
@@ -567,12 +591,176 @@ function renderBattle(){
 		ctx.drawImage(battle.background, x, y);
 	}
 	
-	if(battleTextBackground.width != 0){
-		ctx.drawImage(battleTextBackground, x + 2, y + 228);
+	if(battle.step != 5){
+		ctx.drawImage(res.battleTextBackground, x + 2, y + 228);
+		
+		if(battleText != ''){
+			var str = battleText.slice(0, (now - battleTextTime) / 30);
+			ctx.fillStyle = 'rgb(255,255,255)';
+			ctx.font = '14pt Font2';
+			ctx.fillText(str, x + 24, y + 266);
+			
+			if(str == battleText){
+				if(!battleTextCompleted){
+					battleTextCompleted = true;
+					battleTextCompletedTime = now;
+					
+					if(battleTextDelay != -1){
+						setTimeout(battleTextOnComplete, battleTextDelay);
+					}else{
+						hookAButton(battleTextOnComplete);
+					}
+					
+				}else if(battleTextDelay == -1 && now - battleTextCompletedTime > 100){
+					ctx.drawImage(res.battleMisc, 0, 0, 32, 32, x + 24 + ctx.measureText(str).width, y + 242 + Math.floor((now % 1000) / 500) * 2, 32, 32);
+				}
+			}
+		}
+		
+		if(battle.step == 4){
+			ctx.drawImage(res.battleActionMenu, x + 246, y + 226);
+			
+			battle.selectedAction = Math.floor((now % 2000) / 500);
+			var x1 = x + 252;
+			var y1 = y + 246;// + Math.floor((now % 1000) / 500) * 2;
+			var x2 = x1 + 112;
+			var y2 = y1 + 30;
+			
+			switch(battle.selectedAction){
+				case 0:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y1, 32, 32);
+				break;
+				case 1:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y1, 32, 32);
+				break;
+				case 2:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y2, 32, 32);
+				break;
+				case 3:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y2, 32, 32);
+				break;
+			}
+		}
 	}
 	
-	ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
+	if(battle.step < 3){
+		ctx.drawImage(res.playerBacksprite, 0, 0, 128, 128, x + 60, y + 96, 128, 128);
+	}else if(battle.step == 3){
+		if(battle.animStep >= 4 && battle.animStep < 25){
+			var ballAnimation = [
+				[60, 179, 1, 0],
+				[62, 175, 1, 0],
+				
+				[70, 168, 1, 0],
+				[75, 165, 1, 0],
+				
+				[83, 160, 1, 0],
+				[86, 160, 1, 0],
+				
+				[95, 161, 1, 0],
+				[97, 164, 1, 0],
+				
+				[105, 170, 1, 0],
+				
+				[110, 175, 1, 0],
+				[111, 178, 1, 0],
+				[113, 183, 1, 0],
+				[114, 185, 1, 0],
+				[115, 190, 1, 0],
+				[117, 192, 1, 0],
+				[120, 195, 1, 0, 0.95],
+				[123, 200, 1, 1, 0.9],
+				[124, 205, 1.05, 1, 0.8],
+				[125, 200, 1.1, 1, 0.6],
+				[126, 192, 1.15, 1, 0.3],
+				[127, 192, 1.2, 1, 0.1]
+			];
+			
+			ctx.save();
+			ctx.globalAlpha = ballAnimation[battle.animStep-4][4];
+			ctx.translate(x + ballAnimation[battle.animStep-4][0], y + ballAnimation[battle.animStep-4][1]);
+			ctx.scale(ballAnimation[battle.animStep-4][2], ballAnimation[battle.animStep-4][2]);
+			ctx.rotate(battle.animStep / 17 * Math.PI * 2);
+			
+			ctx.drawImage(res.battlePokeballs, 64, 32 * ballAnimation[battle.animStep-4][3], 32, 32, -16, -16, 32, 32);
+			ctx.restore();
+		}
+		
+		if(Math.floor(battle.animStep / 4) < 5){
+			ctx.save();
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+			ctx.lineTo(x + 480, y);
+			ctx.lineTo(x + 480, y + 320);
+			ctx.lineTo(x, y + 320);
+			ctx.lineTo(x, y);
+			ctx.clip();
+			
+			ctx.globalAlpha = clamp(1 - (battle.animStep / 20), 0, 1);
+			
+			ctx.drawImage(res.playerBacksprite, 128 * Math.floor(battle.animStep / 4), 0, 128, 128, x + 60 - battle.animStep * 5, y + 96, 128, 128);
+			ctx.restore();
+		}
+		
+		if(battle.animStep > 21 && battle.animStep < 35){
+			var perc = Math.min((battle.animStep - 21) / 10, 1);
+			
+			clearTmpCanvas();
+			tmpCtx.save();
+			tmpCtx.fillStyle = '#FFFFFF';
+			tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+			tmpCtx.globalCompositeOperation = "destination-atop";
+			tmpCtx.translate(x + 124, y + 192);
+			tmpCtx.scale(perc, perc);
+			tmpCtx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			tmpCtx.restore();
+			
+			
+			ctx.save();
+			ctx.translate(x + 124, y + 192);
+			ctx.scale(perc, perc);
+			ctx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			
+			
+			ctx.restore();
+			
+			ctx.globalAlpha = clamp(1 - Math.max(0, perc * perc - 0.5) * 2, 0, 1);
+			ctx.drawImage(tmpCanvas, 0, 0);
+			ctx.globalAlpha = 1;
+		}else if(battle.animStep >= 35){
+			battle.step = 4;
+			battle.selectedAction = 0;
+			setBattleText('What will '+pokemonData[battle.curPokemon.id].name.toUpperCase()+' do?');
+		}
+		
+		
+		++battle.animStep;
+	}else{
+		ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
+	}
+	
+	
 	ctx.drawImage(battle.enemyPokemon.sprite, x + 290, y + 30);
+	
+	if(battle.step == 1){
+		battle.step = 2;
+		setBattleText('Wild ' + pokemonData[battle.enemyPokemon.id].name.toUpperCase() +' appeared!', -1, function(){
+			setBattleText("Go! " + pokemonData[battle.curPokemon.id].name.toUpperCase() + "!");
+			battle.step = 3;
+			battle.animStep = 0;
+		});
+	}
+	
+	ctx.restore();
+}
+
+function setBattleText(str, delay, onComplete){
+	battleText = str || '';
+	battleTextTime = +new Date();
+	if(delay == null) delay = NaN;
+	battleTextDelay = delay;
+	battleTextOnComplete = onComplete;
+	battleTextCompleted = false;
 }
 
 function battleTransition(){
@@ -639,6 +827,7 @@ function renderBattleTransition(){
 		ctx.globalAlpha = 1;
 	}else{
 		inBattleTransition = false;
+		battle.step = 1;
 	}
 	
 	
@@ -748,6 +937,12 @@ function Character(data){
 	self.walkingHasMoved = false;
 	self.inBattle = false;
 	self.randInt = Math.floor(Math.random() * 100);
+	self.follower = data.follower || null;
+	
+	var followerObj = new Follower(this);
+	
+	self.lastX = self.x;
+	self.lastY = self.y;
 	
 	self.image = new Image();
 	self.image.onload = function(){
@@ -757,7 +952,15 @@ function Character(data){
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
 	self.tickRender = function(){
-		
+		if(self.follower){
+			var src = 'resources/followers/'+self.follower+'.png';
+			if(followerObj.image.src != src){
+				followerObj.image.src = src;
+			}
+			followerObj.render();
+		}else{
+			followerObj.image.src = '';
+		}
 	}
 	
 	function isControllable(){
@@ -796,19 +999,19 @@ function Character(data){
 			
 			if(self.id == myId){
 				if (!inChat && !inBattle) {
-					if(isKeyDown(65)){ // A
+					if(isKeyDown(37)){ // Left
 						self.walking = true;
 						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_LEFT;
-					}else if(isKeyDown(83)){ // S
+					}else if(isKeyDown(40)){ // Down
 						self.walking = true;
 						if(self.direction == DIR_DOWN) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_DOWN;
-					}else if(isKeyDown(68)){ // D
+					}else if(isKeyDown(39)){ // Right
 						self.walking = true;
 						if(self.direction == DIR_RIGHT) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_RIGHT;
-					}else if(isKeyDown(87)){ // W
+					}else if(isKeyDown(38)){ // Up
 						self.walking = true;
 						if(self.direction == DIR_UP) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_UP;
@@ -823,7 +1026,7 @@ function Character(data){
 			if(isControllable()){
 				switch(self.direction){
 					case DIR_LEFT:
-						if(!isKeyDown(65)){
+						if(!isKeyDown(37)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -832,7 +1035,7 @@ function Character(data){
 						}
 					break;
 					case DIR_DOWN:
-						if(!isKeyDown(83)){
+						if(!isKeyDown(40)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -841,7 +1044,7 @@ function Character(data){
 						}
 					break;
 					case DIR_RIGHT:
-						if(!isKeyDown(68)){
+						if(!isKeyDown(39)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -850,7 +1053,7 @@ function Character(data){
 						}
 					break;
 					case DIR_UP:
-						if(!isKeyDown(87)){
+						if(!isKeyDown(38)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -882,6 +1085,9 @@ function Character(data){
 					}
 				}
 				
+				self.lastX = self.x;
+				self.lastY = self.y;
+				
 				switch(self.direction){
 					case DIR_LEFT: self.x -= 1; break;
 					case DIR_RIGHT: self.x += 1; break;
@@ -898,18 +1104,18 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(65))
-					|| (self.direction == DIR_DOWN && isKeyDown(83))
-					|| (self.direction == DIR_RIGHT && isKeyDown(68))
-					|| (self.direction == DIR_UP && isKeyDown(87)))){
+					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(37))
+					|| (self.direction == DIR_DOWN && isKeyDown(40))
+					|| (self.direction == DIR_RIGHT && isKeyDown(39))
+					|| (self.direction == DIR_UP && isKeyDown(38)))){
 						self.walkingHasMoved = false;
-						self.walkingPerc = CHAR_MOVE_WAIT;
+						self.walkingPerc = CHAR_MOVE_WAIT + 0.10;
 					}else{
 						self.walking = false;
 					}
 				}else{
 					self.walkingHasMoved = false;
-					self.walkingPerc = CHAR_MOVE_WAIT;
+					self.walkingPerc = CHAR_MOVE_WAIT + 0.10;
 					self.walking = false;
 					tickBot();
 				}
@@ -917,6 +1123,8 @@ function Character(data){
 		}else{
 			self.animationStep = 0;
 		}
+		
+		followerObj.tick();
 	}
 	
 	function tickBot(){
@@ -926,9 +1134,124 @@ function Character(data){
 		
 		var lastDirection = self.direction;
 		
-		if(Math.abs(self.x - self.targetX) == 1 && self.y == self.targetY){
+		if(Math.abs(self.x - self.targetX) > 0 && self.y == self.targetY){
 			self.direction = self.x < self.targetX ? DIR_RIGHT : DIR_LEFT;
-		}else if(Math.abs(self.y - self.targetY) == 1 && self.x == self.targetX){
+		}else if(Math.abs(self.y - self.targetY) > 0 && self.x == self.targetX){
+			self.direction = self.y < self.targetY ? DIR_DOWN : DIR_UP;
+		}else{
+			self.direction = (self.targetY < self.y) ? DIR_UP : DIR_DOWN;
+		}
+		
+		if(lastDirection != self.direction){
+			self.walkingPerc = 0.0;
+		}
+	}
+}
+function Follower(char){
+	var self = this;
+	var FOLLOWER_WIDTH = 64;
+	var FOLLOWER_HEIGHT = 64;
+	
+	console.log('new follower');
+	
+	var randInt = Math.floor(Math.random() * 100);
+	
+	self.image = new Image();
+	self.direction = DIR_DOWN;
+	self.x = char.x;
+	self.y = char.y;
+	self.walking = false;
+	self.walkingPerc = 0.0;
+	self.walkingHasMoved = false;
+	
+	self.targetX = char.lastX;
+	self.targetY = char.lastY;
+	
+	
+	self.render = function(){
+		var ctx = gameCtx;
+		var offsetX = getRenderOffsetX();
+		var offsetY = getRenderOffsetY();
+		var renderPos = self.getRenderPos();
+		
+		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor((numRTicks % 14)/7) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+	}
+	
+	self.tick = function(){
+		self.targetX = char.lastX;
+		self.targetY = char.lastY;
+		
+		if(char.walking && !char.walkingHasMoved && char.walkingPerc >= CHAR_MOVE_WAIT){
+			self.targetX = char.x;
+			self.targetY = char.y;
+		}
+		
+		if(!self.walking){
+			self.walkingHasMoved = false;
+			self.walkingPerc = 0.0;
+			
+			tickBot();
+		}else{
+			self.walkingPerc += 0.10;
+			self.animationStep += 0.20;
+			if(self.walkingPerc >= (1-CHAR_MOVE_WAIT)/2 && !self.walkingHasMoved){
+				switch(self.direction){
+					case DIR_LEFT: self.x -= 1; break;
+					case DIR_RIGHT: self.x += 1; break;
+					case DIR_UP: self.y -= 1; break;
+					case DIR_DOWN: self.y += 1; break;
+				}
+				
+				self.walkingHasMoved = true;
+			}
+			
+			if(self.walkingPerc >= 1.0){
+				self.walkingHasMoved = false;
+				self.walkingPerc = CHAR_MOVE_WAIT + 0.10;
+				self.walking = false;
+				tickBot();
+			}
+		}
+	}
+	
+	self.getRenderPos = function(){
+		if(!self.walking) return {x: self.x * curMap.tilewidth - FOLLOWER_WIDTH/4, y: self.y * curMap.tileheight - FOLLOWER_HEIGHT/2};
+		var destX = self.x * curMap.tilewidth - FOLLOWER_WIDTH/4;
+		var destY = self.y * curMap.tileheight - FOLLOWER_HEIGHT/2;
+		var perc = (self.walkingPerc - CHAR_MOVE_WAIT) / (1-CHAR_MOVE_WAIT);
+		
+		if(self.walkingPerc > CHAR_MOVE_WAIT){
+			if(self.walkingHasMoved){
+				switch(self.direction){
+					case DIR_LEFT: destX += (curMap.tilewidth) * (1-perc); break;
+					case DIR_RIGHT: destX -= (curMap.tilewidth) * (1-perc); break;
+					case DIR_UP: destY += (curMap.tileheight) * (1-perc); break;
+					case DIR_DOWN: destY -= (curMap.tileheight) * (1-perc); break;
+				}
+			}else{
+				switch(self.direction){
+					case DIR_LEFT: destX -= (curMap.tilewidth) * perc; break;
+					case DIR_RIGHT: destX += (curMap.tilewidth) * perc; break;
+					case DIR_UP: destY -= (curMap.tileheight) * perc; break;
+					case DIR_DOWN: destY += (curMap.tileheight) * perc; break;
+				}
+			}
+		}
+		
+		console.log(destY);
+		return {x:Math.floor(destX), y:Math.floor(destY)};
+	}
+	
+	function tickBot(){
+		if(self.walking) return;
+		self.walking = self.x != self.targetX || self.y != self.targetY;
+		if(!self.walking) return;
+		
+		var lastDirection = self.direction;
+		
+		if(Math.abs(self.x - self.targetX) > 0 && self.y == self.targetY){
+			self.direction = self.x < self.targetX ? DIR_RIGHT : DIR_LEFT;
+		}else if(Math.abs(self.y - self.targetY) > 0 && self.x == self.targetX){
 			self.direction = self.y < self.targetY ? DIR_DOWN : DIR_UP;
 		}else{
 			self.direction = (self.targetY < self.y) ? DIR_UP : DIR_DOWN;
@@ -973,6 +1296,14 @@ function clamp(n, min, max){
 	return n;
 }
 
+function hookAButton(func){
+	AButtonHooks.push(func);
+}
+
+function hookBButton(func){
+	AButtonHooks.push(func);
+}
+
 function tick(){
 	
 	if(state == ST_MAP){
@@ -981,6 +1312,22 @@ function tick(){
 			characters[i].tick();
 		}
 		
+	}
+	
+	if(fireAHooks){
+		fireAHooks = false;
+		for(var i=0;i<AButtonHooks.length;++i){
+			AButtonHooks[i]();
+		}
+		AButtonHooks.length = 0;
+	}
+	
+	if(fireBHooks){
+		fireBHooks = false;
+		for(var i=0;i<BButtonHooks.length;++i){
+			BButtonHooks[i]();
+		}
+		BButtonHooks.length = 0;
 	}
 	
 	render();
@@ -1069,10 +1416,21 @@ window.initGame = function($canvas, $container){
 	});
 	
 	$q(window).keydown(function(e){
-		keysDown[e.keyCode] = true;
+		
 		if (e.keyCode == 13 && !inChat && !justSentMessage) {
 			inChat = true;
 			$q(chatBox).focus();
+		}
+		
+		if(!inChat){
+			keysDown[e.keyCode] = true;
+			if(e.keyCode == 90){
+				uiAButtonDown = true;
+				fireAHooks = true;
+			}else if(e.keyCode == 88){
+				uiBButtonDown = true;
+				fireBHooks = true;
+			}
 		}
 	});
 	
@@ -1080,6 +1438,10 @@ window.initGame = function($canvas, $container){
 		keysDown[e.keyCode] = false;
 		if(e.keyCode == 13){
 			justSentMessage = false;
+		}else if(e.keyCode == 90){
+			uiAButtonDown = false;
+		}else if(e.keyCode == 88){
+			uiBButtonDown = false;
 		}
 	});
 	
@@ -1165,9 +1527,19 @@ window.initGame = function($canvas, $container){
 				charsNotUpdated.splice(tmp, 1);
 			}
 			
-			if(charData.id == myId) continue;
-			
 			var chr = getCharById(charData.id);
+			
+			if(chr){
+				chr.follower = charData.follower;
+			}
+			
+			if(charData.id == myId){
+				var src = 'resources/chars_sprites/'+charData.type+'.png';
+				if(res.playerBacksprite.src != src) res.playerBacksprite.src = 'resources/chars_sprites/'+charData.type+'.png';
+				continue;
+			}
+			
+			
 			if(chr){
 				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
@@ -1217,6 +1589,7 @@ window.initGame = function($canvas, $container){
 		battle = {};
 		battle.x = data.x;
 		battle.y = data.y;
+		battle.step = 0;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
 		

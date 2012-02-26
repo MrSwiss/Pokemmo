@@ -1,10 +1,18 @@
 var inBattleTransition = false;
 var transitionStep = 0;
-var battleTextBackground = new Image();
-battleTextBackground.src = 'resources/ui/battle_text.png';
 var battleIntroPokeball = new Image();
 battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
 
+
+var battleText = '';
+var battleTextTime = 0;
+var battleTextNeedPress = 0;
+var battleTextDelay;
+var battleTextOnComplete;
+var battleTextCompleted;
+var battleTextCompletedTime;
+
+// exp bar color = rgb(64,200,248)
 
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
@@ -75,6 +83,8 @@ function drawLayer(ctx, map, layer){
 function renderChars(ctx){
 	var offsetX = getRenderOffsetX();
 	var offsetY = getRenderOffsetY();
+	
+	characters.sort(function(a,b){if(a.y<b.y) return -1;if(a.y==b.y) return 0;return 1});
 	
 	for(var i=0;i<characters.length;++i){
 		var chr = characters[i];
@@ -181,7 +191,7 @@ function drawPokemonParty(){
 	
 	function drawStyleText(str, $x, $y){
 		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
-		tmpCtx.fillText(str, x + $x + 1, y + $y + 1);
+		tmpCtx.fillText(str, x + $x + 2, y + $y + 2);
 		
 		tmpCtx.fillStyle = 'rgb(255, 255, 255)';
 		tmpCtx.fillText(str, x + $x, y + $y);
@@ -233,9 +243,9 @@ function drawChat() {
 
 		str = chatLog[i].username + ': ';
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 11, y + 181 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 12, y + 182 - (14 * (chatLog.length - i)));
 		
-		ctx.fillStyle = 'rgb(200, 200, 200)';
+		ctx.fillStyle = 'rgb(255, 255, 0)';
 		ctx.fillText(str, x + 10, y + 180 - (14 * (chatLog.length - i)));
 		
 		var usernameWidth = ctx.measureText(str).width;
@@ -243,7 +253,7 @@ function drawChat() {
 		str = chatLog[i].str;
 		
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 11 + usernameWidth, y + 181 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 12 + usernameWidth, y + 182 - (14 * (chatLog.length - i)));
 		
 		
 		ctx.fillStyle = 'rgb(255, 255, 255)';
@@ -259,9 +269,11 @@ function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
 function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
 function renderBattle(){
+	var now = +new Date();
 	var x = isPhone ? 0 : 160;
 	var y = isPhone ? 0 : 140;
 	
+	ctx.save();
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = 'rgb(0,0,0)';
 	ctx.strokeRect(x - 1, y - 1, 482, 226);
@@ -269,12 +281,176 @@ function renderBattle(){
 		ctx.drawImage(battle.background, x, y);
 	}
 	
-	if(battleTextBackground.width != 0){
-		ctx.drawImage(battleTextBackground, x + 2, y + 228);
+	if(battle.step != 5){
+		ctx.drawImage(res.battleTextBackground, x + 2, y + 228);
+		
+		if(battleText != ''){
+			var str = battleText.slice(0, (now - battleTextTime) / 30);
+			ctx.fillStyle = 'rgb(255,255,255)';
+			ctx.font = '14pt Font2';
+			ctx.fillText(str, x + 24, y + 266);
+			
+			if(str == battleText){
+				if(!battleTextCompleted){
+					battleTextCompleted = true;
+					battleTextCompletedTime = now;
+					
+					if(battleTextDelay != -1){
+						setTimeout(battleTextOnComplete, battleTextDelay);
+					}else{
+						hookAButton(battleTextOnComplete);
+					}
+					
+				}else if(battleTextDelay == -1 && now - battleTextCompletedTime > 100){
+					ctx.drawImage(res.battleMisc, 0, 0, 32, 32, x + 24 + ctx.measureText(str).width, y + 242 + Math.floor((now % 1000) / 500) * 2, 32, 32);
+				}
+			}
+		}
+		
+		if(battle.step == 4){
+			ctx.drawImage(res.battleActionMenu, x + 246, y + 226);
+			
+			battle.selectedAction = Math.floor((now % 2000) / 500);
+			var x1 = x + 252;
+			var y1 = y + 246;// + Math.floor((now % 1000) / 500) * 2;
+			var x2 = x1 + 112;
+			var y2 = y1 + 30;
+			
+			switch(battle.selectedAction){
+				case 0:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y1, 32, 32);
+				break;
+				case 1:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y1, 32, 32);
+				break;
+				case 2:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y2, 32, 32);
+				break;
+				case 3:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y2, 32, 32);
+				break;
+			}
+		}
 	}
 	
-	ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
+	if(battle.step < 3){
+		ctx.drawImage(res.playerBacksprite, 0, 0, 128, 128, x + 60, y + 96, 128, 128);
+	}else if(battle.step == 3){
+		if(battle.animStep >= 4 && battle.animStep < 25){
+			var ballAnimation = [
+				[60, 179, 1, 0],
+				[62, 175, 1, 0],
+				
+				[70, 168, 1, 0],
+				[75, 165, 1, 0],
+				
+				[83, 160, 1, 0],
+				[86, 160, 1, 0],
+				
+				[95, 161, 1, 0],
+				[97, 164, 1, 0],
+				
+				[105, 170, 1, 0],
+				
+				[110, 175, 1, 0],
+				[111, 178, 1, 0],
+				[113, 183, 1, 0],
+				[114, 185, 1, 0],
+				[115, 190, 1, 0],
+				[117, 192, 1, 0],
+				[120, 195, 1, 0, 0.95],
+				[123, 200, 1, 1, 0.9],
+				[124, 205, 1.05, 1, 0.8],
+				[125, 200, 1.1, 1, 0.6],
+				[126, 192, 1.15, 1, 0.3],
+				[127, 192, 1.2, 1, 0.1]
+			];
+			
+			ctx.save();
+			ctx.globalAlpha = ballAnimation[battle.animStep-4][4];
+			ctx.translate(x + ballAnimation[battle.animStep-4][0], y + ballAnimation[battle.animStep-4][1]);
+			ctx.scale(ballAnimation[battle.animStep-4][2], ballAnimation[battle.animStep-4][2]);
+			ctx.rotate(battle.animStep / 17 * Math.PI * 2);
+			
+			ctx.drawImage(res.battlePokeballs, 64, 32 * ballAnimation[battle.animStep-4][3], 32, 32, -16, -16, 32, 32);
+			ctx.restore();
+		}
+		
+		if(Math.floor(battle.animStep / 4) < 5){
+			ctx.save();
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+			ctx.lineTo(x + 480, y);
+			ctx.lineTo(x + 480, y + 320);
+			ctx.lineTo(x, y + 320);
+			ctx.lineTo(x, y);
+			ctx.clip();
+			
+			ctx.globalAlpha = clamp(1 - (battle.animStep / 20), 0, 1);
+			
+			ctx.drawImage(res.playerBacksprite, 128 * Math.floor(battle.animStep / 4), 0, 128, 128, x + 60 - battle.animStep * 5, y + 96, 128, 128);
+			ctx.restore();
+		}
+		
+		if(battle.animStep > 21 && battle.animStep < 35){
+			var perc = Math.min((battle.animStep - 21) / 10, 1);
+			
+			clearTmpCanvas();
+			tmpCtx.save();
+			tmpCtx.fillStyle = '#FFFFFF';
+			tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+			tmpCtx.globalCompositeOperation = "destination-atop";
+			tmpCtx.translate(x + 124, y + 192);
+			tmpCtx.scale(perc, perc);
+			tmpCtx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			tmpCtx.restore();
+			
+			
+			ctx.save();
+			ctx.translate(x + 124, y + 192);
+			ctx.scale(perc, perc);
+			ctx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			
+			
+			ctx.restore();
+			
+			ctx.globalAlpha = clamp(1 - Math.max(0, perc * perc - 0.5) * 2, 0, 1);
+			ctx.drawImage(tmpCanvas, 0, 0);
+			ctx.globalAlpha = 1;
+		}else if(battle.animStep >= 35){
+			battle.step = 4;
+			battle.selectedAction = 0;
+			setBattleText('What will '+pokemonData[battle.curPokemon.id].name.toUpperCase()+' do?');
+		}
+		
+		
+		++battle.animStep;
+	}else{
+		ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
+	}
+	
+	
 	ctx.drawImage(battle.enemyPokemon.sprite, x + 290, y + 30);
+	
+	if(battle.step == 1){
+		battle.step = 2;
+		setBattleText('Wild ' + pokemonData[battle.enemyPokemon.id].name.toUpperCase() +' appeared!', -1, function(){
+			setBattleText("Go! " + pokemonData[battle.curPokemon.id].name.toUpperCase() + "!");
+			battle.step = 3;
+			battle.animStep = 0;
+		});
+	}
+	
+	ctx.restore();
+}
+
+function setBattleText(str, delay, onComplete){
+	battleText = str || '';
+	battleTextTime = +new Date();
+	if(delay == null) delay = NaN;
+	battleTextDelay = delay;
+	battleTextOnComplete = onComplete;
+	battleTextCompleted = false;
 }
 
 function battleTransition(){
@@ -341,6 +517,7 @@ function renderBattleTransition(){
 		ctx.globalAlpha = 1;
 	}else{
 		inBattleTransition = false;
+		battle.step = 1;
 	}
 	
 	

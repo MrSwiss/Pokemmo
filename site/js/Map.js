@@ -30,6 +30,12 @@ function loadMap(id){
 	loadImage('uiPokemon', 'resources/ui/pokemon.png');
 	loadImage('uiChat', 'resources/ui/chat.png');
 	loadImage('uiCharInBattle', 'resources/ui/char_in_battle.png');
+	loadImage('battleTextBackground', 'resources/ui/battle_text.png');
+	loadImage('battleMoveMenu', 'resources/ui/battle_move_menu.png');
+	loadImage('battleTrainerStatus', 'resources/ui/battle_trainer_status.png');
+	loadImage('battleMisc', 'resources/ui/battle_misc.png');
+	loadImage('battlePokeballs', 'resources/ui/battle_pokeballs.png');
+	loadImage('battleActionMenu', 'resources/ui/battle_action_menu.png');
 	
 	loadJSON('data/pokemon.json', function(data){pokemonData = data});
 	loadJSON('resources/maps/'+id+'.json', function(data){
@@ -49,6 +55,7 @@ function loadMap(id){
 				}
 				
 				tileset.onerror = function(tileset){
+					--pending;
 					error = true;
 					refresh();
 				}

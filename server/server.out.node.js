@@ -30,6 +30,8 @@ var GENDER_FEMALE = 2;
 var BALL_MULT = 0;
 var BALL_ADD = 1;
 
+// var starters = [1, 4, 7, 10, 13, 16, 25, 29, 32, 43, 60, 66, 69, 74, 92, 133];
+
 function Pokemon(id, level){
 	var self = this;
 	
@@ -785,9 +787,12 @@ io.sockets.on('connection', function (socket) {
 			get id(){return client.id},
 			get inBattle(){return client.inBattle},
 			type: 'red',
-			x: 16,
-			y: 56,
-			direction: DIR_DOWN
+			//x: 16,
+			//y: 56,
+			x: 22,
+			y: 48,
+			direction: DIR_DOWN,
+			get follower(){return client.pokemon[0].id}
 		},
 		lastAckMove: 0,
 		inBattle: false,
@@ -801,11 +806,13 @@ io.sockets.on('connection', function (socket) {
 	clients.push(client);
 	
 	client.pokemon.push(new Pokemon("1", 5));
+	/*
 	client.pokemon.push(new Pokemon("1", 5));
 	client.pokemon.push(new Pokemon("1", 5));
 	client.pokemon.push(new Pokemon("1", 5));
 	client.pokemon.push(new Pokemon("1", 5));
 	client.pokemon.push(new Pokemon("1", 5));
+	*/
 	
 	maps[client.map].chars.push(client.char);
 	
@@ -894,10 +901,6 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	function sendUpdate(){
-		if(client.inBattle){
-			client.messageQueue.length = 0;
-			return;
-		}
 		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
 	}

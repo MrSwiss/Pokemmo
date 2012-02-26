@@ -72,10 +72,15 @@ if(isPhone){
 
 var battleBackground;
 
+var AButtonHooks = [];
+var BButtonHooks = [];
+var fireAHooks = false;
+var fireBHooks = false;
 
 var battle;
 
 var res = {};
+res.playerBacksprite = new Image();
 
 function isKeyDown(n){return !!keysDown[n];};
 
@@ -92,6 +97,8 @@ function parseMap(data){
 // #include "render.js"
 
 // #include "Character.js"
+
+// #include "Follower.js"
 
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
@@ -127,6 +134,14 @@ function clamp(n, min, max){
 	return n;
 }
 
+function hookAButton(func){
+	AButtonHooks.push(func);
+}
+
+function hookBButton(func){
+	AButtonHooks.push(func);
+}
+
 function tick(){
 	
 	if(state == ST_MAP){
@@ -135,6 +150,22 @@ function tick(){
 			characters[i].tick();
 		}
 		
+	}
+	
+	if(fireAHooks){
+		fireAHooks = false;
+		for(var i=0;i<AButtonHooks.length;++i){
+			AButtonHooks[i]();
+		}
+		AButtonHooks.length = 0;
+	}
+	
+	if(fireBHooks){
+		fireBHooks = false;
+		for(var i=0;i<BButtonHooks.length;++i){
+			BButtonHooks[i]();
+		}
+		BButtonHooks.length = 0;
 	}
 	
 	render();
@@ -223,10 +254,21 @@ window.initGame = function($canvas, $container){
 	});
 	
 	$q(window).keydown(function(e){
-		keysDown[e.keyCode] = true;
+		
 		if (e.keyCode == 13 && !inChat && !justSentMessage) {
 			inChat = true;
 			$q(chatBox).focus();
+		}
+		
+		if(!inChat){
+			keysDown[e.keyCode] = true;
+			if(e.keyCode == 90){
+				uiAButtonDown = true;
+				fireAHooks = true;
+			}else if(e.keyCode == 88){
+				uiBButtonDown = true;
+				fireBHooks = true;
+			}
 		}
 	});
 	
@@ -234,6 +276,10 @@ window.initGame = function($canvas, $container){
 		keysDown[e.keyCode] = false;
 		if(e.keyCode == 13){
 			justSentMessage = false;
+		}else if(e.keyCode == 90){
+			uiAButtonDown = false;
+		}else if(e.keyCode == 88){
+			uiBButtonDown = false;
 		}
 	});
 	
@@ -319,9 +365,19 @@ window.initGame = function($canvas, $container){
 				charsNotUpdated.splice(tmp, 1);
 			}
 			
-			if(charData.id == myId) continue;
-			
 			var chr = getCharById(charData.id);
+			
+			if(chr){
+				chr.follower = charData.follower;
+			}
+			
+			if(charData.id == myId){
+				var src = 'resources/chars_sprites/'+charData.type+'.png';
+				if(res.playerBacksprite.src != src) res.playerBacksprite.src = 'resources/chars_sprites/'+charData.type+'.png';
+				continue;
+			}
+			
+			
 			if(chr){
 				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
@@ -371,6 +427,7 @@ window.initGame = function($canvas, $container){
 		battle = {};
 		battle.x = data.x;
 		battle.y = data.y;
+		battle.step = 0;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
 		

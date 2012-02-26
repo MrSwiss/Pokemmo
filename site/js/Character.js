@@ -15,6 +15,12 @@ function Character(data){
 	self.walkingHasMoved = false;
 	self.inBattle = false;
 	self.randInt = Math.floor(Math.random() * 100);
+	self.follower = data.follower || null;
+	
+	var followerObj = new Follower(this);
+	
+	self.lastX = self.x;
+	self.lastY = self.y;
 	
 	self.image = new Image();
 	self.image.onload = function(){
@@ -24,7 +30,15 @@ function Character(data){
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
 	self.tickRender = function(){
-		
+		if(self.follower){
+			var src = 'resources/followers/'+self.follower+'.png';
+			if(followerObj.image.src != src){
+				followerObj.image.src = src;
+			}
+			followerObj.render();
+		}else{
+			followerObj.image.src = '';
+		}
 	}
 	
 	function isControllable(){
@@ -63,19 +77,19 @@ function Character(data){
 			
 			if(self.id == myId){
 				if (!inChat && !inBattle) {
-					if(isKeyDown(65)){ // A
+					if(isKeyDown(37)){ // Left
 						self.walking = true;
 						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_LEFT;
-					}else if(isKeyDown(83)){ // S
+					}else if(isKeyDown(40)){ // Down
 						self.walking = true;
 						if(self.direction == DIR_DOWN) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_DOWN;
-					}else if(isKeyDown(68)){ // D
+					}else if(isKeyDown(39)){ // Right
 						self.walking = true;
 						if(self.direction == DIR_RIGHT) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_RIGHT;
-					}else if(isKeyDown(87)){ // W
+					}else if(isKeyDown(38)){ // Up
 						self.walking = true;
 						if(self.direction == DIR_UP) self.walkingPerc = CHAR_MOVE_WAIT;
 						self.direction = DIR_UP;
@@ -90,7 +104,7 @@ function Character(data){
 			if(isControllable()){
 				switch(self.direction){
 					case DIR_LEFT:
-						if(!isKeyDown(65)){
+						if(!isKeyDown(37)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -99,7 +113,7 @@ function Character(data){
 						}
 					break;
 					case DIR_DOWN:
-						if(!isKeyDown(83)){
+						if(!isKeyDown(40)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -108,7 +122,7 @@ function Character(data){
 						}
 					break;
 					case DIR_RIGHT:
-						if(!isKeyDown(68)){
+						if(!isKeyDown(39)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -117,7 +131,7 @@ function Character(data){
 						}
 					break;
 					case DIR_UP:
-						if(!isKeyDown(87)){
+						if(!isKeyDown(38)){
 							if(self.walkingPerc < CHAR_MOVE_WAIT){
 								self.walking = false;
 								socket.emit('turn', {'dir':self.direction});
@@ -149,6 +163,9 @@ function Character(data){
 					}
 				}
 				
+				self.lastX = self.x;
+				self.lastY = self.y;
+				
 				switch(self.direction){
 					case DIR_LEFT: self.x -= 1; break;
 					case DIR_RIGHT: self.x += 1; break;
@@ -165,18 +182,18 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(65))
-					|| (self.direction == DIR_DOWN && isKeyDown(83))
-					|| (self.direction == DIR_RIGHT && isKeyDown(68))
-					|| (self.direction == DIR_UP && isKeyDown(87)))){
+					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(37))
+					|| (self.direction == DIR_DOWN && isKeyDown(40))
+					|| (self.direction == DIR_RIGHT && isKeyDown(39))
+					|| (self.direction == DIR_UP && isKeyDown(38)))){
 						self.walkingHasMoved = false;
-						self.walkingPerc = CHAR_MOVE_WAIT;
+						self.walkingPerc = CHAR_MOVE_WAIT + 0.10;
 					}else{
 						self.walking = false;
 					}
 				}else{
 					self.walkingHasMoved = false;
-					self.walkingPerc = CHAR_MOVE_WAIT;
+					self.walkingPerc = CHAR_MOVE_WAIT + 0.10;
 					self.walking = false;
 					tickBot();
 				}
@@ -184,6 +201,8 @@ function Character(data){
 		}else{
 			self.animationStep = 0;
 		}
+		
+		followerObj.tick();
 	}
 	
 	function tickBot(){
@@ -193,9 +212,9 @@ function Character(data){
 		
 		var lastDirection = self.direction;
 		
-		if(Math.abs(self.x - self.targetX) == 1 && self.y == self.targetY){
+		if(Math.abs(self.x - self.targetX) > 0 && self.y == self.targetY){
 			self.direction = self.x < self.targetX ? DIR_RIGHT : DIR_LEFT;
-		}else if(Math.abs(self.y - self.targetY) == 1 && self.x == self.targetX){
+		}else if(Math.abs(self.y - self.targetY) > 0 && self.x == self.targetX){
 			self.direction = self.y < self.targetY ? DIR_DOWN : DIR_UP;
 		}else{
 			self.direction = (self.targetY < self.y) ? DIR_UP : DIR_DOWN;
