@@ -1,3 +1,5 @@
+"use strict";
+
 var io = require('socket.io').listen(2828).configure({'close timeout':0});
 var fs = require('fs');
 
@@ -40,15 +42,26 @@ var BALL_ADD = 1;
 
 start = +new Date();
 console.log('Loading pokemon...');
-var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
+var pokemonData = recursiveFreeze(JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8')));
 end = +new Date();
 console.log('Done ('+(end-start)+' ms)');
 
-var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
+var movesData = recursiveFreeze(JSON.parse(fs.readFileSync('data/moves.json', 'utf8')));
 
-var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
+var typeData = recursiveFreeze(JSON.parse(fs.readFileSync('data/types.json', 'utf8')));
 
 var experienceRequired = {};
+
+function recursiveFreeze(obj){
+	for(var i in obj){
+		if(typeof obj[i] == 'object'){
+			recursiveFreeze(obj[i]);
+		}
+	}
+	
+	Object.freeze(obj);
+	return obj;
+}
 
 // #include "loadMaps.js"
 
@@ -66,23 +79,39 @@ io.sockets.on('connection', function (socket) {
 			type: 'red',
 			//x: 16,
 			//y: 56,
-			x: 22,
-			y: 48,
+			x: 16,
+			y: 56,
+			lastX: 0,
+			lastY: 0,
 			direction: DIR_DOWN,
 			get follower(){return client.pokemon[0].id}
 		},
 		lastAckMove: 0,
 		inBattle: false,
 		battle: null,
-		respawnLocation: ["pallet", 6, 48],
+		respawnLocation: ["pallet", 16, 56],
 		pokemon: [],
 		messageQueue: [],
-		lastMessage: 0
+		lastMessage: 0,
+		playerVars: {},
+		
+		restorePokemon: function(){
+			for(var i=0;i<client.pokemon.length;++i){
+				client.pokemon[i].restore();
+			}
+		},
+		
+		moveToSpawn: function(){
+			client.map = client.respawnLocation[0];
+			client.char.x = client.respawnLocation[1];
+			client.char.y = client.respawnLocation[2];
+		}
 	};
+	
 	
 	clients.push(client);
 	
-	client.pokemon.push(new Pokemon("1", 5));
+	client.pokemon.push(new Pokemon(Math.floor(Math.random()*3)*3+1+"", 5));
 	/*
 	client.pokemon.push(new Pokemon("1", 5));
 	client.pokemon.push(new Pokemon("1", 5));
@@ -91,13 +120,14 @@ io.sockets.on('connection', function (socket) {
 	client.pokemon.push(new Pokemon("1", 5));
 	*/
 	
+	client.char.lastX = client.char.x;
+	client.char.lastY = client.char.y;
+	
 	maps[client.map].chars.push(client.char);
 	
 	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	socket.emit('loadMap', {mapid: client.map});
 	socket.emit('createChars', {arr:maps[client.map].chars});
-	
-	var updateInterval = setInterval(sendUpdate, 250);
 	
 	socket.on('disconnect', function(){
 		var i = maps[client.map].chars.indexOf(client.char);
@@ -105,6 +135,13 @@ io.sockets.on('connection', function (socket) {
 			maps[client.map].chars.splice(i, 1);
 		}else{
 			console.log("Couldn't remove character!");
+		}
+		
+		i = clients.indexOf(client);
+		if(i != -1){
+			clients.splice(i, 1);
+		}else{
+			console.log("Couldn't remove client!");
 		}
 	});
 	
@@ -120,21 +157,31 @@ io.sockets.on('connection', function (socket) {
 		if(destSolid == SD_SOLID || destSolid == SD_WATER){
 			invalidMove = true;
 		}else if(chr.x - 1 == data.x && chr.y == data.y){
+			chr.lastX = chr.x;
+			chr.lastY = chr.y;
 			chr.x -= 1;
 			chr.direction = DIR_LEFT;
-			onPlayerStep()
-		}else if(chr.x + 1== data.x && chr.y == data.y){
+			onPlayerStep();
+		}else if(chr.x + 1 == data.x && chr.y == data.y){
+			chr.lastX = chr.x;
+			chr.lastY = chr.y;
 			chr.x += 1;
 			chr.direction = DIR_RIGHT;
-			onPlayerStep()
+			onPlayerStep();
 		}else if(chr.x == data.x && chr.y - 1 == data.y){
+			chr.lastX = chr.x;
+			chr.lastY = chr.y;
 			chr.y -= 1;
 			chr.direction = DIR_UP;
-			onPlayerStep()
+			onPlayerStep();
 		}else if(chr.x == data.x && chr.y + 1 == data.y){
+			chr.lastX = chr.x;
+			chr.lastY = chr.y;
 			chr.y += 1;
 			chr.direction = DIR_DOWN;
-			onPlayerStep()
+			onPlayerStep();
+		}else{
+			invalidMove = true;
 		}
 		
 		chr.direction = data.dir;
@@ -144,7 +191,6 @@ io.sockets.on('connection', function (socket) {
 		|| chr.x + 2 == data.x && chr.y == data.y
 		|| chr.x == data.x && chr.y - 2 == data.y
 		|| chr.x == data.x && chr.y + 2 == data.y))){
-			// WOW! It's fucking nothing!
 			// The player isn't far enough to be considerated an invalid move
 			// Maybe one of his 'walk' messages is delayed
 			
@@ -170,14 +216,14 @@ io.sockets.on('connection', function (socket) {
 			for (var i=0;i<clients.length;++i) {
 				if (clients[i].map == client.map){
 					// queue new messages for each client in map
-					clients[i].messageQueue.push({username: client.username, str: str, x: client.x, y: client.y});
+					clients[i].messageQueue.push({username: client.username, str: str, x: client.char.x, y: client.char.y});
 				}
 			}
 			client.lastMessage = t;
 		}
 	});
 	
-	function sendUpdate(){
+	client.sendUpdate = function(){
 		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
 	}
@@ -189,7 +235,7 @@ io.sockets.on('connection', function (socket) {
 			var area = encounterAreas[i];
 			for(var j=0;j<area.encounters.length;++j){
 				var areaEncounter = area.encounters[j];
-				if(1 || Math.random() < 1 / (187.5 / areaEncounter.rate)){
+				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
 					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 					var enemy = new Pokemon(areaEncounter.id, level);
 					var battle = new Battle(BATTLE_WILD, client, enemy);
@@ -204,6 +250,12 @@ io.sockets.on('connection', function (socket) {
 		}
 	}
 });
+
+setInterval(function(){
+	for(var i=0;i<clients.length;++i){
+		clients[i].sendUpdate();
+	}
+}, 250);
 
 function getEncounterAreasAt(mapName, x, y){
 	var map = maps[mapName];

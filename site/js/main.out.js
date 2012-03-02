@@ -1,3 +1,8 @@
+
+// Adds Array.filter if the browser doesn't support it
+Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;if("function"!=typeof b)
+throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
+
 (function(window, $q){
 "use strict";
 
@@ -14,18 +19,43 @@ var onScreenCtx;
 var tmpCanvas = document.createElement('canvas');
 var tmpCtx = tmpCanvas.getContext('2d');
 
+var curMapId;
 var curMap;
 var socket;
 
-var ST_LOADING = 1;
-var ST_MAP = 2;
+/** @const */
+var ST_LOADING = 1,
+	ST_MAP = 2;
 
 var inBattle = false;
 
-var DIR_DOWN = 0;
-var DIR_LEFT = 1;
-var DIR_UP = 2;
-var DIR_RIGHT = 3;
+/** @const */
+var DIR_DOWN = 0,
+	DIR_LEFT = 1,
+	DIR_UP = 2,
+	DIR_RIGHT = 3;
+
+/** @const */
+var TYPE = {
+	NORMAL: 0,
+	FIRE: 1,
+	WATER: 2,
+	ICE: 3,
+	ELECTRIC: 4,
+	GRASS: 5,
+	GROUND: 6,
+	ROCK: 7,
+	FIGHT: 8,
+	STEEL: 9,
+	DARK: 10,
+	PSYCHIC: 11,
+	FLYING: 12,
+	BUG: 13,
+	POISON: 14,
+	GHOST: 15,
+	DRAGON: 16,
+	UNKNOWN: 17
+};
 
 var state;
 
@@ -60,6 +90,8 @@ var loadedChars = false;
 
 var numRTicks = 0;
 
+var moves = {};
+
 var iOSUI;
 var iOSAButtonPos = {x:430, y:200};
 var iOSBButtonPos = {x:370, y:250};
@@ -74,8 +106,13 @@ var battleBackground;
 
 var AButtonHooks = [];
 var BButtonHooks = [];
+var dirButtonHooks = [];
 var fireAHooks = false;
 var fireBHooks = false;
+var fireDirHooks = false;
+var arrowKeysPressed = [];
+var renderHooks = [];
+
 
 var battle;
 
@@ -108,6 +145,7 @@ function Map(data){
 function loadMap(id){
 	state = ST_LOADING;
 	curMap = null;
+	curMapId = id;
 	
 	characters = [];
 	loadedChars = false;
@@ -126,6 +164,10 @@ function loadMap(id){
 	loadImage('battleMisc', 'resources/ui/battle_misc.png');
 	loadImage('battlePokeballs', 'resources/ui/battle_pokeballs.png');
 	loadImage('battleActionMenu', 'resources/ui/battle_action_menu.png');
+	loadImage('types', 'resources/ui/types.png');
+	loadImage('battlePokemonBar', 'resources/ui/battle_pokemon_bar.png');
+	loadImage('battleHealthBar', 'resources/ui/battle_healthbar.png');
+	loadImage('battleEnemyBar', 'resources/ui/battle_enemy_bar.png');
 	
 	loadJSON('data/pokemon.json', function(data){pokemonData = data});
 	loadJSON('resources/maps/'+id+'.json', function(data){
@@ -198,6 +240,21 @@ function loadMap(id){
 			if(pending == 0){
 				console.log('Map loaded');
 				state = ST_MAP;
+				
+				var step = 0;
+				var func = function(){
+					ctx.fillStyle = '#000000';
+					ctx.globalAlpha = 1 - (step / 8);
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.globalAlpha = 1;
+					++step;
+					if(step >= 8){
+						unHookRender(func);
+					}
+				}
+				
+				hookRender(func);
+				
 				render();
 			}else{
 				console.log('Pending: '+pending);
@@ -308,21 +365,9 @@ function Layer(data){
 	this.type = data.type;
 	this.properties = data.properties || {};
 }
-var inBattleTransition = false;
 var transitionStep = 0;
 var battleIntroPokeball = new Image();
 battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
-
-
-var battleText = '';
-var battleTextTime = 0;
-var battleTextNeedPress = 0;
-var battleTextDelay;
-var battleTextOnComplete;
-var battleTextCompleted;
-var battleTextCompletedTime;
-
-// exp bar color = rgb(64,200,248)
 
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
@@ -406,6 +451,8 @@ function renderChars(ctx){
 		if(!chr) return;
 		if(!chr.loaded) return;
 		
+		if(chr.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		
 		chr.tickRender();
 		
 		var renderPos = chr.getRenderPos();
@@ -477,15 +524,28 @@ function drawPokemonParty(){
 		
 		var sx = x + 60 + lvWidth;
 		
+		tmpCtx.save();
+		tmpCtx.translate(-0.5, -0.5);
+		tmpCtx.lineWidth = 2;
 		// Exp bar
+		tmpCtx.save();
+		tmpCtx.beginPath();
+		tmpCtx.moveTo(0, y + 32);
+		tmpCtx.lineTo(tmpCanvas.width, y + 32);
+		tmpCtx.lineTo(tmpCanvas.width, y + 45);
+		tmpCtx.lineTo(0, y + 45);
+		tmpCtx.lineTo(0, y + 32);
+		tmpCtx.clip();
+		
 		tmpCtx.strokeStyle = 'rgb(0, 0, 0)';
 		
 		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
 		tmpCtx.fillRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
 		
-		tmpCtx.fillStyle = 'rgb(0, 0, 200)';
+		tmpCtx.fillStyle = 'rgb(64,200,248)';
 		tmpCtx.fillRect(sx + 5, y + 30, Math.ceil((190 - barWidth - lvWidth) * (pokemonParty[i].experience / pokemonParty[i].experienceNeeded)), 5);
 		tmpCtx.strokeRect(sx + 5, y + 30, (190 - barWidth - lvWidth), 5);
+		tmpCtx.restore();
 		
 		// Hp bar
 		
@@ -495,7 +555,7 @@ function drawPokemonParty(){
 		tmpCtx.fillRect(sx, y + 27, Math.ceil((200 - barWidth - lvWidth) * (pokemonParty[i].hp / pokemonParty[i].maxHp)), 5);
 		tmpCtx.strokeRect(sx, y + 27, (200 - barWidth - lvWidth), 5);
 		
-		
+		tmpCtx.restore();
 		y += deltaY;
 	}
 	
@@ -578,193 +638,7 @@ function drawChat() {
 function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
 function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
-function renderBattle(){
-	var now = +new Date();
-	var x = isPhone ? 0 : 160;
-	var y = isPhone ? 0 : 140;
-	
-	ctx.save();
-	ctx.lineWidth = 2;
-	ctx.strokeStyle = 'rgb(0,0,0)';
-	ctx.strokeRect(x - 1, y - 1, 482, 226);
-	if(battle.background.width != 0){
-		ctx.drawImage(battle.background, x, y);
-	}
-	
-	if(battle.step != 5){
-		ctx.drawImage(res.battleTextBackground, x + 2, y + 228);
-		
-		if(battleText != ''){
-			var str = battleText.slice(0, (now - battleTextTime) / 30);
-			ctx.fillStyle = 'rgb(255,255,255)';
-			ctx.font = '14pt Font2';
-			ctx.fillText(str, x + 24, y + 266);
-			
-			if(str == battleText){
-				if(!battleTextCompleted){
-					battleTextCompleted = true;
-					battleTextCompletedTime = now;
-					
-					if(battleTextDelay != -1){
-						setTimeout(battleTextOnComplete, battleTextDelay);
-					}else{
-						hookAButton(battleTextOnComplete);
-					}
-					
-				}else if(battleTextDelay == -1 && now - battleTextCompletedTime > 100){
-					ctx.drawImage(res.battleMisc, 0, 0, 32, 32, x + 24 + ctx.measureText(str).width, y + 242 + Math.floor((now % 1000) / 500) * 2, 32, 32);
-				}
-			}
-		}
-		
-		if(battle.step == 4){
-			ctx.drawImage(res.battleActionMenu, x + 246, y + 226);
-			
-			battle.selectedAction = Math.floor((now % 2000) / 500);
-			var x1 = x + 252;
-			var y1 = y + 246;// + Math.floor((now % 1000) / 500) * 2;
-			var x2 = x1 + 112;
-			var y2 = y1 + 30;
-			
-			switch(battle.selectedAction){
-				case 0:
-					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y1, 32, 32);
-				break;
-				case 1:
-					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y1, 32, 32);
-				break;
-				case 2:
-					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y2, 32, 32);
-				break;
-				case 3:
-					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y2, 32, 32);
-				break;
-			}
-		}
-	}
-	
-	if(battle.step < 3){
-		ctx.drawImage(res.playerBacksprite, 0, 0, 128, 128, x + 60, y + 96, 128, 128);
-	}else if(battle.step == 3){
-		if(battle.animStep >= 4 && battle.animStep < 25){
-			var ballAnimation = [
-				[60, 179, 1, 0],
-				[62, 175, 1, 0],
-				
-				[70, 168, 1, 0],
-				[75, 165, 1, 0],
-				
-				[83, 160, 1, 0],
-				[86, 160, 1, 0],
-				
-				[95, 161, 1, 0],
-				[97, 164, 1, 0],
-				
-				[105, 170, 1, 0],
-				
-				[110, 175, 1, 0],
-				[111, 178, 1, 0],
-				[113, 183, 1, 0],
-				[114, 185, 1, 0],
-				[115, 190, 1, 0],
-				[117, 192, 1, 0],
-				[120, 195, 1, 0, 0.95],
-				[123, 200, 1, 1, 0.9],
-				[124, 205, 1.05, 1, 0.8],
-				[125, 200, 1.1, 1, 0.6],
-				[126, 192, 1.15, 1, 0.3],
-				[127, 192, 1.2, 1, 0.1]
-			];
-			
-			ctx.save();
-			ctx.globalAlpha = ballAnimation[battle.animStep-4][4];
-			ctx.translate(x + ballAnimation[battle.animStep-4][0], y + ballAnimation[battle.animStep-4][1]);
-			ctx.scale(ballAnimation[battle.animStep-4][2], ballAnimation[battle.animStep-4][2]);
-			ctx.rotate(battle.animStep / 17 * Math.PI * 2);
-			
-			ctx.drawImage(res.battlePokeballs, 64, 32 * ballAnimation[battle.animStep-4][3], 32, 32, -16, -16, 32, 32);
-			ctx.restore();
-		}
-		
-		if(Math.floor(battle.animStep / 4) < 5){
-			ctx.save();
-			ctx.beginPath();
-			ctx.moveTo(x, y);
-			ctx.lineTo(x + 480, y);
-			ctx.lineTo(x + 480, y + 320);
-			ctx.lineTo(x, y + 320);
-			ctx.lineTo(x, y);
-			ctx.clip();
-			
-			ctx.globalAlpha = clamp(1 - (battle.animStep / 20), 0, 1);
-			
-			ctx.drawImage(res.playerBacksprite, 128 * Math.floor(battle.animStep / 4), 0, 128, 128, x + 60 - battle.animStep * 5, y + 96, 128, 128);
-			ctx.restore();
-		}
-		
-		if(battle.animStep > 21 && battle.animStep < 35){
-			var perc = Math.min((battle.animStep - 21) / 10, 1);
-			
-			clearTmpCanvas();
-			tmpCtx.save();
-			tmpCtx.fillStyle = '#FFFFFF';
-			tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
-			tmpCtx.globalCompositeOperation = "destination-atop";
-			tmpCtx.translate(x + 124, y + 192);
-			tmpCtx.scale(perc, perc);
-			tmpCtx.drawImage(battle.curPokemon.backsprite, -64, -96);
-			tmpCtx.restore();
-			
-			
-			ctx.save();
-			ctx.translate(x + 124, y + 192);
-			ctx.scale(perc, perc);
-			ctx.drawImage(battle.curPokemon.backsprite, -64, -96);
-			
-			
-			ctx.restore();
-			
-			ctx.globalAlpha = clamp(1 - Math.max(0, perc * perc - 0.5) * 2, 0, 1);
-			ctx.drawImage(tmpCanvas, 0, 0);
-			ctx.globalAlpha = 1;
-		}else if(battle.animStep >= 35){
-			battle.step = 4;
-			battle.selectedAction = 0;
-			setBattleText('What will '+pokemonData[battle.curPokemon.id].name.toUpperCase()+' do?');
-		}
-		
-		
-		++battle.animStep;
-	}else{
-		ctx.drawImage(battle.curPokemon.backsprite, x + 60, y + 96);
-	}
-	
-	
-	ctx.drawImage(battle.enemyPokemon.sprite, x + 290, y + 30);
-	
-	if(battle.step == 1){
-		battle.step = 2;
-		setBattleText('Wild ' + pokemonData[battle.enemyPokemon.id].name.toUpperCase() +' appeared!', -1, function(){
-			setBattleText("Go! " + pokemonData[battle.curPokemon.id].name.toUpperCase() + "!");
-			battle.step = 3;
-			battle.animStep = 0;
-		});
-	}
-	
-	ctx.restore();
-}
-
-function setBattleText(str, delay, onComplete){
-	battleText = str || '';
-	battleTextTime = +new Date();
-	if(delay == null) delay = NaN;
-	battleTextDelay = delay;
-	battleTextOnComplete = onComplete;
-	battleTextCompleted = false;
-}
-
 function battleTransition(){
-	inBattleTransition = true;
 	transitionStep = 0;
 }
 
@@ -826,7 +700,6 @@ function renderBattleTransition(){
 		ctx.drawImage(tmpCanvas, 0, 0);
 		ctx.globalAlpha = 1;
 	}else{
-		inBattleTransition = false;
 		battle.step = 1;
 	}
 	
@@ -870,7 +743,7 @@ function render(forceNoTransition, onlyRender){
 						ctx.drawImage(gameCanvas, 10, 10);
 					}
 					
-					if(inBattleTransition){
+					if(inBattle && battle.step == 0){
 						renderBattleTransition();
 					}else if(inBattle){
 						renderBattle();
@@ -893,6 +766,8 @@ function render(forceNoTransition, onlyRender){
 		if(isPhone){
 			ctx.drawImage(iOSUI, 0, 0);
 		}
+		
+		for(var i=0;i<renderHooks.length;++i) renderHooks[i]();
 	
 		if(!onlyRender){
 			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
@@ -919,6 +794,18 @@ function render(forceNoTransition, onlyRender){
 			realRender();
 		}
 	}
+}
+
+function drawText(ctx, str, x, y){
+	clearTmpCanvas();
+	
+	tmpCtx.save();
+	tmpCtx.fillStyle = ctx.fillStyle;
+	tmpCtx.fontStyle = ctx.fontStyle;
+	tmpCtx.fillText(str, 10, 60);
+	tmpCtx.restore();
+	
+	ctx.drawImage(tmpCanvas, -20, -120);
 }
 function Character(data){
 	var self = this;
@@ -947,7 +834,6 @@ function Character(data){
 	self.image = new Image();
 	self.image.onload = function(){
 		self.loaded = true;
-		console.log('Character sprite loaded');
 		render();
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
@@ -1068,16 +954,7 @@ function Character(data){
 			if(self.animationStep > 4.0) self.animationStep -= 4.0;
 			if(self.walkingPerc >= (1.0-CHAR_MOVE_WAIT)/2 && !self.walkingHasMoved){
 				if(self.id == myId){
-					// Check to see if it hit a wall
-					var invalid = false;
-					switch(self.direction){
-						case DIR_LEFT: invalid = isTileSolid(curMap, self.x - 1, self.y) || isTileWater(curMap, self.x - 1, self.y); break;
-						case DIR_RIGHT: invalid = isTileSolid(curMap, self.x + 1, self.y) || isTileWater(curMap, self.x + 1, self.y); break;
-						case DIR_UP: invalid = isTileSolid(curMap, self.x, self.y - 1) || isTileWater(curMap, self.x, self.y - 1); break;
-						case DIR_DOWN: invalid = isTileSolid(curMap, self.x, self.y + 1) || isTileWater(curMap, self.x, self.y + 1); break;
-					}
-					
-					if(invalid){
+					if(willMoveIntoAWall()){
 						socket.emit('turn', {'dir':self.direction});
 						self.walking = false;
 						//TODO: Play block sound
@@ -1104,7 +981,7 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(37))
+					if(!inBattle && !willMoveIntoAWall() && ((self.direction == DIR_LEFT && isKeyDown(37))
 					|| (self.direction == DIR_DOWN && isKeyDown(40))
 					|| (self.direction == DIR_RIGHT && isKeyDown(39))
 					|| (self.direction == DIR_UP && isKeyDown(38)))){
@@ -1127,6 +1004,17 @@ function Character(data){
 		followerObj.tick();
 	}
 	
+	function willMoveIntoAWall(){
+		switch(self.direction){
+			case DIR_LEFT: return isTileSolid(curMap, self.x - 1, self.y) || isTileWater(curMap, self.x - 1, self.y); break;
+			case DIR_RIGHT: return isTileSolid(curMap, self.x + 1, self.y) || isTileWater(curMap, self.x + 1, self.y); break;
+			case DIR_UP: return isTileSolid(curMap, self.x, self.y - 1) || isTileWater(curMap, self.x, self.y - 1); break;
+			case DIR_DOWN: return isTileSolid(curMap, self.x, self.y + 1) || isTileWater(curMap, self.x, self.y + 1); break;
+		}
+		
+		return false;
+	}
+	
 	function tickBot(){
 		if(self.walking) return;
 		self.walking = self.x != self.targetX || self.y != self.targetY;
@@ -1147,7 +1035,7 @@ function Character(data){
 		}
 	}
 }
-function Follower(char){
+function Follower(chr){
 	var self = this;
 	var FOLLOWER_WIDTH = 64;
 	var FOLLOWER_HEIGHT = 64;
@@ -1158,15 +1046,14 @@ function Follower(char){
 	
 	self.image = new Image();
 	self.direction = DIR_DOWN;
-	self.x = char.x;
-	self.y = char.y;
+	self.x = chr.lastX || chr.x;
+	self.y = chr.lastY || chr.y;
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
 	
-	self.targetX = char.lastX;
-	self.targetY = char.lastY;
-	
+	self.targetX = chr.lastX;
+	self.targetY = chr.lastY;
 	
 	self.render = function(){
 		var ctx = gameCtx;
@@ -1174,16 +1061,18 @@ function Follower(char){
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();
 		
-		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor((numRTicks % 14)/7) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+		ctx.save();
+		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+		ctx.restore();
 	}
 	
 	self.tick = function(){
-		self.targetX = char.lastX;
-		self.targetY = char.lastY;
+		self.targetX = chr.lastX;
+		self.targetY = chr.lastY;
 		
-		if(char.walking && !char.walkingHasMoved && char.walkingPerc >= CHAR_MOVE_WAIT){
-			self.targetX = char.x;
-			self.targetY = char.y;
+		if(chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
+			self.targetX = chr.x;
+			self.targetY = chr.y;
 		}
 		
 		if(!self.walking){
@@ -1191,6 +1080,18 @@ function Follower(char){
 			self.walkingPerc = 0.0;
 			
 			tickBot();
+			
+			if(!self.walking){
+				if(this.x < chr.x){
+					self.direction = DIR_RIGHT;
+				}else if(this.x > chr.x){
+					self.direction = DIR_LEFT;
+				}else if(this.y > chr.y){
+					self.direction = DIR_UP;
+				}else{
+					self.direction = DIR_DOWN;
+				}
+			}
 		}else{
 			self.walkingPerc += 0.10;
 			self.animationStep += 0.20;
@@ -1238,14 +1139,22 @@ function Follower(char){
 			}
 		}
 		
-		console.log(destY);
 		return {x:Math.floor(destX), y:Math.floor(destY)};
 	}
 	
 	function tickBot(){
 		if(self.walking) return;
+		
+		if(Math.abs(self.x - self.targetX) + Math.abs(self.y - self.targetY) > 2){
+			self.x = self.targetX;
+			self.y = self.targetY;
+			return;
+		}
+		
 		self.walking = self.x != self.targetX || self.y != self.targetY;
+		
 		if(!self.walking) return;
+		
 		
 		var lastDirection = self.direction;
 		
@@ -1262,6 +1171,738 @@ function Follower(char){
 		}
 	}
 }
+var moveStartTime = 0;
+
+var BATTLE_WILD = 0;
+var BATTLE_TRAINER = 1;
+
+function initBattle(){
+	battle = {};
+	battle.text = '';
+	battle.textTime = 0;
+	battle.textNeedPress = 0;
+	battle.step = 0;
+	battle.renderVars = {};
+	battle.resultQueue = [];
+	battle.runningQueue = false;
+}
+
+function renderBattle(){
+	var now = +new Date();
+	
+	ctx.save();
+	ctx.translate(isPhone ? 0 : 160, isPhone ? 0 : 140);
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = 'rgb(0,0,0)';
+	ctx.strokeRect(-1, -1, 482, 226);
+	if(battle.background.width != 0){
+		ctx.drawImage(battle.background, 0, 0);
+	}
+	
+	if(battle.step != 5){
+		ctx.drawImage(res.battleTextBackground, 2, 228);
+		
+		if(battle.text != ''){
+			var str = battle.text.slice(0, (now - battle.textTime) / 30);
+			
+			
+			ctx.font = '24px Font2';
+			
+			
+			var maxWidth = (battle.step == 4 ? 150 : 420);
+			if(ctx.measureText(str).width > maxWidth){
+				var firstLine = str;
+				var secondLine = '';
+				do{
+					var arr = firstLine.split(' ');
+					secondLine = arr.pop() + ' ' + secondLine;
+					firstLine = arr.join(' ');
+				} while(ctx.measureText(firstLine).width > maxWidth);
+				
+				ctx.fillStyle = 'rgb(104,88,112)';
+				ctx.fillText(firstLine, 26, 266);
+				ctx.fillText(secondLine, 26, 294);
+				ctx.fillText(firstLine, 24, 268);
+				ctx.fillText(secondLine, 24, 296);
+				ctx.fillText(firstLine, 26, 268);
+				ctx.fillText(secondLine, 26, 296);
+				
+				ctx.fillStyle = 'rgb(255,255,255)';
+				ctx.fillText(firstLine, 24, 266);
+				ctx.fillText(secondLine, 24, 294);
+				
+			}else{
+				ctx.fillStyle = 'rgb(104,88,112)';
+				ctx.fillText(str, 24, 268);
+				ctx.fillText(str, 26, 266);
+				ctx.fillText(str, 26, 268);
+				
+				ctx.fillStyle = 'rgb(255,255,255)';
+				ctx.fillText(str, 24, 266);
+			}
+			
+			if(str == battle.text){
+				if(!battle.textCompleted){
+					battle.textCompleted = true;
+					battle.textCompletedTime = now;
+					
+					if(battle.textDelay != -1){
+						setTimeout(battle.textOnComplete, battle.textDelay);
+					}else{
+						hookAButton(battle.textOnComplete);
+					}
+					
+				}else if(battle.textDelay == -1 && now - battle.textCompletedTime > 100){
+					var tmp = Math.floor((now % 1000) / 250);
+					if(tmp == 3) tmp = 1;
+					tmp *= 2;
+					ctx.drawImage(res.battleMisc, 0, 0, 32, 32, 24 + ctx.measureText(str).width, 240 + tmp, 32, 32);
+				}
+			}
+		}
+		
+		if(battle.step == 4){
+			ctx.drawImage(res.battleActionMenu, 246, 226);
+			
+			var x1 = 252 + Math.floor((now % 1000) / 500) * 2;
+			var y1 = 246;
+			var x2 = x1 + 112;
+			var y2 = y1 + 30;
+			
+			switch(battle.selectedAction){
+				case 0:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y1, 32, 32);
+				break;
+				case 1:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y1, 32, 32);
+				break;
+				case 2:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1, y2, 32, 32);
+				break;
+				case 3:
+					ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x2, y2, 32, 32);
+				break;
+			}
+			
+		}
+	}
+	
+	if(battle.step == 5){
+		ctx.drawImage(res.battleMoveMenu, 2, 228);
+		
+		var x1 = 40;
+		var y1 = 268;
+		
+		var n = battle.curPokemon.moves[0].toUpperCase();
+		ctx.font = '24px Font2';
+		ctx.fillStyle = 'rgb(208,208,208)';
+		ctx.fillText(n, x1, y1 + 2);
+		ctx.fillText(n, x1 + 2, y1);
+		
+		ctx.fillStyle = 'rgb(72,72,72)';
+		ctx.fillText(n, x1, y1);
+		
+		ctx.drawImage(res.battleMisc, 96, 0, 32, 32, x1 - 28 + Math.floor((now % 1000) / 500) * 2, y1 - 22, 32, 32);
+		
+		
+		ctx.drawImage(res.types, 0, 24 * TYPE.NORMAL, 64, 24, 390, 284, 64, 24);
+	}
+	
+	if(!battle.renderVars.dontRenderEnemy){
+		if(battle.renderVars.enemyFainted){
+			if(numRTicks - battle.renderVars.enemyFaintedTick <= 5){
+				ctx.save();
+				ctx.beginPath();
+				ctx.moveTo(290, 30);
+				ctx.lineTo(418, 30);
+				ctx.lineTo(418, 158);
+				ctx.lineTo(290, 158);
+				ctx.lineTo(290, 30);
+				ctx.clip();
+				ctx.drawImage(battle.enemyPokemon.sprite, 290, 30 + (numRTicks - battle.renderVars.enemyFaintedTick) * 30);
+				ctx.restore();
+			}
+		}else{
+			ctx.drawImage(battle.enemyPokemon.sprite, 290, 30);
+		}
+	}
+	
+	if(battle.step < 3){
+		ctx.drawImage(res.playerBacksprite, 0, 0, 128, 128, 60, 96, 128, 128);
+	}else if(battle.step == 3){
+		if(battle.animStep >= 4 && battle.animStep < 25){
+			var ballAnimation = [
+				[60, 179, 1, 0],
+				[62, 175, 1, 0],
+				
+				[70, 168, 1, 0],
+				[75, 165, 1, 0],
+				
+				[83, 160, 1, 0],
+				[86, 160, 1, 0],
+				
+				[95, 161, 1, 0],
+				[97, 164, 1, 0],
+				
+				[105, 170, 1, 0],
+				
+				[110, 175, 1, 0],
+				[111, 178, 1, 0],
+				[113, 183, 1, 0],
+				[114, 185, 1, 0],
+				[115, 190, 1, 0],
+				[117, 192, 1, 0],
+				[120, 195, 1, 0, 0.95],
+				[123, 200, 1, 1, 0.9],
+				[124, 205, 1.05, 1, 0.8],
+				[125, 200, 1.1, 1, 0.6],
+				[126, 192, 1.15, 1, 0.3],
+				[127, 192, 1.2, 1, 0.1]
+			];
+			
+			ctx.save();
+			ctx.globalAlpha = ballAnimation[battle.animStep-4][4];
+			ctx.translate(ballAnimation[battle.animStep-4][0], ballAnimation[battle.animStep-4][1]);
+			ctx.scale(ballAnimation[battle.animStep-4][2], ballAnimation[battle.animStep-4][2]);
+			ctx.rotate(battle.animStep / 17 * Math.PI * 2);
+			
+			ctx.drawImage(res.battlePokeballs, 64, 32 * ballAnimation[battle.animStep-4][3], 32, 32, -16, -16, 32, 32);
+			ctx.restore();
+		}
+		
+		if(Math.floor(battle.animStep / 4) < 5){
+			ctx.save();
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(480, 0);
+			ctx.lineTo(480, 320);
+			ctx.lineTo(0, 320);
+			ctx.lineTo(0, 0);
+			ctx.clip();
+			
+			ctx.globalAlpha = clamp(1 - (battle.animStep / 20), 0, 1);
+			
+			ctx.drawImage(res.playerBacksprite, 128 * Math.floor(battle.animStep / 4), 0, 128, 128, 60 - battle.animStep * 5, 96, 128, 128);
+			ctx.restore();
+		}
+		
+		if(battle.animStep > 21 && battle.animStep < 35){
+			var perc = Math.min((battle.animStep - 21) / 10, 1);
+			
+			clearTmpCanvas();
+			tmpCtx.save();
+			tmpCtx.fillStyle = '#FFFFFF';
+			tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+			tmpCtx.globalCompositeOperation = "destination-atop";
+			tmpCtx.translate(124, 192);
+			tmpCtx.scale(perc, perc);
+			tmpCtx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			tmpCtx.restore();
+			
+			
+			ctx.save();
+			ctx.translate(124, 192);
+			ctx.scale(perc, perc);
+			ctx.drawImage(battle.curPokemon.backsprite, -64, -96);
+			
+			
+			ctx.restore();
+			
+			ctx.globalAlpha = clamp(1 - Math.max(0, perc * perc - 0.5) * 2, 0, 1);
+			ctx.drawImage(tmpCanvas, 0, 0);
+			ctx.globalAlpha = 1;
+		}else if(battle.animStep >= 35){
+			battle.selectedAction = 0;
+			battleOpenActionMenu();
+		}
+		
+		
+		++battle.animStep;
+	}else{
+		if(!battle.renderVars.dontRenderPokemon){
+			if(battle.renderVars.pokemonFainted){
+				if(numRTicks - battle.renderVars.pokemonFaintedTick <= 5){
+					ctx.save();
+					ctx.beginPath();
+					ctx.moveTo(60, 96);
+					ctx.lineTo(188, 96);
+					ctx.lineTo(188, 224);
+					ctx.lineTo(60, 224);
+					ctx.lineTo(60, 96);
+					ctx.clip();
+					ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + (numRTicks - battle.renderVars.pokemonFaintedTick) * 30);
+					ctx.restore();
+				}
+			}else{
+				ctx.drawImage(battle.curPokemon.backsprite, 60, 96);
+			}
+		}
+	}
+	
+	{
+		ctx.save();
+		if(battle.renderVars.shakeEnemyStatus && numRTicks % 2 == 0) ctx.translate(0, 2);
+		ctx.drawImage(res.battleEnemyBar, 26, 32);
+		ctx.drawImage(res.battleHealthBar, 0, 0, 1, 6, 104, 66, 96, 6);
+		
+		var hpPerc = battle.enemyPokemon.hp / battle.enemyPokemon.maxHp;
+		if(hpPerc > 0.50){
+			ctx.drawImage(res.battleHealthBar, 0, 6, 1, 6, 104, 66, Math.floor(48 * hpPerc) * 2, 6);
+		}else if(hpPerc >= 0.20){
+			ctx.drawImage(res.battleHealthBar, 0, 12, 1, 6, 104, 66, Math.floor(48 * hpPerc) * 2, 6);
+		}else{
+			ctx.drawImage(res.battleHealthBar, 0, 18, 1, 6, 104, 66, Math.ceil(48 * hpPerc) * 2, 6);
+		}
+		
+		var pokemonName = (battle.enemyPokemon.nickname || pokemonData[battle.enemyPokemon.id].name).toUpperCase();
+		var pokemonLevel = 'Lv'+battle.enemyPokemon.level.toString();
+		var lvlX = 168 - (battle.enemyPokemon.level < 10 ? 0 : (battle.enemyPokemon.level < 100) ? 8 : 16);
+		
+		ctx.font = '21px Font2';
+		ctx.fillStyle = 'rgb(216,208,176)';
+		ctx.fillText(pokemonName, 42, 56);
+		ctx.fillText(pokemonName, 40, 58);
+		ctx.fillText(pokemonName, 42, 58);
+		ctx.fillText(pokemonLevel, lvlX + 2, 56);
+		ctx.fillText(pokemonLevel, lvlX, 58);
+		ctx.fillText(pokemonLevel, lvlX + 2, 58);
+		
+		ctx.fillStyle = 'rgb(64,64,64)';
+		ctx.fillText(pokemonName, 40, 56);
+		ctx.fillText(pokemonLevel, lvlX, 56);
+		
+		
+		var tmpX = ctx.measureText(pokemonName).width + 40;
+		if(battle.enemyPokemon.gender == 1){
+			ctx.drawImage(res.battleMisc, 64, 0, 10, 16, tmpX, 42, 10, 16);
+		}else if(battle.enemyPokemon.gender == 2){
+			ctx.drawImage(res.battleMisc, 74, 0, 10, 16, tmpX, 42, 10, 16);
+		}
+		ctx.restore();
+	}
+	if(battle.step >= 4){
+		ctx.save();
+		var tmp = 0;
+		if(battle.step == 4 || battle.step == 5){
+			ctx.translate(0, (now % 1000) < 500 ? 0 : 2);
+		}
+		
+		if(battle.renderVars.shakePokemonStatus && numRTicks % 2 == 0) ctx.translate(0, 2);
+		
+		ctx.drawImage(res.battlePokemonBar, 252, 148);
+		
+		ctx.drawImage(res.battleHealthBar, 0, 0, 1, 6, 348, 182, 96, 6);
+		
+		
+		var hpPerc = battle.curPokemon.hp / battle.curPokemon.maxHp;
+		if(hpPerc > 0.50){
+			ctx.drawImage(res.battleHealthBar, 0, 6, 1, 6, 348, 182, Math.floor(48 * hpPerc) * 2, 6);
+		}else if(hpPerc >= 0.20){
+			ctx.drawImage(res.battleHealthBar, 0, 12, 1, 6, 348, 182, Math.floor(48 * hpPerc) * 2, 6);
+		}else{
+			ctx.drawImage(res.battleHealthBar, 0, 18, 1, 6, 348, 182, Math.ceil(48 * hpPerc) * 2, 6);
+		}
+		
+		ctx.fillStyle = 'rgb(64,200,248)';
+		ctx.fillRect(316, 214, Math.floor(battle.curPokemon.experience / battle.curPokemon.experienceNeeded * 64) * 2, 4);
+		
+		
+		var pokemonName = (battle.curPokemon.nickname || pokemonData[battle.curPokemon.id].name).toUpperCase();
+		var pokemonLevel = 'Lv'+battle.curPokemon.level.toString();
+		var lvlX = 412 - (battle.curPokemon.level < 10 ? 0 : (battle.curPokemon.level < 100) ? 8 : 16);
+		var maxHpX = 422 - (battle.curPokemon.maxHp >= 100 ? 8 : 0);
+		
+		ctx.font = '21px Font2';
+		ctx.fillStyle = 'rgb(216,208,176)';
+		ctx.fillText(pokemonName, 286, 172);
+		ctx.fillText(pokemonName, 284, 174);
+		ctx.fillText(pokemonName, 286, 174);
+		ctx.fillText(pokemonLevel, lvlX + 2, 172);
+		ctx.fillText(pokemonLevel, lvlX, 174);
+		ctx.fillText(pokemonLevel, lvlX + 2, 174);
+		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 208);
+		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 210);
+		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 210);
+		
+		
+		ctx.fillStyle = 'rgb(64,64,64)';
+		ctx.fillText(pokemonName, 284, 172);
+		ctx.fillText(pokemonLevel, lvlX, 172);
+		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 208);
+		
+		
+		var tmpX = ctx.measureText(pokemonName).width + 284;
+		if(battle.curPokemon.gender == 1){
+			ctx.drawImage(res.battleMisc, 64, 0, 10, 16, tmpX, 158, 10, 16);
+		}else if(battle.curPokemon.gender == 2){
+			ctx.drawImage(res.battleMisc, 74, 0, 10, 16, tmpX, 158, 10, 16);
+		}
+		
+		ctx.restore();
+	}
+	
+	
+	
+	
+	if(battle.step == 1){
+		battle.step = 2;
+		setBattleText('Wild ' + pokemonData[battle.enemyPokemon.id].name.toUpperCase() +' appeared!', -1, function(){
+			setBattleText("Go! " + pokemonData[battle.curPokemon.id].name.toUpperCase() + "!");
+			battle.step = 3;
+			battle.animStep = 0;
+			battle.selectedMove = 0;
+		});
+	}
+	
+	ctx.restore();
+}
+
+function battleOpenActionMenu(){
+	battle.runningQueue = false;
+	battle.step = 4;
+	
+	setBattleText('What will '+pokemonData[battle.curPokemon.id].name.toUpperCase()+' do?');
+	
+	hookAButton(function(){
+		
+		// Ignore actions other than attack for now
+		if(battle.selectedAction != 0){
+			battleOpenActionMenu();
+			return;
+		}
+		
+		switch(battle.selectedAction){
+		case 0:
+			battleOpenFightMenu();
+			break;
+		}
+	});
+}
+
+function battleOpenFightMenu(){
+	battle.step = 5;
+	
+	var aAction = function(){
+		
+		unHookBButton(bAction);
+		setBattleText(null);
+		battle.step = 6;
+		socket.emit('battleMove', {move: battle.selectedMove});
+	};
+	
+	var bAction = function(){
+		unHookAButton(aAction);
+		battleOpenActionMenu();
+		battle.textTime = 0;
+	};
+	
+	hookAButton(aAction);
+	hookBButton(bAction);
+}
+
+function battleRunQueue(force){
+	if(!force && battle.runningQueue) return;
+	battle.runningQueue = true;
+	if(battle.resultQueue.length == 0){
+		battleOpenActionMenu();
+		return;
+	}
+	
+	var action = battle.resultQueue.shift();
+	battle.curAction = action;
+	
+	console.log('Action: '+action.type, action);
+	
+	switch(action.type){
+	case "moveAttack":
+		setBattleText((action.player == 0 ? (battle.curPokemon.nickname || pokemonData[battle.curPokemon.id].name) : (battle.enemyPokemon.nickname || pokemonData[battle.enemyPokemon.id].name)).toUpperCase()+" used "+action.value.move.toUpperCase()+"!");
+		setTimeout(function(){
+			moveStartTime = +new Date();
+			if(moves[action.value.move]){
+				moves[action.value.move]();
+			}else{
+				moves['def']();
+			}
+		}, 1000);
+		break;
+	case "moveMiss":
+		setBattleText((action.player == 0 ? (battle.curPokemon.nickname || pokemonData[battle.curPokemon.id].name) : (battle.enemyPokemon.nickname || pokemonData[battle.enemyPokemon.id].name)).toUpperCase()+" used "+action.value.toUpperCase()+"!");
+		setTimeout(function(){
+			setBattleText('But it missed!');
+			setTimeout(function(){battleRunQueue(true)}, 1000);
+		}, 1000);
+		break;
+	case "pokemonDefeated":
+		var attacker;
+		var defeated;
+		if(action.player == 0){
+			attacker = battle.curPokemon;
+			defeated = battle.enemyPokemon;
+			battle.renderVars.enemyFainted = true;
+			battle.renderVars.enemyFaintedTick = numRTicks;
+		}else{
+			attacker = battle.enemyPokemon;
+			defeated = battle.curPokemon;
+			battle.renderVars.pokemonFainted = true;
+			battle.renderVars.pokemonFaintedTick = numRTicks;
+		}
+		
+		
+		
+		setBattleText((battle.type == BATTLE_WILD && action.player == 0 ? 'Wild ':'')+(defeated.nickname || pokemonData[defeated.id].name).toUpperCase()+' fainted!', -1, function(){
+			if(action.player == 0){
+				setBattleText((attacker.nickname || pokemonData[attacker.id].name).toUpperCase() + ' gained '+action.value+' EXP. Points!', -1, function(){
+					battleAnimateExp();
+				});
+			}else{
+				battleRunQueue(true);
+			}
+		});
+		
+		break;
+	case "win":
+		setPokemonParty(action.value.pokemon);
+		
+		battle.finishX = action.value.x;
+		battle.finishY = action.value.y;
+		battle.finishMap = action.value.map;
+		
+		if(battle.type == BATTLE_WILD && action.player == 0){
+			battleFinish();
+			return;
+		}
+		
+		
+		battleFinish();
+		
+		break;
+	case "switchFainted":
+		if(action.player != 0){
+			setBattleText('The opponent is selecting another pokemon');
+			battle.runningQueue = false;
+			return;
+		}
+		
+		//TODO
+		
+		break;
+	case "fleeFail":
+		
+		break;
+	case "pokemonLevelup": battleRunQueue(true); break;
+	}
+}
+
+function battleMoveFinish(){
+	battle.renderVars.shakeEnemyStatus = false;
+	battle.renderVars.shakePokemonStatus = false;
+	
+	var action = battle.curAction;
+	if(action.type == "moveAttack"){
+		if(action.value.effec == 0){
+			setBattleText("It's not effective...", 0, battleAnimateHp);
+		}else if(action.value.effec < 1){
+			setBattleText("It's not very effective...", 0, battleAnimateHp);
+		}else if(action.value.effec > 1){
+			setBattleText("It's very effective!", 0, battleAnimateHp);
+		}else{
+			battleAnimateHp();
+		}
+	}else{
+		battleRunQueue(true);
+	}
+}
+
+function battleAnimateHp(){
+	var action = battle.curAction;
+	var renderFunc = function(){
+		var result = action.value.resultHp;
+		var pok;
+		if(action.player == 1){
+			pok = battle.curPokemon;
+		}else{
+			pok = battle.enemyPokemon;
+		}
+		
+		var step = Math.ceil(pok.maxHp / 50);
+		if(pok.hp > result){
+			pok.hp -= step;
+			if(pok.hp < result){
+				pok.hp = result;
+			}
+		}else if(pok.hp < result){
+			pok.hp += step;
+			if(pok.hp > result){
+				pok.hp = result;
+			}
+		}
+		
+		if(pok.hp == result){
+			unHookRender(renderFunc);
+			setTimeout(function(){battleRunQueue(true)}, 100);
+		}
+	};
+	
+	hookRender(renderFunc);
+}
+
+function battleAnimateExp(){
+	var action = battle.curAction;
+	if(action.player != 0 || battle.curPokemon.level >= 100){
+		battleRunQueue(true);
+		return;
+	}
+	
+	battle.textDelay = 1/0;
+	var expGained = action.value;
+	var step = Math.ceil(expGained / 100);
+	
+	var renderFunc = function(){
+		var pok = battle.curPokemon;
+		
+		if(step > expGained) step = expGained;
+		pok.experience += step;
+		expGained -= step;
+		
+		if(pok.experience >= pok.experienceNeeded){
+			expGained += pok.experience - pok.experienceNeeded;
+			
+			var info = battle.resultQueue.shift();
+			if(info.type != 'pokemonLevelup') throw new Error('Assertion failed');
+			
+			var backsprite = battle.curPokemon.backsprite;
+			battle.curPokemon = info.value;
+			battle.curPokemon.backsprite = backsprite;
+			pok = battle.curPokemon;
+			
+			
+			pok.experience = 0;
+		}
+		
+		
+		if(expGained <= 0){
+			unHookRender(renderFunc);
+			setTimeout(function(){battleRunQueue(true)}, 100);
+		}
+	};
+	
+	hookRender(renderFunc);
+}
+
+function battleFinish(){
+	var step = 0;
+	var func = function(){
+		ctx.fillStyle = '#000000';
+		if(step < 15){
+			ctx.globalAlpha = step / 15;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.globalAlpha = 1;
+		}else if(step < 20){
+			ctx.globalAlpha = 1;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			if(step == 15){
+				if(battle.finishMap == curMapId){
+					var chr = getPlayerChar();
+					if(chr){
+						chr.x = battle.finishX;
+						chr.y = battle.finishY;
+					}
+				}else{
+					unHookRender(func);
+					loadMap(battle.finishMap);
+				}
+				
+				inBattle = false;
+				battle = null;
+			}
+			
+		}else{
+			ctx.globalAlpha = 1 - (step - 20) / 8;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.globalAlpha = 1;
+			if(step >= 28){
+				unHookRender(func);
+			}
+		}
+		++step;
+	}
+	
+	hookRender(func);
+}
+
+function battleButtonHandler(dir){
+	if(!inBattle) return;
+	
+	
+	if(battle.step == 4){
+		switch(battle.selectedAction){
+		case 0:
+			if(dir == DIR_RIGHT){
+				battle.selectedAction = 1;
+			}else if(dir == DIR_DOWN){
+				battle.selectedAction = 2;
+			}
+			break;
+		case 1:
+			if(dir == DIR_LEFT){
+				battle.selectedAction = 0;
+			}else if(dir == DIR_DOWN){
+				battle.selectedAction = 3;
+			}
+			break;
+		case 2:
+			if(dir == DIR_UP){
+				battle.selectedAction = 0;
+			}else if(dir == DIR_RIGHT){
+				battle.selectedAction = 3;
+			}
+			break;
+		case 3:
+			if(dir == DIR_UP){
+				battle.selectedAction = 1;
+			}else if(dir == DIR_LEFT){
+				battle.selectedAction = 2;
+			}
+			break;
+		}
+	}
+}
+hookDirButtons(battleButtonHandler);
+
+function setBattleText(str, delay, onComplete){
+	battle.text = str || '';
+	battle.textTime = +new Date();
+	if(delay == null) delay = NaN;
+	battle.textDelay = delay;
+	battle.textOnComplete = onComplete;
+	battle.textCompleted = false;
+}
+
+moves['def'] = (function(){
+	function render(){
+		var now = +new Date();
+		
+		if(battle.curAction.player == 0){
+			battle.renderVars.dontRenderEnemy = (Math.floor((now - moveStartTime)/100) % 2) == 0;
+			battle.renderVars.shakeEnemyStatus = true;
+		}else{
+			battle.renderVars.dontRenderPokemon = (Math.floor((now - moveStartTime)/100) % 2) == 0;
+			battle.renderVars.shakePokemonStatus = true;
+		}
+		
+		if(now - moveStartTime > 500){
+			battle.renderVars.dontRenderEnemy = false;
+			battle.renderVars.dontRenderPokemon = false;
+			unHookRender(render);
+			battleMoveFinish();
+		}
+	}
+	
+	return function(){
+		hookRender(render);
+	}
+})();
+
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
 }
@@ -1297,12 +1938,49 @@ function clamp(n, min, max){
 }
 
 function hookAButton(func){
+	if(AButtonHooks.indexOf(func) != -1) return;
 	AButtonHooks.push(func);
 }
 
 function hookBButton(func){
-	AButtonHooks.push(func);
+	if(BButtonHooks.indexOf(func) != -1) return;
+	BButtonHooks.push(func);
 }
+
+function unHookAButton(func){
+	var i = AButtonHooks.indexOf(func);
+	if(i != -1){
+		AButtonHooks.splice(i, 1);
+	}
+}
+
+function unHookBButton(func){
+	var i = BButtonHooks.indexOf(func);
+	if(i != -1){
+		BButtonHooks.splice(i, 1);
+	}
+}
+
+function hookDirButtons(func){
+	if(dirButtonHooks.indexOf(func) != -1) return;
+	dirButtonHooks.push(func);
+}
+
+function unHookDirButtons(func){
+	var i = dirButtonHooks.indexOf(func);
+	if(i != -1) dirButtonHooks.splice(i, 1);
+}
+
+function hookRender(func){
+	if(renderHooks.indexOf(func) != -1) return;
+	renderHooks.push(func);
+}
+
+function unHookRender(func){
+	var i = renderHooks.indexOf(func);
+	if(i != -1) renderHooks.splice(i, 1);
+}
+
 
 function tick(){
 	
@@ -1316,19 +1994,31 @@ function tick(){
 	
 	if(fireAHooks){
 		fireAHooks = false;
-		for(var i=0;i<AButtonHooks.length;++i){
-			AButtonHooks[i]();
-		}
+		var arr = AButtonHooks.concat();
 		AButtonHooks.length = 0;
+		
+		for(var i=0;i<arr.length;++i){
+			arr[i]();
+		}
 	}
 	
 	if(fireBHooks){
 		fireBHooks = false;
-		for(var i=0;i<BButtonHooks.length;++i){
-			BButtonHooks[i]();
-		}
+		var arr = BButtonHooks.concat();
 		BButtonHooks.length = 0;
+		
+		
+		for(var i=0;i<arr.length;++i){
+			arr[i]();
+		}
 	}
+	
+	for(var i=0;i<arrowKeysPressed.length;++i){
+		for(var j=0;j<dirButtonHooks.length;++j){
+			dirButtonHooks[j](arrowKeysPressed[i]);
+		}
+	}
+	arrowKeysPressed.length = 0;
 	
 	render();
 }
@@ -1346,6 +2036,15 @@ function sendMessage() {
 
 function clearTmpCanvas(){
 	tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+}
+
+function setPokemonParty(arr){
+	pokemonParty = arr;
+	
+	for(var i=0;i<pokemonParty.length;++i){
+		pokemonParty[i].icon = new Image();
+		pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
+	}
 }
 
 window.initGame = function($canvas, $container){
@@ -1402,6 +2101,8 @@ window.initGame = function($canvas, $container){
 		if((iOSBButtonPos.x - pressX) * (iOSBButtonPos.x - pressX) + (iOSBButtonPos.y - pressY) * (iOSBButtonPos.y - pressY) < 1200){
 			uiBButtonDown = true;
 		}
+		
+		//keysDown[38] = true;
 	});
 	
 	$(onScreenCanvas).on('touchend', function(e){
@@ -1422,7 +2123,7 @@ window.initGame = function($canvas, $container){
 			$q(chatBox).focus();
 		}
 		
-		if(!inChat){
+		if(!inChat && !keysDown[e.keyCode]){
 			keysDown[e.keyCode] = true;
 			if(e.keyCode == 90){
 				uiAButtonDown = true;
@@ -1430,6 +2131,14 @@ window.initGame = function($canvas, $container){
 			}else if(e.keyCode == 88){
 				uiBButtonDown = true;
 				fireBHooks = true;
+			}else if(e.keyCode == 37){
+				arrowKeysPressed.push(DIR_LEFT);
+			}else if(e.keyCode == 40){
+				arrowKeysPressed.push(DIR_DOWN);
+			}else if(e.keyCode == 39){
+				arrowKeysPressed.push(DIR_RIGHT);
+			}else if(e.keyCode == 38){
+				arrowKeysPressed.push(DIR_UP);
 			}
 		}
 	});
@@ -1475,12 +2184,7 @@ window.initGame = function($canvas, $container){
 	socket.on('setInfo', function(data){
 		console.log('setInfo: '+data.id);
 		myId = data.id;
-		pokemonParty = data.pokemon;
-		
-		for(var i=0;i<pokemonParty.length;++i){
-			pokemonParty[i].icon = new Image();
-			pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
-		}
+		setPokemonParty(data.pokemon);
 	});
 	
 	socket.on('loadMap', function(data){
@@ -1544,6 +2248,12 @@ window.initGame = function($canvas, $container){
 				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
+				
+				if(!chr.moving){
+					chr.lastX = charData.lastX;
+					chr.lastY = charData.lastY;
+				}
+				
 				if(chr.x == charData.x && chr.y == charData.y){
 					chr.direction = charData.direction;
 				}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
@@ -1585,13 +2295,13 @@ window.initGame = function($canvas, $container){
 	socket.on('battleWild', function(data){
 		inBattle = true;
 		
-		
-		battle = {};
+		initBattle();
 		battle.x = data.x;
 		battle.y = data.y;
-		battle.step = 0;
+		battle.type = BATTLE_WILD;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
+		
 		
 		var enemy = data.battle.enemy;
 		
@@ -1601,9 +2311,14 @@ window.initGame = function($canvas, $container){
 		
 		battle.curPokemon = data.battle.curPokemon;
 		battle.curPokemon.backsprite = new Image();
-		battle.curPokemon.backsprite.src = 'resources/back' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
+		battle.curPokemon.backsprite.src = 'resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
 		
 		battleTransition();
+	});
+	
+	socket.on('battleTurn', function(data){
+		battle.resultQueue = battle.resultQueue.concat(data.results);
+		battleRunQueue();
 	});
 }
 

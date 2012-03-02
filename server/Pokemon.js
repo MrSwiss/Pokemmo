@@ -1,3 +1,6 @@
+var VIRUS_NONE = 0;
+var VIRUS_POKERUS = 1;
+
 function Pokemon(id, level){
 	var self = this;
 	
@@ -53,6 +56,8 @@ function Pokemon(id, level){
 	
 	self.status = STATUS_NONE;
 	
+	self.virus = VIRUS_NONE;
+	
 	self.shiny = (1/8192 > Math.random());
 	self.moves = [null, null, null, null];
 	self.movesPP = [0, 0, 0, 0];
@@ -96,12 +101,13 @@ function Pokemon(id, level){
 		get moves(){return self.moves},
 		get movesPP(){return self.movesPP},
 		get movesMaxPP(){return self.movesMaxPP},
-		get training(){return (self.evHp + self.evAtk + self.evDef + self.SpAtk + self.evSpDef + self.evSpeed) / MAX_EV}
+		get training(){return (self.evHp + self.evAtk + self.evDef + self.evSpAtk + self.evSpDef + self.evSpeed) / MAX_EV},
+		get virus(){return self.virus}
 	};
 	
 	
 	self.calculateExpGain = function(isTrainer){
-		return ((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7;
+		return Math.ceil(((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7);
 	}
 	
 	self.addEV = function(data){
@@ -191,15 +197,15 @@ function Pokemon(id, level){
 	self.restore = function(){
 		self.hp = self.maxHp;
 		for(var i = 0; i < 4; ++i){
-			self.moves[i] = self.movesMaxPP[i];
+			self.movesPP[i] = self.movesMaxPP[i];
 		}
 	}
 	
 	self.getUsableMoves = function(){
 		var list = [];
-		for(var i=0;i<moves.length;++i){
-			if(moves[i] == null) continue;
-			if(movesPP[i] <= 0) continue;
+		for(var i=0;i<self.moves.length;++i){
+			if(self.moves[i] == null) continue;
+			if(self.movesPP[i] <= 0) continue;
 			list.push(i);
 		}
 		return list;
@@ -210,7 +216,7 @@ function Pokemon(id, level){
 	var learnset = pokemonData[self.id].learnset;
 	for(var i=0;i<learnset.length;++i){
 		if(movesData[learnset[i].move] == null) continue;
-		if(learnset[i].level > self.level) break;
+		if(learnset[i].level > self.level) continue;
 		self.moves[j] = learnset[i].move;
 		self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
 		

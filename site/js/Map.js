@@ -18,6 +18,7 @@ function Map(data){
 function loadMap(id){
 	state = ST_LOADING;
 	curMap = null;
+	curMapId = id;
 	
 	characters = [];
 	loadedChars = false;
@@ -36,6 +37,10 @@ function loadMap(id){
 	loadImage('battleMisc', 'resources/ui/battle_misc.png');
 	loadImage('battlePokeballs', 'resources/ui/battle_pokeballs.png');
 	loadImage('battleActionMenu', 'resources/ui/battle_action_menu.png');
+	loadImage('types', 'resources/ui/types.png');
+	loadImage('battlePokemonBar', 'resources/ui/battle_pokemon_bar.png');
+	loadImage('battleHealthBar', 'resources/ui/battle_healthbar.png');
+	loadImage('battleEnemyBar', 'resources/ui/battle_enemy_bar.png');
 	
 	loadJSON('data/pokemon.json', function(data){pokemonData = data});
 	loadJSON('resources/maps/'+id+'.json', function(data){
@@ -108,6 +113,21 @@ function loadMap(id){
 			if(pending == 0){
 				console.log('Map loaded');
 				state = ST_MAP;
+				
+				var step = 0;
+				var func = function(){
+					ctx.fillStyle = '#000000';
+					ctx.globalAlpha = 1 - (step / 8);
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.globalAlpha = 1;
+					++step;
+					if(step >= 8){
+						unHookRender(func);
+					}
+				}
+				
+				hookRender(func);
+				
 				render();
 			}else{
 				console.log('Pending: '+pending);

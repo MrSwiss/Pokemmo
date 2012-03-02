@@ -1,5 +1,18 @@
 console.log('Loading maps...');
 start = +new Date();
+
+(function(){
+
+var tilesets;
+
+function getTilesetOfTile(n){
+	var i = tilesets.length;
+	while(i--){
+		if(n >= tilesets[i].firstgid) return tilesets[i];
+	}
+	return null;
+}
+
 for(var i=0;i<mapsNames.length;++i){
 	var mapName = mapsNames[i];
 	console.log('Loading: '+mapName+'...');
@@ -13,18 +26,10 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	
 	var solidData = new Array(map.data.width);
-	var tilesets = map.data.tilesets;
+	tilesets = map.data.tilesets;
 	
 	map.encounterAreas = [];
 	
-	
-	function getTilesetOfTile(n){
-		var i = tilesets.length;
-		while(i--){
-			if(n >= tilesets[i].firstgid) return tilesets[i];
-		}
-		return null;
-	}
 	
 	for(var x=0;x<solidData.length;++x){
 		solidData[x] = new Array(map.data.height);
@@ -76,7 +81,13 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	
 	map.solidData = solidData;
+	
+	recursiveFreeze(map.solidData);
+	recursiveFreeze(map.encounterAreas);
+	
 }
 
 end = +new Date();
 console.log('Maps loaded! ('+(end-start)+' ms)');
+
+})();

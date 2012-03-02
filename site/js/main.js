@@ -1,3 +1,8 @@
+
+// Adds Array.filter if the browser doesn't support it
+Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;if("function"!=typeof b)
+throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
+
 (function(window, $q){
 "use strict";
 
@@ -14,18 +19,43 @@ var onScreenCtx;
 var tmpCanvas = document.createElement('canvas');
 var tmpCtx = tmpCanvas.getContext('2d');
 
+var curMapId;
 var curMap;
 var socket;
 
-var ST_LOADING = 1;
-var ST_MAP = 2;
+/** @const */
+var ST_LOADING = 1,
+	ST_MAP = 2;
 
 var inBattle = false;
 
-var DIR_DOWN = 0;
-var DIR_LEFT = 1;
-var DIR_UP = 2;
-var DIR_RIGHT = 3;
+/** @const */
+var DIR_DOWN = 0,
+	DIR_LEFT = 1,
+	DIR_UP = 2,
+	DIR_RIGHT = 3;
+
+/** @const */
+var TYPE = {
+	NORMAL: 0,
+	FIRE: 1,
+	WATER: 2,
+	ICE: 3,
+	ELECTRIC: 4,
+	GRASS: 5,
+	GROUND: 6,
+	ROCK: 7,
+	FIGHT: 8,
+	STEEL: 9,
+	DARK: 10,
+	PSYCHIC: 11,
+	FLYING: 12,
+	BUG: 13,
+	POISON: 14,
+	GHOST: 15,
+	DRAGON: 16,
+	UNKNOWN: 17
+};
 
 var state;
 
@@ -60,6 +90,8 @@ var loadedChars = false;
 
 var numRTicks = 0;
 
+var moves = {};
+
 var iOSUI;
 var iOSAButtonPos = {x:430, y:200};
 var iOSBButtonPos = {x:370, y:250};
@@ -74,8 +106,13 @@ var battleBackground;
 
 var AButtonHooks = [];
 var BButtonHooks = [];
+var dirButtonHooks = [];
 var fireAHooks = false;
 var fireBHooks = false;
+var fireDirHooks = false;
+var arrowKeysPressed = [];
+var renderHooks = [];
+
 
 var battle;
 
@@ -99,6 +136,10 @@ function parseMap(data){
 // #include "Character.js"
 
 // #include "Follower.js"
+
+// #include "Battle.js"
+
+// #include "moves.js"
 
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
@@ -135,12 +176,49 @@ function clamp(n, min, max){
 }
 
 function hookAButton(func){
+	if(AButtonHooks.indexOf(func) != -1) return;
 	AButtonHooks.push(func);
 }
 
 function hookBButton(func){
-	AButtonHooks.push(func);
+	if(BButtonHooks.indexOf(func) != -1) return;
+	BButtonHooks.push(func);
 }
+
+function unHookAButton(func){
+	var i = AButtonHooks.indexOf(func);
+	if(i != -1){
+		AButtonHooks.splice(i, 1);
+	}
+}
+
+function unHookBButton(func){
+	var i = BButtonHooks.indexOf(func);
+	if(i != -1){
+		BButtonHooks.splice(i, 1);
+	}
+}
+
+function hookDirButtons(func){
+	if(dirButtonHooks.indexOf(func) != -1) return;
+	dirButtonHooks.push(func);
+}
+
+function unHookDirButtons(func){
+	var i = dirButtonHooks.indexOf(func);
+	if(i != -1) dirButtonHooks.splice(i, 1);
+}
+
+function hookRender(func){
+	if(renderHooks.indexOf(func) != -1) return;
+	renderHooks.push(func);
+}
+
+function unHookRender(func){
+	var i = renderHooks.indexOf(func);
+	if(i != -1) renderHooks.splice(i, 1);
+}
+
 
 function tick(){
 	
@@ -154,19 +232,31 @@ function tick(){
 	
 	if(fireAHooks){
 		fireAHooks = false;
-		for(var i=0;i<AButtonHooks.length;++i){
-			AButtonHooks[i]();
-		}
+		var arr = AButtonHooks.concat();
 		AButtonHooks.length = 0;
+		
+		for(var i=0;i<arr.length;++i){
+			arr[i]();
+		}
 	}
 	
 	if(fireBHooks){
 		fireBHooks = false;
-		for(var i=0;i<BButtonHooks.length;++i){
-			BButtonHooks[i]();
-		}
+		var arr = BButtonHooks.concat();
 		BButtonHooks.length = 0;
+		
+		
+		for(var i=0;i<arr.length;++i){
+			arr[i]();
+		}
 	}
+	
+	for(var i=0;i<arrowKeysPressed.length;++i){
+		for(var j=0;j<dirButtonHooks.length;++j){
+			dirButtonHooks[j](arrowKeysPressed[i]);
+		}
+	}
+	arrowKeysPressed.length = 0;
 	
 	render();
 }
@@ -184,6 +274,15 @@ function sendMessage() {
 
 function clearTmpCanvas(){
 	tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+}
+
+function setPokemonParty(arr){
+	pokemonParty = arr;
+	
+	for(var i=0;i<pokemonParty.length;++i){
+		pokemonParty[i].icon = new Image();
+		pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
+	}
 }
 
 window.initGame = function($canvas, $container){
@@ -240,6 +339,8 @@ window.initGame = function($canvas, $container){
 		if((iOSBButtonPos.x - pressX) * (iOSBButtonPos.x - pressX) + (iOSBButtonPos.y - pressY) * (iOSBButtonPos.y - pressY) < 1200){
 			uiBButtonDown = true;
 		}
+		
+		//keysDown[38] = true;
 	});
 	
 	$(onScreenCanvas).on('touchend', function(e){
@@ -260,7 +361,7 @@ window.initGame = function($canvas, $container){
 			$q(chatBox).focus();
 		}
 		
-		if(!inChat){
+		if(!inChat && !keysDown[e.keyCode]){
 			keysDown[e.keyCode] = true;
 			if(e.keyCode == 90){
 				uiAButtonDown = true;
@@ -268,6 +369,14 @@ window.initGame = function($canvas, $container){
 			}else if(e.keyCode == 88){
 				uiBButtonDown = true;
 				fireBHooks = true;
+			}else if(e.keyCode == 37){
+				arrowKeysPressed.push(DIR_LEFT);
+			}else if(e.keyCode == 40){
+				arrowKeysPressed.push(DIR_DOWN);
+			}else if(e.keyCode == 39){
+				arrowKeysPressed.push(DIR_RIGHT);
+			}else if(e.keyCode == 38){
+				arrowKeysPressed.push(DIR_UP);
 			}
 		}
 	});
@@ -313,12 +422,7 @@ window.initGame = function($canvas, $container){
 	socket.on('setInfo', function(data){
 		console.log('setInfo: '+data.id);
 		myId = data.id;
-		pokemonParty = data.pokemon;
-		
-		for(var i=0;i<pokemonParty.length;++i){
-			pokemonParty[i].icon = new Image();
-			pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
-		}
+		setPokemonParty(data.pokemon);
 	});
 	
 	socket.on('loadMap', function(data){
@@ -382,6 +486,12 @@ window.initGame = function($canvas, $container){
 				chr.inBattle = charData.inBattle;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
+				
+				if(!chr.moving){
+					chr.lastX = charData.lastX;
+					chr.lastY = charData.lastY;
+				}
+				
 				if(chr.x == charData.x && chr.y == charData.y){
 					chr.direction = charData.direction;
 				}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
@@ -423,13 +533,13 @@ window.initGame = function($canvas, $container){
 	socket.on('battleWild', function(data){
 		inBattle = true;
 		
-		
-		battle = {};
+		initBattle();
 		battle.x = data.x;
 		battle.y = data.y;
-		battle.step = 0;
+		battle.type = BATTLE_WILD;
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
+		
 		
 		var enemy = data.battle.enemy;
 		
@@ -439,9 +549,14 @@ window.initGame = function($canvas, $container){
 		
 		battle.curPokemon = data.battle.curPokemon;
 		battle.curPokemon.backsprite = new Image();
-		battle.curPokemon.backsprite.src = 'resources/back' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
+		battle.curPokemon.backsprite.src = 'resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
 		
 		battleTransition();
+	});
+	
+	socket.on('battleTurn', function(data){
+		battle.resultQueue = battle.resultQueue.concat(data.results);
+		battleRunQueue();
 	});
 }
 

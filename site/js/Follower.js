@@ -1,4 +1,4 @@
-function Follower(char){
+function Follower(chr){
 	var self = this;
 	var FOLLOWER_WIDTH = 64;
 	var FOLLOWER_HEIGHT = 64;
@@ -9,15 +9,14 @@ function Follower(char){
 	
 	self.image = new Image();
 	self.direction = DIR_DOWN;
-	self.x = char.x;
-	self.y = char.y;
+	self.x = chr.lastX || chr.x;
+	self.y = chr.lastY || chr.y;
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
 	
-	self.targetX = char.lastX;
-	self.targetY = char.lastY;
-	
+	self.targetX = chr.lastX;
+	self.targetY = chr.lastY;
 	
 	self.render = function(){
 		var ctx = gameCtx;
@@ -25,16 +24,18 @@ function Follower(char){
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();
 		
-		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor((numRTicks % 14)/7) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+		ctx.save();
+		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+		ctx.restore();
 	}
 	
 	self.tick = function(){
-		self.targetX = char.lastX;
-		self.targetY = char.lastY;
+		self.targetX = chr.lastX;
+		self.targetY = chr.lastY;
 		
-		if(char.walking && !char.walkingHasMoved && char.walkingPerc >= CHAR_MOVE_WAIT){
-			self.targetX = char.x;
-			self.targetY = char.y;
+		if(chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
+			self.targetX = chr.x;
+			self.targetY = chr.y;
 		}
 		
 		if(!self.walking){
@@ -42,6 +43,18 @@ function Follower(char){
 			self.walkingPerc = 0.0;
 			
 			tickBot();
+			
+			if(!self.walking){
+				if(this.x < chr.x){
+					self.direction = DIR_RIGHT;
+				}else if(this.x > chr.x){
+					self.direction = DIR_LEFT;
+				}else if(this.y > chr.y){
+					self.direction = DIR_UP;
+				}else{
+					self.direction = DIR_DOWN;
+				}
+			}
 		}else{
 			self.walkingPerc += 0.10;
 			self.animationStep += 0.20;
@@ -89,14 +102,22 @@ function Follower(char){
 			}
 		}
 		
-		console.log(destY);
 		return {x:Math.floor(destX), y:Math.floor(destY)};
 	}
 	
 	function tickBot(){
 		if(self.walking) return;
+		
+		if(Math.abs(self.x - self.targetX) + Math.abs(self.y - self.targetY) > 2){
+			self.x = self.targetX;
+			self.y = self.targetY;
+			return;
+		}
+		
 		self.walking = self.x != self.targetX || self.y != self.targetY;
+		
 		if(!self.walking) return;
+		
 		
 		var lastDirection = self.direction;
 		

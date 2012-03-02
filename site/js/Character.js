@@ -25,7 +25,6 @@ function Character(data){
 	self.image = new Image();
 	self.image.onload = function(){
 		self.loaded = true;
-		console.log('Character sprite loaded');
 		render();
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
@@ -146,16 +145,7 @@ function Character(data){
 			if(self.animationStep > 4.0) self.animationStep -= 4.0;
 			if(self.walkingPerc >= (1.0-CHAR_MOVE_WAIT)/2 && !self.walkingHasMoved){
 				if(self.id == myId){
-					// Check to see if it hit a wall
-					var invalid = false;
-					switch(self.direction){
-						case DIR_LEFT: invalid = isTileSolid(curMap, self.x - 1, self.y) || isTileWater(curMap, self.x - 1, self.y); break;
-						case DIR_RIGHT: invalid = isTileSolid(curMap, self.x + 1, self.y) || isTileWater(curMap, self.x + 1, self.y); break;
-						case DIR_UP: invalid = isTileSolid(curMap, self.x, self.y - 1) || isTileWater(curMap, self.x, self.y - 1); break;
-						case DIR_DOWN: invalid = isTileSolid(curMap, self.x, self.y + 1) || isTileWater(curMap, self.x, self.y + 1); break;
-					}
-					
-					if(invalid){
+					if(willMoveIntoAWall()){
 						socket.emit('turn', {'dir':self.direction});
 						self.walking = false;
 						//TODO: Play block sound
@@ -182,7 +172,7 @@ function Character(data){
 			
 			if(self.walkingPerc >= 1.0){
 				if(self.id == myId){
-					if(!inBattle && ((self.direction == DIR_LEFT && isKeyDown(37))
+					if(!inBattle && !willMoveIntoAWall() && ((self.direction == DIR_LEFT && isKeyDown(37))
 					|| (self.direction == DIR_DOWN && isKeyDown(40))
 					|| (self.direction == DIR_RIGHT && isKeyDown(39))
 					|| (self.direction == DIR_UP && isKeyDown(38)))){
@@ -203,6 +193,17 @@ function Character(data){
 		}
 		
 		followerObj.tick();
+	}
+	
+	function willMoveIntoAWall(){
+		switch(self.direction){
+			case DIR_LEFT: return isTileSolid(curMap, self.x - 1, self.y) || isTileWater(curMap, self.x - 1, self.y); break;
+			case DIR_RIGHT: return isTileSolid(curMap, self.x + 1, self.y) || isTileWater(curMap, self.x + 1, self.y); break;
+			case DIR_UP: return isTileSolid(curMap, self.x, self.y - 1) || isTileWater(curMap, self.x, self.y - 1); break;
+			case DIR_DOWN: return isTileSolid(curMap, self.x, self.y + 1) || isTileWater(curMap, self.x, self.y + 1); break;
+		}
+		
+		return false;
 	}
 	
 	function tickBot(){

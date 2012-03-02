@@ -21,11 +21,18 @@ function Battle(type, arg1, arg2){
 	
 	var winner;
 	
+	var results = [];
+	
 	switch(type){
 	case BATTLE_WILD:
 		var client = player1.client = arg1;
 		player1.pokemon = client.pokemon[0];
 		player1.pokemonList = client.pokemon;
+		for(var i=0;i<client.pokemon.length;++i){
+			if(client.pokemon[i].hp > 0){
+				player1.pokemon = client.pokemon[i];
+			}
+		}
 		player1.pending = false;
 		
 		player2.pokemon = arg2;
@@ -63,6 +70,8 @@ function Battle(type, arg1, arg2){
 	function onBattleMoveWild(data){
 		if(!player1.pending) return;
 		
+		if(player1.pokemon.hp <= 0) return;
+		
 		player1.pending = false;
 		
 		var tmp = Number(data.move);
@@ -81,7 +90,7 @@ function Battle(type, arg1, arg2){
 	}
 	
 	function calculateAIAction(){
-		var enemyMoves = enemy.getUsableMoves();
+		var enemyMoves = player2.pokemon.getUsableMoves();
 		if(enemyMoves.length == 0){
 			player2.action = new BattleAction(BATTLE_ACTION_STRUGGLE);
 		}else{
@@ -92,7 +101,7 @@ function Battle(type, arg1, arg2){
 	function initTurn(dontSendMessage){
 		switch(type){
 		case BATTLE_WILD:
-			if(!dontSendMessage) client.socket.emit('battleInitTurn', {battle: self.wildInfo});
+			//if(!dontSendMessage) client.socket.emit('battleInitTurn', {battle: self.wildInfo});
 			player1.pending = true;
 			break;
 		}
@@ -101,7 +110,6 @@ function Battle(type, arg1, arg2){
 	function processTurn(){
 		var first = determineFirstAction();
 		
-		var results = [];
 		var tmp;
 		
 		var firstPlayer, secondPlayer;
@@ -114,26 +122,64 @@ function Battle(type, arg1, arg2){
 			secondPlayer = player1;
 		}
 		
-		tmp = processAction(firstPlayer, secondPlayer);
-		
-		if(tmp.battleEnded) return;
-		results.push(tmp);
+		{
+			tmp = processAction(firstPlayer, secondPlayer);
+			pushResult(tmp);
+			if(tmp && tmp.battleEnded) return;
+			
+			checkFainted(player1, player2);
+			checkFainted(player2, player1);
+		}
 		
 		if(canTurnProceed()){
 			tmp = processAction(secondPlayer, firstPlayer);
-			if(tmp.battleEnded) return;
+			pushResult(tmp);
+			if(tmp && tmp.battleEnded) return;
+			
+			checkFainted(player1, player2);
+			checkFainted(player2, player1);
+		}else{
+			if(!checkWin()){
+				if(player1.pokemon.hp <= 0){
+					player1.pending = true;
+					pushResult(new BattleTurnResult(player1, "switchFainted"));
+				}
+				
+				if(player2.pokemon.hp <= 0){
+					if(type == BATTLE_WILD){
+						//TODO: Switch logic
+					}else{
+						player2.pending = true;
+						pushResult(new BattleTurnResult(player2, "switchFainted"));
+					}
+				}
+				
+				flushResults();
+				return;
+			}
 		}
 		
-		checkFainted(player1, player2);
-		checkFainted(player2, player1);
-		
-		player1.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player1)})});
-		
-		if(player2.client){
-			player2.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player2)})});
-		}
+		flushResults();
 		
 		if(!checkWin()) initTurn();
+	}
+	
+	function pushResult(res){
+		if(res == null) return;
+		results.push(res);
+	}
+	
+	function flushResults(){
+		if(results.length == 0) return;
+		if(player1.client){
+			player1.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player1)}).filter(function(v){return v != null})});
+		}
+		
+		if(player2.client){
+			player2.client.socket.emit('battleTurn', {results: results.map(function(v){return v.formatForPlayer(player2)}).filter(function(v){return v != null})});
+		}
+		
+		results.length = 0;
 	}
 	
 	function canTurnProceed(){
@@ -144,51 +190,83 @@ function Battle(type, arg1, arg2){
 	
 	function checkFainted(player, enemy){
 		if(type == BATTLE_VERSUS) return;
+		if(player != player1) return;
 		
 		if(enemy.pokemon.hp <= 0){
 			player.pokemon.addEV(pokemonData[enemy.pokemon.id].evYield);
 			
 			var exp = enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER);
 			player.pokemon.experience += exp;
+			pushResult(new BattleTurnResult(player, 'pokemonDefeated', exp));
 			
 			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
 				player.pokemon.experience -= player.pokemon.experienceNeeded;
 				player.pokemon.levelUp();
+				pushResult(new BattleTurnResult(player, 'pokemonLevelup', player.pokemon.ownerInfo));
 			}
+			
+			
 		}
 	}
 	
 	function checkWin(){
-		if(winner != undefined) return;
+		if(winner != undefined) return true;
 		
 		var player1Dead = true;
 		var player2Dead = true;
-		for(var i=0;i<player1.pokemon.length;++i){
-			if(player1.pokemon[i].hp > 0) player1Dead = false;
+		for(var i=0;i<player1.pokemonList.length;++i){
+			if(player1.pokemonList[i].hp > 0) player1Dead = false;
 		}
 		
-		for(var i=0;i<player2.pokemon.length;++i){
-			if(player2.pokemon[i].hp > 0) player2Dead = false;
+		for(var i=0;i<player2.pokemonList.length;++i){
+			if(player2.pokemonList[i].hp > 0) player2Dead = false;
 		}
 		
 		if(player1Dead){
 			if(player2Dead){
-				self.declareWinner(0);
+				self.declareWinner(null);
 			}else{
-				self.declareWinner(2);
+				self.declareWinner(player2);
 			}
 			return true;
 		}else if(player2Dead){
-			self.declareWinner(1);
+			self.declareWinner(player1);
+			return true;
 		}
 		
 		return false;
 	}
 	
-	self.declareWinner = function(playerId){
-		winner = playerId;
+	self.declareWinner = function(player){
+		winner = player;
 		
-		//TOOD
+		if(player1.client){
+			player1.client.inBattle = false;
+			
+			if(winner != player1){
+				player1.client.moveToSpawn();
+				player1.client.restorePokemon();
+			}
+		}
+		
+		if(player2.client){
+			player2.client.inBattle = false;
+			
+			if(winner != player2){
+				player2.client.moveToSpawn();
+				player2.client.restorePokemon();
+			}
+		}
+		
+		pushResult(new BattleTurnResult(winner, 'win', function(res, p){
+			return {
+				map: p.client.map,
+				x: p.client.char.x,
+				y: p.client.char.y,
+				pokemon: p.client.pokemon.map(function(v){return v.ownerInfo})
+			}
+		}));
+		flushResults();
 	}
 	
 	function processAction(player, enemy){
@@ -212,6 +290,7 @@ function Battle(type, arg1, arg2){
 	}
 	
 	function processMove(player, enemy, moveId){
+		
 		var moveData = movesData[moveId];
 		
 		if(Math.random() >= moveData.accuracy){
@@ -220,7 +299,7 @@ function Battle(type, arg1, arg2){
 		
 		switch(moveData.type){
 		case "simple":
-			var obj = calculateDamage(player.pokemon, enemy.pokemon);
+			var obj = calculateDamage(player.pokemon, enemy.pokemon, moveData);
 			enemy.pokemon.hp = Math.max(enemy.pokemon.hp - obj.damage, 0);
 			
 			return new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: obj.isCritical, effec:obj.effec});
@@ -228,6 +307,8 @@ function Battle(type, arg1, arg2){
 		
 		case "custom": return movesFunctions[moveId](player, enemy);
 		}
+		
+		throw new Error("Not implemented");
 	}
 	
 	function calculateDamage(pokemon, enemyPokemon, moveData){
@@ -308,16 +389,17 @@ function BattleAction(type, value){
 	this.value = value;
 }
 
-function BattleTurnResult(player, type, value, battleEnded){
+function BattleTurnResult(player, type, value, battleEnded, onlyBroadcastToPlayer){
 	this.player = player;
 	this.type = type;
 	this.value = value;
 	this.battleEnded = !!battleEnded;
 	this.formatForPlayer = function(p){
+		if(onlyBroadcastToPlayer && player != p) return null;
 		return {
 			player: (p == player) ? PLAYER_SELF : PLAYER_ENEMY,
 			type: type,
-			value: value
+			value: (typeof value == 'function' ? value(this, p) : value)
 		};
 	}
 }

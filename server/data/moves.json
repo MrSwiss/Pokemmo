@@ -7,7 +7,7 @@
 		"power":		35,
 		"accuracy":		0.95,
 		"contact":		true,
-		"attackType":	"simple"
+		"type":			"simple"
 	},
 	
 	"growl": {
@@ -17,8 +17,20 @@
 		"pp_max":		64,
 		"accuracy":		1.0,
 		"contact":		false,
-		"attackType":	"debuff",
+		"type":			"debuff",
 		"debuffStat":	"atk",
 		"debuffAmount":	"1"
+	},
+	
+	
+	"scratch": {
+		"name":			"Scratch",
+		"type":			"normal",
+		"pp":			35,
+		"pp_max":		56,
+		"power":		40,
+		"accuracy":		1,
+		"contact":		true,
+		"type":			"simple"
 	}
 }
