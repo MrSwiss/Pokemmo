@@ -21,6 +21,7 @@ function loadMap(id){
 	curMapId = id;
 	
 	characters = [];
+	gameObjects = [];
 	loadedChars = false;
 	
 	var pending = 0;

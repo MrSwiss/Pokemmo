@@ -3,6 +3,16 @@
 Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;if("function"!=typeof b)
 throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
 
+Array.prototype.remove = function(e){
+	var i = -1;
+	var arr = this;
+	
+	while((i = arr.indexOf(e, i)) != -1){
+		arr.splice(i, 1);
+		--i;
+	}
+};
+
 (function(window, $q){
 "use strict";
 
@@ -112,6 +122,8 @@ var fireBHooks = false;
 var fireDirHooks = false;
 var arrowKeysPressed = [];
 var renderHooks = [];
+var gameRenderHooks = [];
+var gameObjects = [];
 
 
 var battle;
@@ -148,6 +160,7 @@ function loadMap(id){
 	curMapId = id;
 	
 	characters = [];
+	gameObjects = [];
 	loadedChars = false;
 	
 	var pending = 0;
@@ -435,51 +448,24 @@ function drawLayer(ctx, map, layer){
 	}
 }
 
-function renderChars(ctx){
-	var offsetX = getRenderOffsetX();
-	var offsetY = getRenderOffsetY();
-	
-	characters.sort(function(a,b){if(a.y<b.y) return -1;if(a.y==b.y) return 0;return 1});
-	
-	for(var i=0;i<characters.length;++i){
-		var chr = characters[i];
-		renderChar(chr);
-	}
-	
-	
-	function renderChar(chr){
-		if(!chr) return;
-		if(!chr.loaded) return;
-		
-		if(chr.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
-		
-		chr.tickRender();
-		
-		var renderPos = chr.getRenderPos();
-		ctx.drawImage(chr.image, chr.direction * CHAR_WIDTH, Math.floor(chr.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
-		
-		
-		if(!chr.walking && isTileGrass(curMap, chr.x, chr.y)){
-			//TODO Actually make it look like how it is in game
-			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
+function renderObjects(ctx){
+	gameObjects.sort(function(a,b){
+		if(a instanceof Character && a.id == myId) return 1;
+		if(b instanceof Character && b.id == myId) return -1;
+		if(a.y < b.y) return -1;
+		if(a.y == b.y){
+			if(a instanceof Character && b instanceof Follower){
+				return 1;
+			}else if(b instanceof Character && a instanceof Follower){
+				return -1;
+			}
+			return 0;
 		}
-		
-		if(chr.inBattle){
-			ctx.save();
-			var ly = 0;
-			
-			ly = ((numRTicks + chr.randInt) % 31) / 30;
-			ly *= 2;
-			
-			if(ly > 1) ly = 1 - (ly - 1);
-			ly *= ly;
-			ly *= 10;
-			
-			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
-			ctx.rotate(((numRTicks + chr.randInt) % 11) / 10 * Math.PI * 2);
-			ctx.drawImage(res.uiCharInBattle, -10, -10);
-			ctx.restore();
-		}
+		return 1;
+	});
+	for(var i=0;i<gameObjects.length;++i){
+		var obj = gameObjects[i];
+		obj.render(ctx);
 	}
 }
 
@@ -734,8 +720,10 @@ function render(forceNoTransition, onlyRender){
 					}
 					
 					renderMap(gameCtx, curMap);
-					renderChars(gameCtx);
+					renderObjects(gameCtx);
 					renderMapOver(gameCtx, curMap);
+					
+					for(var i=0;i<gameRenderHooks.length;++i) gameRenderHooks[i]();
 					
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
@@ -825,6 +813,7 @@ function Character(data){
 	self.inBattle = false;
 	self.randInt = Math.floor(Math.random() * 100);
 	self.follower = data.follower || null;
+	self.lastMoveTick = 0;
 	
 	var followerObj = new Follower(this);
 	
@@ -837,16 +826,18 @@ function Character(data){
 		render();
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
-	self.tickRender = function(){
-		if(self.follower){
-			var src = 'resources/followers/'+self.follower+'.png';
-			if(followerObj.image.src != src){
-				followerObj.image.src = src;
-			}
-			followerObj.render();
-		}else{
-			followerObj.image.src = '';
-		}
+	
+	self.init = function(){
+		characters.push(self);
+		gameObjects.push(self);
+		
+		followerObj.init();
+	}
+	
+	self.destroy = function(){
+		characters.remove(self);
+		gameObjects.remove(self);
+		followerObj.destroy();
 	}
 	
 	function isControllable(){
@@ -972,7 +963,26 @@ function Character(data){
 					case DIR_DOWN: self.y += 1; break;
 				}
 				
+				self.lastMoveTick = numRTicks;
 				self.walkingHasMoved = true;
+				
+				if(isTileGrass(curMap, self.x, self.y)){
+					var grass = {
+						x: self.x,
+						y: self.y,
+						tick: numRTicks,
+						render: function(ctx){
+							if(numRTicks - grass.tick >= 20){
+								gameObjects.remove(grass);
+								return;
+							}
+							
+							ctx.drawImage(res.miscSprites, 32, 32 * Math.floor((numRTicks - grass.tick) / 5), 32, 32, grass.x * curMap.tilewidth + getRenderOffsetX(), grass.y * curMap.tileheight + getRenderOffsetY(), 32, 32);
+						}
+					};
+					
+					gameObjects.push(grass);
+				}
 				
 				if(self.id == myId){
 					socket.emit('walk', {ack: lastAckMove, x: self.x, y: self.y, dir:self.direction});
@@ -1034,6 +1044,51 @@ function Character(data){
 			self.walkingPerc = 0.0;
 		}
 	}
+	
+	self.render = function(ctx){
+		if(!self.loaded) return;
+		
+		if(self.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		
+		var offsetX = getRenderOffsetX();
+		var offsetY = getRenderOffsetY();
+		
+		if(self.follower){
+			var src = 'resources/followers/'+self.follower+'.png';
+			if(followerObj.image.src != src){
+				followerObj.image.src = src;
+			}
+		}else{
+			followerObj.image.src = '';
+		}
+		var renderPos = self.getRenderPos();
+		ctx.drawImage(self.image, self.direction * CHAR_WIDTH, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
+		
+		
+		if(isTileGrass(curMap, self.x, self.y)){
+			if(!self.walking){
+				//TODO Actually make it look like how it is in game
+				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+			}
+		}
+		
+		if(self.inBattle){
+			ctx.save();
+			var ly = 0;
+			
+			ly = ((numRTicks + self.randInt) % 31) / 30;
+			ly *= 2;
+			
+			if(ly > 1) ly = 1 - (ly - 1);
+			ly *= ly;
+			ly *= 10;
+			
+			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
+			ctx.rotate(((numRTicks + self.randInt) % 11) / 10 * Math.PI * 2);
+			ctx.drawImage(res.uiCharInBattle, -10, -10);
+			ctx.restore();
+		}
+	}
 }
 function Follower(chr){
 	var self = this;
@@ -1055,8 +1110,15 @@ function Follower(chr){
 	self.targetX = chr.lastX;
 	self.targetY = chr.lastY;
 	
-	self.render = function(){
-		var ctx = gameCtx;
+	self.init = function(){
+		gameObjects.push(self);
+	}
+	
+	self.destroy = function(){
+		gameObjects.remove(self);
+	}
+	
+	self.render = function(ctx){
 		var offsetX = getRenderOffsetX();
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();
@@ -1981,6 +2043,15 @@ function unHookRender(func){
 	if(i != -1) renderHooks.splice(i, 1);
 }
 
+function hookGameRender(func){
+	if(gameRenderHooks.indexOf(func) != -1) return;
+	gameRenderHooks.push(func);
+}
+
+function unHookGameRender(func){
+	var i = gameRenderHooks.indexOf(func);
+	if(i != -1) gameRenderHooks.splice(i, 1);
+}
 
 function tick(){
 	
@@ -2197,7 +2268,8 @@ window.initGame = function($canvas, $container){
 		loadedChars = true;
 		var arr = data.arr;
 		for(var i=0;i<arr.length;++i){
-			characters.push(new Character(arr[i]));
+			var chr = new Character(arr[i]);
+			chr.init();
 		}
 	});
 	
@@ -2270,14 +2342,15 @@ window.initGame = function($canvas, $container){
 				}
 			}else{
 				chr = new Character(charData);
-				characters.push(chr);
+				chr.init();
 			}
 		}
 		
 		for(var i=0;i<charsNotUpdated.length;++i){
 			for(var j=0;j<characters.length;++j){
 				if(characters[j].id == charsNotUpdated[i]){
-					characters.splice(j, 1);
+					characters[j].destroy();
+					
 					break;
 				}
 			}

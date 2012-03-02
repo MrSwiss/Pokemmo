@@ -103,8 +103,8 @@ io.sockets.on('connection', function (socket) {
 		
 		moveToSpawn: function(){
 			client.map = client.respawnLocation[0];
-			client.char.x = client.respawnLocation[1];
-			client.char.y = client.respawnLocation[2];
+			client.char.lastX = client.char.x = client.respawnLocation[1];
+			client.char.lastY = client.char.y = client.respawnLocation[2];
 		}
 	};
 	

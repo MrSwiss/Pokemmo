@@ -3,6 +3,16 @@
 Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;if("function"!=typeof b)
 throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
 
+Array.prototype.remove = function(e){
+	var i = -1;
+	var arr = this;
+	
+	while((i = arr.indexOf(e, i)) != -1){
+		arr.splice(i, 1);
+		--i;
+	}
+};
+
 (function(window, $q){
 "use strict";
 
@@ -112,6 +122,8 @@ var fireBHooks = false;
 var fireDirHooks = false;
 var arrowKeysPressed = [];
 var renderHooks = [];
+var gameRenderHooks = [];
+var gameObjects = [];
 
 
 var battle;
@@ -219,6 +231,15 @@ function unHookRender(func){
 	if(i != -1) renderHooks.splice(i, 1);
 }
 
+function hookGameRender(func){
+	if(gameRenderHooks.indexOf(func) != -1) return;
+	gameRenderHooks.push(func);
+}
+
+function unHookGameRender(func){
+	var i = gameRenderHooks.indexOf(func);
+	if(i != -1) gameRenderHooks.splice(i, 1);
+}
 
 function tick(){
 	
@@ -435,7 +456,8 @@ window.initGame = function($canvas, $container){
 		loadedChars = true;
 		var arr = data.arr;
 		for(var i=0;i<arr.length;++i){
-			characters.push(new Character(arr[i]));
+			var chr = new Character(arr[i]);
+			chr.init();
 		}
 	});
 	
@@ -508,14 +530,15 @@ window.initGame = function($canvas, $container){
 				}
 			}else{
 				chr = new Character(charData);
-				characters.push(chr);
+				chr.init();
 			}
 		}
 		
 		for(var i=0;i<charsNotUpdated.length;++i){
 			for(var j=0;j<characters.length;++j){
 				if(characters[j].id == charsNotUpdated[i]){
-					characters.splice(j, 1);
+					characters[j].destroy();
+					
 					break;
 				}
 			}

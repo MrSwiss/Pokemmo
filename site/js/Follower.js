@@ -18,8 +18,15 @@ function Follower(chr){
 	self.targetX = chr.lastX;
 	self.targetY = chr.lastY;
 	
-	self.render = function(){
-		var ctx = gameCtx;
+	self.init = function(){
+		gameObjects.push(self);
+	}
+	
+	self.destroy = function(){
+		gameObjects.remove(self);
+	}
+	
+	self.render = function(ctx){
 		var offsetX = getRenderOffsetX();
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();

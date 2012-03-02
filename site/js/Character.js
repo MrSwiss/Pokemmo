@@ -16,6 +16,7 @@ function Character(data){
 	self.inBattle = false;
 	self.randInt = Math.floor(Math.random() * 100);
 	self.follower = data.follower || null;
+	self.lastMoveTick = 0;
 	
 	var followerObj = new Follower(this);
 	
@@ -28,16 +29,18 @@ function Character(data){
 		render();
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
-	self.tickRender = function(){
-		if(self.follower){
-			var src = 'resources/followers/'+self.follower+'.png';
-			if(followerObj.image.src != src){
-				followerObj.image.src = src;
-			}
-			followerObj.render();
-		}else{
-			followerObj.image.src = '';
-		}
+	
+	self.init = function(){
+		characters.push(self);
+		gameObjects.push(self);
+		
+		followerObj.init();
+	}
+	
+	self.destroy = function(){
+		characters.remove(self);
+		gameObjects.remove(self);
+		followerObj.destroy();
 	}
 	
 	function isControllable(){
@@ -163,7 +166,26 @@ function Character(data){
 					case DIR_DOWN: self.y += 1; break;
 				}
 				
+				self.lastMoveTick = numRTicks;
 				self.walkingHasMoved = true;
+				
+				if(isTileGrass(curMap, self.x, self.y)){
+					var grass = {
+						x: self.x,
+						y: self.y,
+						tick: numRTicks,
+						render: function(ctx){
+							if(numRTicks - grass.tick >= 20){
+								gameObjects.remove(grass);
+								return;
+							}
+							
+							ctx.drawImage(res.miscSprites, 32, 32 * Math.floor((numRTicks - grass.tick) / 5), 32, 32, grass.x * curMap.tilewidth + getRenderOffsetX(), grass.y * curMap.tileheight + getRenderOffsetY(), 32, 32);
+						}
+					};
+					
+					gameObjects.push(grass);
+				}
 				
 				if(self.id == myId){
 					socket.emit('walk', {ack: lastAckMove, x: self.x, y: self.y, dir:self.direction});
@@ -223,6 +245,51 @@ function Character(data){
 		
 		if(lastDirection != self.direction){
 			self.walkingPerc = 0.0;
+		}
+	}
+	
+	self.render = function(ctx){
+		if(!self.loaded) return;
+		
+		if(self.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		
+		var offsetX = getRenderOffsetX();
+		var offsetY = getRenderOffsetY();
+		
+		if(self.follower){
+			var src = 'resources/followers/'+self.follower+'.png';
+			if(followerObj.image.src != src){
+				followerObj.image.src = src;
+			}
+		}else{
+			followerObj.image.src = '';
+		}
+		var renderPos = self.getRenderPos();
+		ctx.drawImage(self.image, self.direction * CHAR_WIDTH, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
+		
+		
+		if(isTileGrass(curMap, self.x, self.y)){
+			if(!self.walking){
+				//TODO Actually make it look like how it is in game
+				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+			}
+		}
+		
+		if(self.inBattle){
+			ctx.save();
+			var ly = 0;
+			
+			ly = ((numRTicks + self.randInt) % 31) / 30;
+			ly *= 2;
+			
+			if(ly > 1) ly = 1 - (ly - 1);
+			ly *= ly;
+			ly *= 10;
+			
+			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
+			ctx.rotate(((numRTicks + self.randInt) % 11) / 10 * Math.PI * 2);
+			ctx.drawImage(res.uiCharInBattle, -10, -10);
+			ctx.restore();
 		}
 	}
 }

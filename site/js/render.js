@@ -68,51 +68,24 @@ function drawLayer(ctx, map, layer){
 	}
 }
 
-function renderChars(ctx){
-	var offsetX = getRenderOffsetX();
-	var offsetY = getRenderOffsetY();
-	
-	characters.sort(function(a,b){if(a.y<b.y) return -1;if(a.y==b.y) return 0;return 1});
-	
-	for(var i=0;i<characters.length;++i){
-		var chr = characters[i];
-		renderChar(chr);
-	}
-	
-	
-	function renderChar(chr){
-		if(!chr) return;
-		if(!chr.loaded) return;
-		
-		if(chr.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
-		
-		chr.tickRender();
-		
-		var renderPos = chr.getRenderPos();
-		ctx.drawImage(chr.image, chr.direction * CHAR_WIDTH, Math.floor(chr.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
-		
-		
-		if(!chr.walking && isTileGrass(curMap, chr.x, chr.y)){
-			//TODO Actually make it look like how it is in game
-			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, chr.x * curMap.tilewidth + offsetX, chr.y * curMap.tileheight + offsetY, 32, 32);
+function renderObjects(ctx){
+	gameObjects.sort(function(a,b){
+		if(a instanceof Character && a.id == myId) return 1;
+		if(b instanceof Character && b.id == myId) return -1;
+		if(a.y < b.y) return -1;
+		if(a.y == b.y){
+			if(a instanceof Character && b instanceof Follower){
+				return 1;
+			}else if(b instanceof Character && a instanceof Follower){
+				return -1;
+			}
+			return 0;
 		}
-		
-		if(chr.inBattle){
-			ctx.save();
-			var ly = 0;
-			
-			ly = ((numRTicks + chr.randInt) % 31) / 30;
-			ly *= 2;
-			
-			if(ly > 1) ly = 1 - (ly - 1);
-			ly *= ly;
-			ly *= 10;
-			
-			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
-			ctx.rotate(((numRTicks + chr.randInt) % 11) / 10 * Math.PI * 2);
-			ctx.drawImage(res.uiCharInBattle, -10, -10);
-			ctx.restore();
-		}
+		return 1;
+	});
+	for(var i=0;i<gameObjects.length;++i){
+		var obj = gameObjects[i];
+		obj.render(ctx);
 	}
 }
 
@@ -367,8 +340,10 @@ function render(forceNoTransition, onlyRender){
 					}
 					
 					renderMap(gameCtx, curMap);
-					renderChars(gameCtx);
+					renderObjects(gameCtx);
 					renderMapOver(gameCtx, curMap);
+					
+					for(var i=0;i<gameRenderHooks.length;++i) gameRenderHooks[i]();
 					
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
