@@ -2971,7 +2971,6 @@
 
 
 		"evolveTo":		"65",
-		"evolveItem":	"none",
 		"tradeToEvolve":"true",
 
 
@@ -3124,7 +3123,6 @@
 
 
 		"evolveTo":		"68",
-		"evolveItem":	"none",
 		"tradeToEvolve":"true",
 
 
@@ -3513,7 +3511,6 @@
 
 
 		"evolveTo":		"76",
-		"evolveItem":	"none",
 		"tradeToEvolve":"true",
 
 
@@ -4380,7 +4377,6 @@
 
 
 		"evolveTo":		"94",
-		"evolveItem":	"none",
 		"tradeToEvolve":"true",
 
 

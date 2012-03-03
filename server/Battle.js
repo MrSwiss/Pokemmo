@@ -16,6 +16,9 @@ function Battle(type, arg1, arg2){
 	var self = this;
 	
 	var player1 = {}, player2 = {};
+	self.player1 = player1;
+	self.player2 = player2;
+	self.type = type;
 	
 	var runAttempts = 0;
 	

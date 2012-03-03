@@ -13,12 +13,16 @@ function Character(data){
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
-	self.inBattle = false;
+	self.inBattle = data.inBattle || false;
 	self.randInt = Math.floor(Math.random() * 100);
 	self.follower = data.follower || null;
 	self.lastMoveTick = 0;
 	
 	var followerObj = new Follower(this);
+	
+	var wildPokemon;
+	
+	self.battleEnemy = undefined;
 	
 	self.lastX = self.x;
 	self.lastY = self.y;
@@ -40,7 +44,9 @@ function Character(data){
 	self.destroy = function(){
 		characters.remove(self);
 		gameObjects.remove(self);
+		inBattle = false;
 		followerObj.destroy();
+		if(wildPokemon) wildPokemon.destroy();
 	}
 	
 	function isControllable(){
@@ -170,21 +176,7 @@ function Character(data){
 				self.walkingHasMoved = true;
 				
 				if(isTileGrass(curMap, self.x, self.y)){
-					var grass = {
-						x: self.x,
-						y: self.y,
-						tick: numRTicks,
-						render: function(ctx){
-							if(numRTicks - grass.tick >= 20){
-								gameObjects.remove(grass);
-								return;
-							}
-							
-							ctx.drawImage(res.miscSprites, 32, 32 * Math.floor((numRTicks - grass.tick) / 5), 32, 32, grass.x * curMap.tilewidth + getRenderOffsetX(), grass.y * curMap.tileheight + getRenderOffsetY(), 32, 32);
-						}
-					};
-					
-					gameObjects.push(grass);
+					createGrassAnimation(self.x, self.y);
 				}
 				
 				if(self.id == myId){
@@ -214,7 +206,38 @@ function Character(data){
 			self.animationStep = 0;
 		}
 		
-		followerObj.tick();
+		if(self.inBattle && !wildPokemon){
+			var tmpX, tmpY;
+			
+			if(self.id != myId){
+				tmpX = self.targetX;
+				tmpY = self.targetY;
+			}else{
+				tmpX = self.x;
+				tmpY = self.y;
+				if(chr.walking && !self.walkingHasMoved){
+					switch(self.direction){
+						case DIR_LEFT: tmpX -= 1;; break;
+						case DIR_RIGHT: tmpX += 1; break;
+						case DIR_UP: tmpY -= 1; break;
+						case DIR_DOWN: tmpY += 1; break;
+					}
+				}
+			}
+			
+			
+			var tmpDir;
+			switch(self.direction){
+				case DIR_LEFT: tmpX -= 1; tmpDir = DIR_RIGHT; break;
+				case DIR_RIGHT: tmpX += 1; tmpDir = DIR_LEFT; break;
+				case DIR_UP: tmpY -= 1; tmpDir = DIR_DOWN; break;
+				case DIR_DOWN: tmpY += 1; tmpDir = DIR_UP; break;
+			}
+			
+			wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
+		}else if(!self.inBattle && wildPokemon){
+			wildPokemon.destroy();
+		}
 	}
 	
 	function willMoveIntoAWall(){
@@ -258,21 +281,18 @@ function Character(data){
 		
 		if(self.follower){
 			var src = 'resources/followers/'+self.follower+'.png';
-			if(followerObj.image.src != src){
-				followerObj.image.src = src;
+			if(followerObj.pok.image.src != src){
+				followerObj.pok.image.src = src;
 			}
 		}else{
-			followerObj.image.src = '';
+			followerObj.pok.image.src = '';
 		}
 		var renderPos = self.getRenderPos();
 		ctx.drawImage(self.image, self.direction * CHAR_WIDTH, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
 		
 		
-		if(isTileGrass(curMap, self.x, self.y)){
-			if(!self.walking){
-				//TODO Actually make it look like how it is in game
-				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
-			}
+		if(isTileGrass(curMap, self.x, self.y) && !self.walking){
+			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
 		if(self.inBattle){

@@ -4,7 +4,7 @@ Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;
 throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
 
 Array.prototype.remove = function(e){
-	var i = -1;
+	var i = 0;
 	var arr = this;
 	
 	while((i = arr.indexOf(e, i)) != -1){
@@ -449,11 +449,20 @@ function drawLayer(ctx, map, layer){
 }
 
 function renderObjects(ctx){
-	gameObjects.sort(function(a,b){
-		if(a instanceof Character && a.id == myId) return 1;
-		if(b instanceof Character && b.id == myId) return -1;
+	gameObjects.sort(function(a, b){
+		if(a instanceof Character && a.id == myId){
+			if(b instanceof TGrass) return -1;
+			return 1;
+		}
+		if(b instanceof Character && b.id == myId){
+			if(a instanceof TGrass) return 1;
+			return -1;
+		}
 		if(a.y < b.y) return -1;
 		if(a.y == b.y){
+			if(a instanceof TGrass) return 1;
+			if(b instanceof TGrass) return -1;
+			
 			if(a instanceof Character && b instanceof Follower){
 				return 1;
 			}else if(b instanceof Character && a instanceof Follower){
@@ -461,11 +470,17 @@ function renderObjects(ctx){
 			}
 			return 0;
 		}
-		return 1;
+		if(a.y > b.y) return 1;
+		console.log(a, b);
+		tick = function(){};
+		render = function(){};
+		throw new Error('Assertion failed');
 	});
+	
+	
 	for(var i=0;i<gameObjects.length;++i){
 		var obj = gameObjects[i];
-		obj.render(ctx);
+		if(typeof obj.render == 'function') obj.render(ctx);
 	}
 }
 
@@ -629,66 +644,70 @@ function battleTransition(){
 }
 
 function renderBattleTransition(){
-	var BAR_HEIGHT = 80;
-	
-	ctx.fillStyle = 'rgb(0,0,0)';
-	
-	if(transitionStep >= 30){
-		renderBattle();
-	}
-	
-	
-	
-	if(transitionStep < 18){
-		var h = transitionStep * transitionStep;
-		ctx.fillRect(0, 0, canvas.width, h);
-		ctx.fillRect(0, canvas.height - h, canvas.width, h);
-	}else if(transitionStep < 30){
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		if(transitionStep == 18){
-			var chr = getPlayerChar();
-			if(chr){
-				chr.x = battle.x;
-				chr.y = battle.y;
-				chr.walking = false;
-			}
+	ctx.fillStyle = '#000000';
+	switch(battle.startTransition){
+	case 0:
+		var BAR_HEIGHT = 80;
+		
+		if(transitionStep >= 30){
+			renderBattle();
 		}
-	}else if(transitionStep < 50){
-		var perc = ((transitionStep - 30) / 20);
-		if(perc > 1) perc = 1;
-		perc *= perc;
 		
-		ctx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
+		if(transitionStep < 18){
+			var h = transitionStep * transitionStep;
+			ctx.fillRect(0, 0, canvas.width, h);
+			ctx.fillRect(0, canvas.height - h, canvas.width, h);
+		}else if(transitionStep < 30){
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			if(transitionStep == 18){
+				var chr = getPlayerChar();
+				if(chr){
+					chr.x = battle.x;
+					chr.y = battle.y;
+					chr.walking = false;
+				}
+			}
+		}else if(transitionStep < 50){
+			var perc = ((transitionStep - 30) / 20);
+			if(perc > 1) perc = 1;
+			perc *= perc;
+			
+			ctx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
+			
+			var h = (canvas.height / 2 - BAR_HEIGHT / 2) * (1 - perc);
+			ctx.fillRect(0, (canvas.height / 2 - BAR_HEIGHT / 2) - h, canvas.width, h);
+			ctx.fillRect(0, (canvas.height / 2 + BAR_HEIGHT / 2), canvas.width, h);
+			
+			ctx.save();
+			
+			ctx.translate(canvas.width / 2, canvas.height / 2);
+			ctx.rotate(Math.PI * 2 * perc);
+			ctx.scale(perc, perc);
+			
+			ctx.drawImage(battleIntroPokeball, -60, -60);
+			ctx.restore();
+		}else if(transitionStep < 80){
+			var perc = ((transitionStep - 60) / 20);
+			
+			clearTmpCanvas();
+			
+			tmpCtx.fillStyle = 'rgb(0, 0, 0)';
+			tmpCtx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
+			tmpCtx.drawImage(battleIntroPokeball, canvas.width / 2 - 60, canvas.height / 2 - 60);
+			
+			
+			ctx.globalAlpha = clamp(1 - perc, 0, 1);
+			ctx.drawImage(tmpCanvas, 0, 0);
+			ctx.globalAlpha = 1;
+		}else{
+			battle.step = 1;
+		}
+		break;
+	case 1:
+		//TODO
 		
-		var h = (canvas.height / 2 - BAR_HEIGHT / 2) * (1 - perc);
-		ctx.fillRect(0, (canvas.height / 2 - BAR_HEIGHT / 2) - h, canvas.width, h);
-		ctx.fillRect(0, (canvas.height / 2 + BAR_HEIGHT / 2), canvas.width, h);
-		
-		ctx.save();
-		
-		ctx.translate(canvas.width / 2, canvas.height / 2);
-		ctx.rotate(Math.PI * 2 * perc);
-		ctx.scale(perc, perc);
-		
-		ctx.drawImage(battleIntroPokeball, -60, -60);
-		ctx.restore();
-	}else if(transitionStep < 80){
-		var perc = ((transitionStep - 60) / 20);
-		
-		clearTmpCanvas();
-		
-		tmpCtx.fillStyle = 'rgb(0, 0, 0)';
-		tmpCtx.fillRect(0, canvas.height / 2 - BAR_HEIGHT / 2, canvas.width, BAR_HEIGHT);
-		tmpCtx.drawImage(battleIntroPokeball, canvas.width / 2 - 60, canvas.height / 2 - 60);
-		
-		
-		ctx.globalAlpha = clamp(1 - perc, 0, 1);
-		ctx.drawImage(tmpCanvas, 0, 0);
-		ctx.globalAlpha = 1;
-	}else{
-		battle.step = 1;
+		break;
 	}
-	
 	
 	++transitionStep;
 }
@@ -704,6 +723,7 @@ function render(forceNoTransition, onlyRender){
 	
 	
 	var realRender = function(){
+		
 		willRender = false;
 		
 		switch(state){
@@ -784,16 +804,23 @@ function render(forceNoTransition, onlyRender){
 	}
 }
 
-function drawText(ctx, str, x, y){
-	clearTmpCanvas();
-	
-	tmpCtx.save();
-	tmpCtx.fillStyle = ctx.fillStyle;
-	tmpCtx.fontStyle = ctx.fontStyle;
-	tmpCtx.fillText(str, 10, 60);
-	tmpCtx.restore();
-	
-	ctx.drawImage(tmpCanvas, -20, -120);
+function createGrassAnimation(x, y){
+	gameObjects.push(new TGrass(x, y));
+}
+
+function TGrass(x, y){
+	var self = this;
+	var tick = numRTicks;
+	self.x = x;
+	self.y = y;
+	self.render = function(ctx){
+		if(numRTicks - tick >= 16){
+			gameObjects.remove(self);
+			return;
+		}
+		
+		ctx.drawImage(res.miscSprites, 32, 32 * Math.floor((numRTicks - tick) / 4), 32, 32, x * curMap.tilewidth + getRenderOffsetX(), y * curMap.tileheight + getRenderOffsetY(), 32, 32);
+	}
 }
 function Character(data){
 	var self = this;
@@ -810,12 +837,16 @@ function Character(data){
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
-	self.inBattle = false;
+	self.inBattle = data.inBattle || false;
 	self.randInt = Math.floor(Math.random() * 100);
 	self.follower = data.follower || null;
 	self.lastMoveTick = 0;
 	
 	var followerObj = new Follower(this);
+	
+	var wildPokemon;
+	
+	self.battleEnemy = undefined;
 	
 	self.lastX = self.x;
 	self.lastY = self.y;
@@ -837,7 +868,9 @@ function Character(data){
 	self.destroy = function(){
 		characters.remove(self);
 		gameObjects.remove(self);
+		inBattle = false;
 		followerObj.destroy();
+		if(wildPokemon) wildPokemon.destroy();
 	}
 	
 	function isControllable(){
@@ -967,21 +1000,7 @@ function Character(data){
 				self.walkingHasMoved = true;
 				
 				if(isTileGrass(curMap, self.x, self.y)){
-					var grass = {
-						x: self.x,
-						y: self.y,
-						tick: numRTicks,
-						render: function(ctx){
-							if(numRTicks - grass.tick >= 20){
-								gameObjects.remove(grass);
-								return;
-							}
-							
-							ctx.drawImage(res.miscSprites, 32, 32 * Math.floor((numRTicks - grass.tick) / 5), 32, 32, grass.x * curMap.tilewidth + getRenderOffsetX(), grass.y * curMap.tileheight + getRenderOffsetY(), 32, 32);
-						}
-					};
-					
-					gameObjects.push(grass);
+					createGrassAnimation(self.x, self.y);
 				}
 				
 				if(self.id == myId){
@@ -1011,7 +1030,38 @@ function Character(data){
 			self.animationStep = 0;
 		}
 		
-		followerObj.tick();
+		if(self.inBattle && !wildPokemon){
+			var tmpX, tmpY;
+			
+			if(self.id != myId){
+				tmpX = self.targetX;
+				tmpY = self.targetY;
+			}else{
+				tmpX = self.x;
+				tmpY = self.y;
+				if(chr.walking && !self.walkingHasMoved){
+					switch(self.direction){
+						case DIR_LEFT: tmpX -= 1;; break;
+						case DIR_RIGHT: tmpX += 1; break;
+						case DIR_UP: tmpY -= 1; break;
+						case DIR_DOWN: tmpY += 1; break;
+					}
+				}
+			}
+			
+			
+			var tmpDir;
+			switch(self.direction){
+				case DIR_LEFT: tmpX -= 1; tmpDir = DIR_RIGHT; break;
+				case DIR_RIGHT: tmpX += 1; tmpDir = DIR_LEFT; break;
+				case DIR_UP: tmpY -= 1; tmpDir = DIR_DOWN; break;
+				case DIR_DOWN: tmpY += 1; tmpDir = DIR_UP; break;
+			}
+			
+			wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
+		}else if(!self.inBattle && wildPokemon){
+			wildPokemon.destroy();
+		}
 	}
 	
 	function willMoveIntoAWall(){
@@ -1055,21 +1105,18 @@ function Character(data){
 		
 		if(self.follower){
 			var src = 'resources/followers/'+self.follower+'.png';
-			if(followerObj.image.src != src){
-				followerObj.image.src = src;
+			if(followerObj.pok.image.src != src){
+				followerObj.pok.image.src = src;
 			}
 		}else{
-			followerObj.image.src = '';
+			followerObj.pok.image.src = '';
 		}
 		var renderPos = self.getRenderPos();
 		ctx.drawImage(self.image, self.direction * CHAR_WIDTH, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
 		
 		
-		if(isTileGrass(curMap, self.x, self.y)){
-			if(!self.walking){
-				//TODO Actually make it look like how it is in game
-				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
-			}
+		if(isTileGrass(curMap, self.x, self.y) && !self.walking){
+			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
 		if(self.inBattle){
@@ -1090,25 +1137,27 @@ function Character(data){
 		}
 	}
 }
-function Follower(chr){
+var POKEMON_WIDTH = 64;
+var POKEMON_HEIGHT = 64;
+
+function TPokemon(x, y){
 	var self = this;
-	var FOLLOWER_WIDTH = 64;
-	var FOLLOWER_HEIGHT = 64;
 	
-	console.log('new follower');
 	
 	var randInt = Math.floor(Math.random() * 100);
 	
 	self.image = new Image();
 	self.direction = DIR_DOWN;
-	self.x = chr.lastX || chr.x;
-	self.y = chr.lastY || chr.y;
+	self.x = x || 0;
+	self.y = y || 0;
 	self.walking = false;
 	self.walkingPerc = 0.0;
 	self.walkingHasMoved = false;
 	
-	self.targetX = chr.lastX;
-	self.targetY = chr.lastY;
+	self.canDrawGrass = true;
+	
+	self.targetX = self.x;
+	self.targetY = self.y;
 	
 	self.init = function(){
 		gameObjects.push(self);
@@ -1124,36 +1173,20 @@ function Follower(chr){
 		var renderPos = self.getRenderPos();
 		
 		ctx.save();
-		ctx.drawImage(self.image, FOLLOWER_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * FOLLOWER_HEIGHT, FOLLOWER_WIDTH, FOLLOWER_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, FOLLOWER_WIDTH, FOLLOWER_HEIGHT);
+		ctx.drawImage(self.image, POKEMON_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
 		ctx.restore();
+		
+		if(self.canDrawGrass && isTileGrass(curMap, self.x, self.y) && !self.walking){
+			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+		}
 	}
 	
 	self.tick = function(){
-		self.targetX = chr.lastX;
-		self.targetY = chr.lastY;
-		
-		if(chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
-			self.targetX = chr.x;
-			self.targetY = chr.y;
-		}
-		
 		if(!self.walking){
 			self.walkingHasMoved = false;
 			self.walkingPerc = 0.0;
 			
 			tickBot();
-			
-			if(!self.walking){
-				if(this.x < chr.x){
-					self.direction = DIR_RIGHT;
-				}else if(this.x > chr.x){
-					self.direction = DIR_LEFT;
-				}else if(this.y > chr.y){
-					self.direction = DIR_UP;
-				}else{
-					self.direction = DIR_DOWN;
-				}
-			}
 		}else{
 			self.walkingPerc += 0.10;
 			self.animationStep += 0.20;
@@ -1166,6 +1199,10 @@ function Follower(chr){
 				}
 				
 				self.walkingHasMoved = true;
+				
+				if(isTileGrass(curMap, self.x, self.y)){
+					createGrassAnimation(self.x, self.y);
+				}
 			}
 			
 			if(self.walkingPerc >= 1.0){
@@ -1178,9 +1215,9 @@ function Follower(chr){
 	}
 	
 	self.getRenderPos = function(){
-		if(!self.walking) return {x: self.x * curMap.tilewidth - FOLLOWER_WIDTH/4, y: self.y * curMap.tileheight - FOLLOWER_HEIGHT/2};
-		var destX = self.x * curMap.tilewidth - FOLLOWER_WIDTH/4;
-		var destY = self.y * curMap.tileheight - FOLLOWER_HEIGHT/2;
+		if(!self.walking) return {x: self.x * curMap.tilewidth - POKEMON_WIDTH/4, y: self.y * curMap.tileheight - POKEMON_HEIGHT/2};
+		var destX = self.x * curMap.tilewidth - POKEMON_WIDTH/4;
+		var destY = self.y * curMap.tileheight - POKEMON_HEIGHT/2;
 		var perc = (self.walkingPerc - CHAR_MOVE_WAIT) / (1-CHAR_MOVE_WAIT);
 		
 		if(self.walkingPerc > CHAR_MOVE_WAIT){
@@ -1233,6 +1270,52 @@ function Follower(chr){
 		}
 	}
 }
+function Follower(chr){
+	var self = this;
+	var pok = new TPokemon(chr.lastX || chr.x, chr.lastY || chr.y);
+	self.pok = pok;
+	self.x = pok.x;
+	self.y = pok.y;
+	self.init = function(){
+		gameObjects.push(self);
+	}
+	
+	self.destroy = function(){
+		gameObjects.remove(self);
+	}
+	
+	self.render = function(ctx){
+		if(chr.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		pok.render(ctx);
+	}
+	
+	self.tick = function(){
+		pok.targetX = chr.lastX;
+		pok.targetY = chr.lastY;
+		
+		if(chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
+			pok.targetX = chr.x;
+			pok.targetY = chr.y;
+		}
+		
+		pok.tick();
+		
+		if(!pok.walking){
+			if(pok.x < chr.x){
+				pok.direction = DIR_RIGHT;
+			}else if(pok.x > chr.x){
+				pok.direction = DIR_LEFT;
+			}else if(pok.y > chr.y){
+				pok.direction = DIR_UP;
+			}else{
+				pok.direction = DIR_DOWN;
+			}
+		}
+		
+		self.x = pok.x;
+		self.y = pok.y;
+	}
+}
 var moveStartTime = 0;
 
 var BATTLE_WILD = 0;
@@ -1247,6 +1330,8 @@ function initBattle(){
 	battle.renderVars = {};
 	battle.resultQueue = [];
 	battle.runningQueue = false;
+	battle.randInt = Math.floor(Math.random() * 1000);
+	battle.startTransition = 0;//Math.floor(Math.random() * 2);
 }
 
 function renderBattle(){
@@ -1481,24 +1566,27 @@ function renderBattle(){
 		
 		++battle.animStep;
 	}else{
+		ctx.save();
+		ctx.beginPath();
+		ctx.moveTo(60, 96);
+		ctx.lineTo(188, 96);
+		ctx.lineTo(188, 224);
+		ctx.lineTo(60, 224);
+		ctx.lineTo(60, 96);
+		ctx.clip();
 		if(!battle.renderVars.dontRenderPokemon){
 			if(battle.renderVars.pokemonFainted){
 				if(numRTicks - battle.renderVars.pokemonFaintedTick <= 5){
-					ctx.save();
-					ctx.beginPath();
-					ctx.moveTo(60, 96);
-					ctx.lineTo(188, 96);
-					ctx.lineTo(188, 224);
-					ctx.lineTo(60, 224);
-					ctx.lineTo(60, 96);
-					ctx.clip();
 					ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + (numRTicks - battle.renderVars.pokemonFaintedTick) * 30);
-					ctx.restore();
 				}
 			}else{
-				ctx.drawImage(battle.curPokemon.backsprite, 60, 96);
+				ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + ((battle.step == 4 || battle.step == 5) && ((now + battle.randInt) % 600) < 300 ? 2 : 0));
+				
 			}
+			
 		}
+		
+		ctx.restore();
 	}
 	
 	{
@@ -1546,7 +1634,7 @@ function renderBattle(){
 		ctx.save();
 		var tmp = 0;
 		if(battle.step == 4 || battle.step == 5){
-			ctx.translate(0, (now % 1000) < 500 ? 0 : 2);
+			ctx.translate(0, (now % 600) < 300 ? 0 : 2);
 		}
 		
 		if(battle.renderVars.shakePokemonStatus && numRTicks % 2 == 0) ctx.translate(0, 2);
@@ -1965,6 +2053,65 @@ moves['def'] = (function(){
 	}
 })();
 
+function TWildPokemon(id, x, y, dir, chr){
+	var self = this;
+	
+	var pok = new TPokemon(x, y);
+	var initTick;
+	
+	self.x = pok.x;
+	self.y = pok.y;
+	
+	//pok.image.onload = function(){self.init();};
+	pok.image.src = 'resources/followers/'+id+'.png';
+	
+	self.init = function(){
+		gameObjects.push(self);
+		initTick = numRTicks;
+	}
+	
+	self.destroy = function(){
+		gameObjects.remove(self);
+	}
+	
+	self.tick = function(){
+		if(!chr.inBattle){
+			self.destroy();
+			return;
+		}
+		
+		pok.tick();
+		
+		if(!pok.walking){
+			if(pok.x < chr.x){
+				pok.direction = DIR_RIGHT;
+			}else if(pok.x > chr.x){
+				pok.direction = DIR_LEFT;
+			}else if(pok.y > chr.y){
+				pok.direction = DIR_UP;
+			}else{
+				pok.direction = DIR_DOWN;
+			}
+		}
+		
+		self.x = pok.x;
+		self.y = pok.y;
+	}
+	
+	self.render = function(ctx){
+		ctx.save();
+		pok.canDrawGrass = numRTicks - initTick < 5;
+		if(numRTicks - initTick < 10){
+			ctx.translate(0, -(Math.floor(-7 / 50 * (numRTicks - initTick) * (numRTicks - initTick) + 7 / 5 * (numRTicks - initTick)) * 8));
+		}
+		
+		pok.render(ctx);
+		
+		ctx.restore();
+	}
+	
+	self.init();
+}
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
 }
@@ -2057,8 +2204,8 @@ function tick(){
 	
 	if(state == ST_MAP){
 		
-		for(var i=0;i<characters.length;++i){
-			characters[i].tick();
+		for(var i=0;i<gameObjects.length;++i){
+			if(typeof gameObjects[i].tick == 'function') gameObjects[i].tick();
 		}
 		
 	}
@@ -2318,6 +2465,7 @@ window.initGame = function($canvas, $container){
 			
 			if(chr){
 				chr.inBattle = charData.inBattle;
+				chr.battleEnemy = charData.battleEnemy;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
 				

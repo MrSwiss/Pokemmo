@@ -4,7 +4,7 @@ Array.prototype.filter||(Array.prototype.filter=function(b,e){var f=this.length;
 throw new TypeError;for(var c=[],a=0;a<f;a++)if(a in this){var d=this[a];b.call(e,d,a,this)&&c.push(d)}return c});
 
 Array.prototype.remove = function(e){
-	var i = -1;
+	var i = 0;
 	var arr = this;
 	
 	while((i = arr.indexOf(e, i)) != -1){
@@ -147,11 +147,15 @@ function parseMap(data){
 
 // #include "Character.js"
 
+// #include "TPokemon.js"
+
 // #include "Follower.js"
 
 // #include "Battle.js"
 
 // #include "moves.js"
+
+// #include "TWildPokemon.js"
 
 function filterChatText(){
 	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
@@ -245,8 +249,8 @@ function tick(){
 	
 	if(state == ST_MAP){
 		
-		for(var i=0;i<characters.length;++i){
-			characters[i].tick();
+		for(var i=0;i<gameObjects.length;++i){
+			if(typeof gameObjects[i].tick == 'function') gameObjects[i].tick();
 		}
 		
 	}
@@ -506,6 +510,7 @@ window.initGame = function($canvas, $container){
 			
 			if(chr){
 				chr.inBattle = charData.inBattle;
+				chr.battleEnemy = charData.battleEnemy;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
 				

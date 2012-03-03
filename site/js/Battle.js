@@ -12,6 +12,8 @@ function initBattle(){
 	battle.renderVars = {};
 	battle.resultQueue = [];
 	battle.runningQueue = false;
+	battle.randInt = Math.floor(Math.random() * 1000);
+	battle.startTransition = 0;//Math.floor(Math.random() * 2);
 }
 
 function renderBattle(){
@@ -246,24 +248,27 @@ function renderBattle(){
 		
 		++battle.animStep;
 	}else{
+		ctx.save();
+		ctx.beginPath();
+		ctx.moveTo(60, 96);
+		ctx.lineTo(188, 96);
+		ctx.lineTo(188, 224);
+		ctx.lineTo(60, 224);
+		ctx.lineTo(60, 96);
+		ctx.clip();
 		if(!battle.renderVars.dontRenderPokemon){
 			if(battle.renderVars.pokemonFainted){
 				if(numRTicks - battle.renderVars.pokemonFaintedTick <= 5){
-					ctx.save();
-					ctx.beginPath();
-					ctx.moveTo(60, 96);
-					ctx.lineTo(188, 96);
-					ctx.lineTo(188, 224);
-					ctx.lineTo(60, 224);
-					ctx.lineTo(60, 96);
-					ctx.clip();
 					ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + (numRTicks - battle.renderVars.pokemonFaintedTick) * 30);
-					ctx.restore();
 				}
 			}else{
-				ctx.drawImage(battle.curPokemon.backsprite, 60, 96);
+				ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + ((battle.step == 4 || battle.step == 5) && ((now + battle.randInt) % 600) < 300 ? 2 : 0));
+				
 			}
+			
 		}
+		
+		ctx.restore();
 	}
 	
 	{
@@ -311,7 +316,7 @@ function renderBattle(){
 		ctx.save();
 		var tmp = 0;
 		if(battle.step == 4 || battle.step == 5){
-			ctx.translate(0, (now % 1000) < 500 ? 0 : 2);
+			ctx.translate(0, (now % 600) < 300 ? 0 : 2);
 		}
 		
 		if(battle.renderVars.shakePokemonStatus && numRTicks % 2 == 0) ctx.translate(0, 2);

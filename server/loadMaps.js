@@ -21,9 +21,6 @@ for(var i=0;i<mapsNames.length;++i){
 	maps[mapName] = map;
 	
 	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
-	map.chars = [];
-	
-	
 	
 	var solidData = new Array(map.data.width);
 	tilesets = map.data.tilesets;
@@ -82,12 +79,14 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	map.solidData = solidData;
 	
-	recursiveFreeze(map.solidData);
-	recursiveFreeze(map.encounterAreas);
+	recursiveFreeze(map);
 	
 }
 
 end = +new Date();
 console.log('Maps loaded! ('+(end-start)+' ms)');
 
+for(var i in maps){
+	mapInstances[i] = [createInstance(i)];
+}
 })();

@@ -6,6 +6,7 @@ var fs = require('fs');
 var mapsNames = ['pallet'];
 var clients = [];
 var maps = {};
+var mapInstances = {};
 
 var start, end;
 
@@ -280,6 +281,9 @@ function Battle(type, arg1, arg2){
 	var self = this;
 	
 	var player1 = {}, player2 = {};
+	self.player1 = player1;
+	self.player2 = player2;
+	self.type = type;
 	
 	var runAttempts = 0;
 	
@@ -724,9 +728,6 @@ for(var i=0;i<mapsNames.length;++i){
 	maps[mapName] = map;
 	
 	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
-	map.chars = [];
-	
-	
 	
 	var solidData = new Array(map.data.width);
 	tilesets = map.data.tilesets;
@@ -785,14 +786,16 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	map.solidData = solidData;
 	
-	recursiveFreeze(map.solidData);
-	recursiveFreeze(map.encounterAreas);
+	recursiveFreeze(map);
 	
 }
 
 end = +new Date();
 console.log('Maps loaded! ('+(end-start)+' ms)');
 
+for(var i in maps){
+	mapInstances[i] = [createInstance(i)];
+}
 })();
 // Generate experience lookup table
 // The table works as this: experienceRequired.fast[100] would be
@@ -889,15 +892,19 @@ var MAX_LEVEL = 100;
 		}
 	}
 })();
+
+
 io.sockets.on('connection', function (socket) {
 	var client = {
 		socket: socket,
 		id: generateRandomString(16),
 		username: generateRandomString(5),
 		map: 'pallet',
+		mapInstance: 0,
 		char: {
 			get id(){return client.id},
 			get inBattle(){return client.inBattle},
+			get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
 			type: 'red',
 			//x: 16,
 			//y: 56,
@@ -925,8 +932,8 @@ io.sockets.on('connection', function (socket) {
 		
 		moveToSpawn: function(){
 			client.map = client.respawnLocation[0];
-			client.char.x = client.respawnLocation[1];
-			client.char.y = client.respawnLocation[2];
+			client.char.lastX = client.char.x = client.respawnLocation[1];
+			client.char.lastY = client.char.y = client.respawnLocation[2];
 		}
 	};
 	
@@ -945,16 +952,16 @@ io.sockets.on('connection', function (socket) {
 	client.char.lastX = client.char.x;
 	client.char.lastY = client.char.y;
 	
-	maps[client.map].chars.push(client.char);
+	getMapInstance().chars.push(client.char);
 	
 	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	socket.emit('loadMap', {mapid: client.map});
-	socket.emit('createChars', {arr:maps[client.map].chars});
+	socket.emit('createChars', {arr: getMapInstance().chars});
 	
 	socket.on('disconnect', function(){
-		var i = maps[client.map].chars.indexOf(client.char);
+		var i = mapInstances[client.map][client.mapInstance].chars.indexOf(client.char);
 		if(i != -1){
-			maps[client.map].chars.splice(i, 1);
+			mapInstances[client.map][client.mapInstance].chars.splice(i, 1);
 		}else{
 			console.log("Couldn't remove character!");
 		}
@@ -1046,7 +1053,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	client.sendUpdate = function(){
-		socket.volatile.emit('update', {chars:maps[client.map].chars, messages: client.messageQueue});
+		socket.volatile.emit('update', {chars:getMapInstance().chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
 	}
 	
@@ -1071,6 +1078,10 @@ io.sockets.on('connection', function (socket) {
 			}
 		}
 	}
+	
+	function getMapInstance(){
+		return mapInstances[client.map][client.mapInstance];
+	}
 });
 
 setInterval(function(){
@@ -1093,6 +1104,14 @@ function getEncounterAreasAt(mapName, x, y){
 	return arr;
 }
 
+function createInstance(map){
+	if(mapInstances[map] == null) mapInstances[map] = [];
+	
+	var instance = {};
+	instance.chars = [];
+	
+	return instance;
+}
 
 function generateRandomString(len){
 	var i = len;
