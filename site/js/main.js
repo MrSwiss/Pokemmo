@@ -97,6 +97,7 @@ var inChat = false;
 
 var lastAckMove = 0;
 var loadedChars = false;
+var drawPlayerChar = true;
 
 var numRTicks = 0;
 
@@ -513,6 +514,7 @@ window.initGame = function($canvas, $container){
 				chr.battleEnemy = charData.battleEnemy;
 				chr.targetX = charData.x;
 				chr.targetY = charData.y;
+				chr.targetDirection = charData.direction;
 				
 				if(!chr.moving){
 					chr.lastX = charData.lastX;
@@ -568,8 +570,8 @@ window.initGame = function($canvas, $container){
 		battle.background = new Image();
 		battle.background.src = 'resources/ui/battle_background1.png';
 		
-		
 		var enemy = data.battle.enemy;
+		
 		
 		battle.enemyPokemon = enemy;
 		battle.enemyPokemon.sprite = new Image();
@@ -578,6 +580,12 @@ window.initGame = function($canvas, $container){
 		battle.curPokemon = data.battle.curPokemon;
 		battle.curPokemon.backsprite = new Image();
 		battle.curPokemon.backsprite.src = 'resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
+		
+		var chr = getPlayerChar();
+		if(chr){
+			chr.inBattle = true;
+			chr.battleEnemy = battle.enemyPokemon.id;
+		}
 		
 		battleTransition();
 	});

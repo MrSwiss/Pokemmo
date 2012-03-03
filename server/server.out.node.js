@@ -906,10 +906,8 @@ io.sockets.on('connection', function (socket) {
 			get inBattle(){return client.inBattle},
 			get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
 			type: 'red',
-			//x: 16,
-			//y: 56,
-			x: 16,
-			y: 56,
+			x: 0,
+			y: 0,
 			lastX: 0,
 			lastY: 0,
 			direction: DIR_DOWN,
@@ -918,7 +916,7 @@ io.sockets.on('connection', function (socket) {
 		lastAckMove: 0,
 		inBattle: false,
 		battle: null,
-		respawnLocation: ["pallet", 16, 56],
+		respawnLocation: ["pallet", 16, 56, DIR_DOWN],
 		pokemon: [],
 		messageQueue: [],
 		lastMessage: 0,
@@ -934,9 +932,11 @@ io.sockets.on('connection', function (socket) {
 			client.map = client.respawnLocation[0];
 			client.char.lastX = client.char.x = client.respawnLocation[1];
 			client.char.lastY = client.char.y = client.respawnLocation[2];
+			client.char.direction = DIR_DOWN;
 		}
 	};
 	
+	client.moveToSpawn();
 	
 	clients.push(client);
 	
@@ -949,14 +949,11 @@ io.sockets.on('connection', function (socket) {
 	client.pokemon.push(new Pokemon("1", 5));
 	*/
 	
-	client.char.lastX = client.char.x;
-	client.char.lastY = client.char.y;
-	
-	getMapInstance().chars.push(client.char);
+	getClientMapInstance().chars.push(client.char);
 	
 	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	socket.emit('loadMap', {mapid: client.map});
-	socket.emit('createChars', {arr: getMapInstance().chars});
+	socket.emit('createChars', {arr: getClientMapInstance().chars});
 	
 	socket.on('disconnect', function(){
 		var i = mapInstances[client.map][client.mapInstance].chars.indexOf(client.char);
@@ -1043,8 +1040,7 @@ io.sockets.on('connection', function (socket) {
 		var str = data.str.substr(0, 128);
 		if(t - client.lastMessage > 100 && str != '') {
 			for (var i=0;i<clients.length;++i) {
-				if (clients[i].map == client.map){
-					// queue new messages for each client in map
+				if(clients[i].map == client.map && clients[i].mapInstance == client.mapInstance){
 					clients[i].messageQueue.push({username: client.username, str: str, x: client.char.x, y: client.char.y});
 				}
 			}
@@ -1053,7 +1049,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	client.sendUpdate = function(){
-		socket.volatile.emit('update', {chars:getMapInstance().chars, messages: client.messageQueue});
+		socket.volatile.emit('update', {chars:getClientMapInstance().chars, messages: client.messageQueue});
 		client.messageQueue.length = 0;
 	}
 	
@@ -1079,7 +1075,7 @@ io.sockets.on('connection', function (socket) {
 		}
 	}
 	
-	function getMapInstance(){
+	function getClientMapInstance(){
 		return mapInstances[client.map][client.mapInstance];
 	}
 });
@@ -1105,8 +1101,6 @@ function getEncounterAreasAt(mapName, x, y){
 }
 
 function createInstance(map){
-	if(mapInstances[map] == null) mapInstances[map] = [];
-	
 	var instance = {};
 	instance.chars = [];
 	

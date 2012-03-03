@@ -3,12 +3,20 @@ var moveStartTime = 0;
 var BATTLE_WILD = 0;
 var BATTLE_TRAINER = 1;
 
+var BATTLE_STEP_TRANSITION = 0;
+var BATTLE_STEP_POKEMON_APPEARED_TMP = 1;
+var BATTLE_STEP_POKEMON_APPEARED = 2;
+var BATTLE_STEP_GO_POKEMON = 3;
+var BATTLE_STEP_ACTION_MENU = 4;
+var BATTLE_STEP_FIGHT_MENU = 5;
+var BATTLE_STEP_TURN = 6;
+
 function initBattle(){
 	battle = {};
 	battle.text = '';
 	battle.textTime = 0;
 	battle.textNeedPress = 0;
-	battle.step = 0;
+	battle.step = BATTLE_STEP_TRANSITION;
 	battle.renderVars = {};
 	battle.resultQueue = [];
 	battle.runningQueue = false;
@@ -28,7 +36,7 @@ function renderBattle(){
 		ctx.drawImage(battle.background, 0, 0);
 	}
 	
-	if(battle.step != 5){
+	if(battle.step != BATTLE_STEP_FIGHT_MENU){
 		ctx.drawImage(res.battleTextBackground, 2, 228);
 		
 		if(battle.text != ''){
@@ -38,7 +46,7 @@ function renderBattle(){
 			ctx.font = '24px Font2';
 			
 			
-			var maxWidth = (battle.step == 4 ? 150 : 420);
+			var maxWidth = (battle.step == BATTLE_STEP_ACTION_MENU ? 150 : 420);
 			if(ctx.measureText(str).width > maxWidth){
 				var firstLine = str;
 				var secondLine = '';
@@ -90,7 +98,7 @@ function renderBattle(){
 			}
 		}
 		
-		if(battle.step == 4){
+		if(battle.step == BATTLE_STEP_ACTION_MENU){
 			ctx.drawImage(res.battleActionMenu, 246, 226);
 			
 			var x1 = 252 + Math.floor((now % 1000) / 500) * 2;
@@ -116,7 +124,7 @@ function renderBattle(){
 		}
 	}
 	
-	if(battle.step == 5){
+	if(battle.step == BATTLE_STEP_FIGHT_MENU){
 		ctx.drawImage(res.battleMoveMenu, 2, 228);
 		
 		var x1 = 40;
@@ -156,9 +164,9 @@ function renderBattle(){
 		}
 	}
 	
-	if(battle.step < 3){
+	if(battle.step < BATTLE_STEP_GO_POKEMON){
 		ctx.drawImage(res.playerBacksprite, 0, 0, 128, 128, 60, 96, 128, 128);
-	}else if(battle.step == 3){
+	}else if(battle.step == BATTLE_STEP_GO_POKEMON){
 		if(battle.animStep >= 4 && battle.animStep < 25){
 			var ballAnimation = [
 				[60, 179, 1, 0],
@@ -262,7 +270,7 @@ function renderBattle(){
 					ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + (numRTicks - battle.renderVars.pokemonFaintedTick) * 30);
 				}
 			}else{
-				ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + ((battle.step == 4 || battle.step == 5) && ((now + battle.randInt) % 600) < 300 ? 2 : 0));
+				ctx.drawImage(battle.curPokemon.backsprite, 60, 96 + ((battle.step == BATTLE_STEP_ACTION_MENU || battle.step == BATTLE_STEP_FIGHT_MENU) && ((now + battle.randInt) % 600) < 300 ? 2 : 0));
 				
 			}
 			
@@ -312,10 +320,10 @@ function renderBattle(){
 		}
 		ctx.restore();
 	}
-	if(battle.step >= 4){
+	if(battle.step >= BATTLE_STEP_ACTION_MENU){
 		ctx.save();
 		var tmp = 0;
-		if(battle.step == 4 || battle.step == 5){
+		if(battle.step == BATTLE_STEP_ACTION_MENU || battle.step == BATTLE_STEP_FIGHT_MENU){
 			ctx.translate(0, (now % 600) < 300 ? 0 : 2);
 		}
 		
@@ -376,11 +384,11 @@ function renderBattle(){
 	
 	
 	
-	if(battle.step == 1){
-		battle.step = 2;
+	if(battle.step == BATTLE_STEP_POKEMON_APPEARED_TMP){
+		battle.step = BATTLE_STEP_POKEMON_APPEARED;
 		setBattleText('Wild ' + pokemonData[battle.enemyPokemon.id].name.toUpperCase() +' appeared!', -1, function(){
 			setBattleText("Go! " + pokemonData[battle.curPokemon.id].name.toUpperCase() + "!");
-			battle.step = 3;
+			battle.step = BATTLE_STEP_GO_POKEMON;
 			battle.animStep = 0;
 			battle.selectedMove = 0;
 		});
@@ -391,7 +399,7 @@ function renderBattle(){
 
 function battleOpenActionMenu(){
 	battle.runningQueue = false;
-	battle.step = 4;
+	battle.step = BATTLE_STEP_ACTION_MENU;
 	
 	setBattleText('What will '+pokemonData[battle.curPokemon.id].name.toUpperCase()+' do?');
 	
@@ -412,13 +420,13 @@ function battleOpenActionMenu(){
 }
 
 function battleOpenFightMenu(){
-	battle.step = 5;
+	battle.step = BATTLE_STEP_FIGHT_MENU;
 	
 	var aAction = function(){
 		
 		unHookBButton(bAction);
 		setBattleText(null);
-		battle.step = 6;
+		battle.step = BATTLE_STEP_TURN;
 		socket.emit('battleMove', {move: battle.selectedMove});
 	};
 	
@@ -646,6 +654,12 @@ function battleFinish(){
 				
 				inBattle = false;
 				battle = null;
+				drawPlayerChar = true;
+				
+				var chr = getPlayerChar();
+				if(chr){
+					chr.inBattle = false;
+				}
 			}
 			
 		}else{
@@ -666,7 +680,7 @@ function battleButtonHandler(dir){
 	if(!inBattle) return;
 	
 	
-	if(battle.step == 4){
+	if(battle.step == BATTLE_STEP_ACTION_MENU){
 		switch(battle.selectedAction){
 		case 0:
 			if(dir == DIR_RIGHT){

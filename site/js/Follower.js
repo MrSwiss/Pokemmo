@@ -4,6 +4,7 @@ function Follower(chr){
 	self.pok = pok;
 	self.x = pok.x;
 	self.y = pok.y;
+	self.forceTarget = false;
 	self.init = function(){
 		gameObjects.push(self);
 	}
@@ -13,7 +14,7 @@ function Follower(chr){
 	}
 	
 	self.render = function(ctx){
-		if(chr.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		if(chr.id == myId && !drawPlayerChar) return;
 		pok.render(ctx);
 	}
 	
@@ -21,7 +22,7 @@ function Follower(chr){
 		pok.targetX = chr.lastX;
 		pok.targetY = chr.lastY;
 		
-		if(chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
+		if(!self.forceTarget && chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CHAR_MOVE_WAIT){
 			pok.targetX = chr.x;
 			pok.targetY = chr.y;
 		}

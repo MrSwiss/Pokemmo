@@ -8,6 +8,7 @@ function Character(data){
 	self.targetX = self.x;
 	self.targetY = self.y;
 	self.direction = data.direction || DIR_DOWN;
+	self.targetDirection = self.direction;
 	self.animationStep = 0;
 	self.loaded = false;
 	self.walking = false;
@@ -21,8 +22,12 @@ function Character(data){
 	var followerObj = new Follower(this);
 	
 	var wildPokemon;
+	var battleHasWalkedBack = false;
+	var battleX, battleY;
+	var battleLastX, battleLastY;
+	var battleFolX, battleFolY;
 	
-	self.battleEnemy = undefined;
+	self.battleEnemy = null;
 	
 	self.lastX = self.x;
 	self.lastY = self.y;
@@ -34,6 +39,8 @@ function Character(data){
 	}
 	self.image.src = 'resources/chars/'+data.type+'.png';
 	
+	self.lockDirection = -1;
+	
 	self.init = function(){
 		characters.push(self);
 		gameObjects.push(self);
@@ -44,7 +51,7 @@ function Character(data){
 	self.destroy = function(){
 		characters.remove(self);
 		gameObjects.remove(self);
-		inBattle = false;
+		self.inBattle = false;
 		followerObj.destroy();
 		if(wildPokemon) wildPokemon.destroy();
 	}
@@ -162,8 +169,10 @@ function Character(data){
 					}
 				}
 				
-				self.lastX = self.x;
-				self.lastY = self.y;
+				if(!self.inBattle || self.id != myId){
+					self.lastX = self.x;
+					self.lastY = self.y;
+				}
 				
 				switch(self.direction){
 					case DIR_LEFT: self.x -= 1; break;
@@ -206,37 +215,99 @@ function Character(data){
 			self.animationStep = 0;
 		}
 		
-		if(self.inBattle && !wildPokemon){
-			var tmpX, tmpY;
-			
-			if(self.id != myId){
-				tmpX = self.targetX;
-				tmpY = self.targetY;
-			}else{
-				tmpX = self.x;
-				tmpY = self.y;
-				if(chr.walking && !self.walkingHasMoved){
-					switch(self.direction){
-						case DIR_LEFT: tmpX -= 1;; break;
-						case DIR_RIGHT: tmpX += 1; break;
-						case DIR_UP: tmpY -= 1; break;
-						case DIR_DOWN: tmpY += 1; break;
+		if(self.id == myId){
+			if(self.inBattle){
+				var tmpX, tmpY;
+				if(!wildPokemon && self.battleEnemy && !self.walking){
+					if(battleHasWalkedBack){
+						var tmpDir;
+						tmpX = battleX;
+						tmpY = battleY;
+						if(self.walking && !self.walkingHasMoved){
+							switch(self.direction){
+								case DIR_LEFT: tmpX -= 1;; break;
+								case DIR_RIGHT: tmpX += 1; break;
+								case DIR_UP: tmpY -= 1; break;
+								case DIR_DOWN: tmpY += 1; break;
+							}
+						}
+							
+						wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
+						
+						transitionStep = 7;
+					}else{
+						battleX = self.x;
+						battleY = self.y;
+						
+						self.lockDirection = self.direction;
+						self.direction = (self.direction + 2) % 4;
+						self.walking = true;
+						self.walkingHasMoved = false;
+						self.walkingPerc = 0.0;
+						
+						battleHasWalkedBack = true;
+						
+						tmpX = battleX;
+						tmpY = battleY;
+						
+						switch(self.direction){
+							case DIR_LEFT: tmpX -= 1; break;
+							case DIR_RIGHT: tmpX += 1; break;
+							case DIR_UP: tmpY -= 1; break;
+							case DIR_DOWN: tmpY += 1; break;
+						}
+						
+						battleLastX = tmpX;
+						battleLastY = tmpY;
+						
+						tmpX = battleX;
+						tmpY = battleY;
+						
+						switch(self.direction){
+							case DIR_LEFT: tmpX -= 2; break;
+							case DIR_RIGHT: tmpX += 2; break;
+							case DIR_UP: tmpY -= 2; break;
+							case DIR_DOWN: tmpY += 2; break;
+						}
+						if(isTileSolid(curMap, tmpX, tmpY) || isTileWater(curMap, tmpX, tmpY)){
+							tmpX = battleX;
+							tmpY = battleY;
+							switch(self.direction){
+								case DIR_LEFT: tmpX -= 1; break;
+								case DIR_RIGHT: tmpX += 1; break;
+								case DIR_UP: tmpY -= 1; break;
+								case DIR_DOWN: tmpY += 1; break;
+							}
+						}
+						
+						battleFolX = tmpX;
+						battleFolY = tmpY;
 					}
 				}
+				
+				
+				followerObj.forceTarget = true;
+				self.lastX = battleFolX;
+				self.lastY = battleFolY;
+				
+				
+			}else{
+				followerObj.forceTarget = false;
+				
+				if(wildPokemon){
+					wildPokemon.destroy();
+					wildPokemon = null;
+				}
+				
+				if(self.lockDirection != -1){
+					self.direction = self.lockDirection;
+					self.lockDirection = -1;
+					self.lastX = battleLastX;
+					self.lastY = battleLastY;
+				}
+				
+				battleHasWalkedBack = false
 			}
-			
-			
-			var tmpDir;
-			switch(self.direction){
-				case DIR_LEFT: tmpX -= 1; tmpDir = DIR_RIGHT; break;
-				case DIR_RIGHT: tmpX += 1; tmpDir = DIR_LEFT; break;
-				case DIR_UP: tmpY -= 1; tmpDir = DIR_DOWN; break;
-				case DIR_DOWN: tmpY += 1; tmpDir = DIR_UP; break;
-			}
-			
-			wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
-		}else if(!self.inBattle && wildPokemon){
-			wildPokemon.destroy();
 		}
 	}
 	
@@ -274,7 +345,7 @@ function Character(data){
 	self.render = function(ctx){
 		if(!self.loaded) return;
 		
-		if(self.id == myId && inBattle && (battle.step > 0 || transitionStep >= 18)) return;
+		if(self.id == myId && !drawPlayerChar) return;
 		
 		var offsetX = getRenderOffsetX();
 		var offsetY = getRenderOffsetY();
@@ -288,14 +359,17 @@ function Character(data){
 			followerObj.pok.image.src = '';
 		}
 		var renderPos = self.getRenderPos();
-		ctx.drawImage(self.image, self.direction * CHAR_WIDTH, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
+		
+		var dirId = self.direction * CHAR_WIDTH;
+		if(self.lockDirection != -1) dirId = self.lockDirection * CHAR_WIDTH;
+		ctx.drawImage(self.image, dirId, Math.floor(self.animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
 		
 		
 		if(isTileGrass(curMap, self.x, self.y) && !self.walking){
 			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
 		}
 		
-		if(self.inBattle){
+		if(self.inBattle && self.id != myId){
 			ctx.save();
 			var ly = 0;
 			
@@ -306,7 +380,7 @@ function Character(data){
 			ly *= ly;
 			ly *= 10;
 			
-			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + ly);
+			ctx.translate(renderPos.x + offsetX + 16, renderPos.y + offsetY + 2 + Math.round(ly));
 			ctx.rotate(((numRTicks + self.randInt) % 11) / 10 * Math.PI * 2);
 			ctx.drawImage(res.uiCharInBattle, -10, -10);
 			ctx.restore();

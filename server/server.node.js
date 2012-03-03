@@ -80,7 +80,7 @@ io.sockets.on('connection', function (socket) {
 		char: {
 			get id(){return client.id},
 			get inBattle(){return client.inBattle},
-			get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
+			//get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
 			type: 'red',
 			x: 0,
 			y: 0,

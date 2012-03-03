@@ -260,35 +260,31 @@ function getRenderOffsetX(){return curMap.tilewidth * -cameraX;};
 function getRenderOffsetY(){return curMap.tileheight * -cameraY;};
 
 function battleTransition(){
-	transitionStep = 0;
+	transitionStep = -1;
 }
 
 function renderBattleTransition(){
+	if(transitionStep < 0) return;
 	ctx.fillStyle = '#000000';
 	switch(battle.startTransition){
 	case 0:
 		var BAR_HEIGHT = 80;
 		
-		if(transitionStep >= 30){
+		if(transitionStep >= 50){
 			renderBattle();
 		}
 		
-		if(transitionStep < 18){
-			var h = transitionStep * transitionStep;
+		if(transitionStep < 20){
+		
+		}else if(transitionStep < 38){
+			var h = (transitionStep - 20) * (transitionStep - 20);
 			ctx.fillRect(0, 0, canvas.width, h);
 			ctx.fillRect(0, canvas.height - h, canvas.width, h);
-		}else if(transitionStep < 30){
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			if(transitionStep == 18){
-				var chr = getPlayerChar();
-				if(chr){
-					chr.x = battle.x;
-					chr.y = battle.y;
-					chr.walking = false;
-				}
-			}
 		}else if(transitionStep < 50){
-			var perc = ((transitionStep - 30) / 20);
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			drawPlayerChar = false;
+		}else if(transitionStep < 70){
+			var perc = ((transitionStep - 50) / 20);
 			if(perc > 1) perc = 1;
 			perc *= perc;
 			
@@ -306,8 +302,8 @@ function renderBattleTransition(){
 			
 			ctx.drawImage(battleIntroPokeball, -60, -60);
 			ctx.restore();
-		}else if(transitionStep < 80){
-			var perc = ((transitionStep - 60) / 20);
+		}else if(transitionStep < 100){
+			var perc = ((transitionStep - 80) / 20);
 			
 			clearTmpCanvas();
 			
