@@ -6,4 +6,5 @@ function Layer(data){
 	this.y = data.y;
 	this.type = data.type;
 	this.properties = data.properties || {};
+	this.objects = data.objects;
 }

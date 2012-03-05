@@ -35,7 +35,8 @@ var socket;
 
 /** @const */
 var ST_LOADING = 1,
-	ST_MAP = 2;
+	ST_MAP = 2,
+	ST_DISCONNECTED = 3;
 
 var inBattle = false;
 
@@ -82,8 +83,8 @@ var keysDown = [];
 
 var CHAR_MOVE_WAIT = 0.3;
 
-var screenWidth = isPhone ? 480 : 780;
-var screenHeight = isPhone ? 320 : 540;
+var screenWidth = isPhone ? 480 : 800;
+var screenHeight = isPhone ? 320 : 600;
 
 var CHAR_WIDTH = 32;
 var CHAR_HEIGHT = 64;
@@ -98,6 +99,12 @@ var inChat = false;
 var lastAckMove = 0;
 var loadedChars = false;
 var drawPlayerChar = true;
+var drawPlayerFollower = true;
+var playerCanMove = true;
+
+var queueLoadMap = false;
+var queuedMap;
+var queuedChars;
 
 var numRTicks = 0;
 
@@ -109,8 +116,7 @@ var iOSBButtonPos = {x:370, y:250};
 var uiAButtonDown = false;
 var uiBButtonDown = false;
 if(isPhone){
-	iOSUI = new Image();
-	iOSUI.src = 'resources/ui/ios_ui.png';
+	iOSUI = getImage('resources/ui/ios_ui.png');
 }
 
 var battleBackground;
@@ -125,7 +131,7 @@ var arrowKeysPressed = [];
 var renderHooks = [];
 var gameRenderHooks = [];
 var gameObjects = [];
-
+var loadedResources = {};
 
 var battle;
 
@@ -158,8 +164,12 @@ function parseMap(data){
 
 // #include "TWildPokemon.js"
 
+// #include "TDoor.js"
+
+// #include "TWarpArrow.js"
+
 function filterChatText(){
-	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
+	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"!?@#$%&*]/, '');
 }
 
 function generateRandomString(len){
@@ -306,8 +316,11 @@ function setPokemonParty(arr){
 	pokemonParty = arr;
 	
 	for(var i=0;i<pokemonParty.length;++i){
-		pokemonParty[i].icon = new Image();
-		pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
+		pokemonParty[i].icon = getImage('resources/picons/'+pokemonParty[i].id+'_1.png');
+		
+		console.log('Preloading pokemon '+pokemonParty[i].id);
+		getImage('resources/back/'+pokemonParty[i].id+'.png');
+		getImage('resources/followers/'+pokemonParty[i].id+'.png');
 	}
 }
 
@@ -445,6 +458,10 @@ window.initGame = function($canvas, $container){
 		console.log('Connected');
 	});
 	
+	socket.on('disconnect', function(){
+		state = ST_DISCONNECTED;
+	});
+	
 	socket.on('setInfo', function(data){
 		console.log('setInfo: '+data.id);
 		myId = data.id;
@@ -452,19 +469,15 @@ window.initGame = function($canvas, $container){
 	});
 	
 	socket.on('loadMap', function(data){
-		console.log('loadMap: '+data.mapid);
-		loadMap(data.mapid);
-	});
-	
-	
-	socket.on('createChars', function(data){
-		loadedChars = true;
-		var arr = data.arr;
-		for(var i=0;i<arr.length;++i){
-			var chr = new Character(arr[i]);
-			chr.init();
+		if(queueLoadMap){
+			queuedMap = data.mapid;
+			queuedChars = data.chars;
+			return;
 		}
+		console.log('loadMap: '+data.mapid);
+		loadMap(data.mapid, data.chars);
 	});
+	
 	
 	
 	socket.on('invalidMove', function(data){
@@ -480,7 +493,10 @@ window.initGame = function($canvas, $container){
 	});
 	
 	socket.on('update', function(data){
+		if(typeof data == 'string') data = JSON.parse(data);
 		if(!loadedChars) return;
+		
+		if(data.map != curMapId) return;
 		var chars = data.chars;
 		
 		var charsNotUpdated = [];
@@ -567,19 +583,16 @@ window.initGame = function($canvas, $container){
 		battle.x = data.x;
 		battle.y = data.y;
 		battle.type = BATTLE_WILD;
-		battle.background = new Image();
-		battle.background.src = 'resources/ui/battle_background1.png';
+		battle.background = getImage('resources/ui/battle_background1.png');
 		
 		var enemy = data.battle.enemy;
 		
 		
 		battle.enemyPokemon = enemy;
-		battle.enemyPokemon.sprite = new Image();
-		battle.enemyPokemon.sprite.src = 'resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png';
+		battle.enemyPokemon.sprite = getImage('resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png');
 		
 		battle.curPokemon = data.battle.curPokemon;
-		battle.curPokemon.backsprite = new Image();
-		battle.curPokemon.backsprite.src = 'resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
+		battle.curPokemon.backsprite = getImage('resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png');
 		
 		var chr = getPlayerChar();
 		if(chr){

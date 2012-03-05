@@ -35,7 +35,8 @@ var socket;
 
 /** @const */
 var ST_LOADING = 1,
-	ST_MAP = 2;
+	ST_MAP = 2,
+	ST_DISCONNECTED = 3;
 
 var inBattle = false;
 
@@ -82,8 +83,8 @@ var keysDown = [];
 
 var CHAR_MOVE_WAIT = 0.3;
 
-var screenWidth = isPhone ? 480 : 780;
-var screenHeight = isPhone ? 320 : 540;
+var screenWidth = isPhone ? 480 : 800;
+var screenHeight = isPhone ? 320 : 600;
 
 var CHAR_WIDTH = 32;
 var CHAR_HEIGHT = 64;
@@ -98,6 +99,12 @@ var inChat = false;
 var lastAckMove = 0;
 var loadedChars = false;
 var drawPlayerChar = true;
+var drawPlayerFollower = true;
+var playerCanMove = true;
+
+var queueLoadMap = false;
+var queuedMap;
+var queuedChars;
 
 var numRTicks = 0;
 
@@ -109,8 +116,7 @@ var iOSBButtonPos = {x:370, y:250};
 var uiAButtonDown = false;
 var uiBButtonDown = false;
 if(isPhone){
-	iOSUI = new Image();
-	iOSUI.src = 'resources/ui/ios_ui.png';
+	iOSUI = getImage('resources/ui/ios_ui.png');
 }
 
 var battleBackground;
@@ -125,7 +131,7 @@ var arrowKeysPressed = [];
 var renderHooks = [];
 var gameRenderHooks = [];
 var gameObjects = [];
-
+var loadedResources = {};
 
 var battle;
 
@@ -145,6 +151,7 @@ function Map(data){
 	this.layers = [];
 	this.tilewidth = data.tilewidth;
 	this.tileheight = data.tileheight;
+	this.properties = data.properties || {};
 	
 	for(var i = 0; i< data.tilesets.length; ++i){
 		this.tilesets.push(new Tileset(data.tilesets[i]));
@@ -155,14 +162,27 @@ function Map(data){
 	}
 }
 
-function loadMap(id){
+function loadMap(id, chars){
+	console.log('Loading map '+id);
+	
 	state = ST_LOADING;
 	curMap = null;
 	curMapId = id;
 	
+	inBattle = false;
 	characters = [];
 	gameObjects = [];
+	loadedResources = {};
 	loadedChars = false;
+	playerCanMove = true;
+	drawPlayerChar = true;
+	drawPlayerFollower = true;
+	queueLoadMap = false;
+	queuedMap = undefined;
+	renderHooks = [];
+	gameRenderHooks = [];
+	loadedChars = false;
+	queuedChars = undefined;
 	
 	var pending = 0;
 	var completed = 0;
@@ -208,17 +228,31 @@ function loadMap(id){
 			}
 		}
 		
+		if(map.properties.preload_pokemon){
+			var arr = map.properties.preload_pokemon.split(',');
+			for(var i=0;i<arr.length;++i){
+				getImage('resources/followers/'+arr[i]+'.png');
+				getImage('resources/sprites/'+arr[i]+'.png');
+			}
+		}
+		
+		parseMapObjects(map);
+		
 		curMap = map;
+		
+		loadedChars = true;
+		var arr = chars;
+		for(var i=0;i<arr.length;++i){
+			var chr = new Character(arr[i]);
+			chr.init();
+		}
 		
 		refresh();
 	});
 	
 	function loadImage(name, src){
 		++pending;
-		res[name] = new Image();
-		res[name].onload = function(){--pending;++completed;};
-		res[name].onerror = function(){--pending;error = true;refresh();};
-		res[name].src = src;
+		res[name] = getImage(src, function(){--pending;++completed;}, function(){--pending;error = true;refresh();});
 	}
 	
 	function loadJSON(src, onload){
@@ -242,17 +276,15 @@ function loadMap(id){
 	function refresh(){
 		if(state != ST_LOADING) return;
 		
-		ctx.fillStyle = 'rgb(0,0,0)';
+		ctx.fillStyle = '#000000';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = 'rgb(255,255,255)';
+		ctx.fillStyle = '#FFFFFF';
 		ctx.font = '12pt Courier New';
 		
 		if(error){
-			console.log('Error loading map');
 			ctx.fillText('Failed loading files', 10, 30);
 		}else{
 			if(pending == 0){
-				console.log('Map loaded');
 				state = ST_MAP;
 				
 				var step = 0;
@@ -271,7 +303,6 @@ function loadMap(id){
 				
 				render();
 			}else{
-				console.log('Pending: '+pending);
 				ctx.fillText('Loading... ' + pending, 10, 30);
 			}
 		}
@@ -280,6 +311,25 @@ function loadMap(id){
 	
 	loadingMapRender = refresh;
 	render();
+}
+
+function parseMapObjects(map){
+	for(var i=0;i<map.layers.length;++i){
+		if(map.layers[i].type != 'objectgroup') continue;
+		var objects = map.layers[i].objects;
+		for(var k=0;k<objects.length;++k){
+			var obj = objects[k];
+			switch(obj.type){
+			case "warp":
+				if(obj.properties.type == 'door'){
+					new TDoor(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
+				}else if(obj.properties.type == 'arrow'){
+					new TWarpArrow(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
+				}
+				break;
+			}
+		}
+	}
 }
 function Tileset(data){
 	var self = this;
@@ -378,10 +428,10 @@ function Layer(data){
 	this.y = data.y;
 	this.type = data.type;
 	this.properties = data.properties || {};
+	this.objects = data.objects;
 }
 var transitionStep = 0;
-var battleIntroPokeball = new Image();
-battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
+var battleIntroPokeball = getImage('resources/ui/battle_intro_pokeball.png');
 
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
@@ -450,28 +500,62 @@ function drawLayer(ctx, map, layer){
 }
 
 function renderObjects(ctx){
+	/** @const */
+	var A_FIRST = -1,
+		B_FIRST = 1;
 	gameObjects.sort(function(a, b){
 		if(a instanceof Character && a.id == myId){
-			if(b instanceof TGrass) return -1;
-			return 1;
+			if(b instanceof TGrass) return A_FIRST;
+			return B_FIRST;
 		}
 		if(b instanceof Character && b.id == myId){
-			if(a instanceof TGrass) return 1;
-			return -1;
+			if(a instanceof TGrass) return B_FIRST;
+			return A_FIRST;
 		}
-		if(a.y < b.y) return -1;
+		
+		if(a instanceof Character && b instanceof Follower){
+			return B_FIRST;
+		}
+		
+		if(b instanceof Character && a instanceof Follower){
+			return A_FIRST;
+		}
+		
+		if(a.y < b.y){
+			return A_FIRST;
+		}
+		
+		if(a.y > b.y){
+			return B_FIRST;
+		}
+		
 		if(a.y == b.y){
-			if(a instanceof TGrass) return 1;
-			if(b instanceof TGrass) return -1;
+			if((a.renderPriority || 0) > (b.renderPriority || 0)) return B_FIRST;
+			if((b.renderPriority || 0) > (a.renderPriority || 0)) return A_FIRST;
+			
+			
+			if(a instanceof TGrass) return B_FIRST;
+			if(b instanceof TGrass) return A_FIRST;
 			
 			if(a instanceof Character && b instanceof Follower){
-				return 1;
+				return B_FIRST;
 			}else if(b instanceof Character && a instanceof Follower){
-				return -1;
+				return A_FIRST;
+			}
+			
+			if(a.randInt){
+				if(b.randInt){
+					if(a.randInt > b.randInt) return B_FIRST;
+					if(a.randInt < b.randInt) return A_FIRST;
+					return 0;
+				}
+				return B_FIRST;
+			}else if(b.randInt){
+				return A_FIRST;
 			}
 			return 0;
 		}
-		if(a.y > b.y) return 1;
+		
 		console.log(a, b);
 		tick = function(){};
 		render = function(){};
@@ -580,7 +664,7 @@ function drawChat() {
 	var x = 20;
 	var y = 335;
 	
-	ctx.font = '12pt Font1';
+	ctx.font = '12px Font2';
 	
 	if(inChat){
 		ctx.globalAlpha = 0.5;
@@ -610,12 +694,17 @@ function drawChat() {
 	var i = chatLog.length;
 	var now = +new Date();
 	for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
-		if(!inChat) ctx.globalAlpha = clamp(3 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
+		if(!inChat) ctx.globalAlpha = clamp(5 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
 		var str;
-
+		
+		if(!inChat){
+			ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			ctx.fillRect(x + 6, y + 169 - (14 * (chatLog.length - i)), ctx.measureText(chatLog[i].username + ': ' + chatLog[i].str).width + 6, 14);
+		}
+		
 		str = chatLog[i].username + ': ';
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 12, y + 182 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 11, y + 181 - (14 * (chatLog.length - i)));
 		
 		ctx.fillStyle = 'rgb(255, 255, 0)';
 		ctx.fillText(str, x + 10, y + 180 - (14 * (chatLog.length - i)));
@@ -625,7 +714,7 @@ function drawChat() {
 		str = chatLog[i].str;
 		
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 12 + usernameWidth, y + 182 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 11 + usernameWidth, y + 181 - (14 * (chatLog.length - i)));
 		
 		
 		ctx.fillStyle = 'rgb(255, 255, 255)';
@@ -664,6 +753,7 @@ function renderBattleTransition(){
 		}else if(transitionStep < 50){
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			drawPlayerChar = false;
+			drawPlayerFollower = false;
 		}else if(transitionStep < 70){
 			var perc = ((transitionStep - 50) / 20);
 			if(perc > 1) perc = 1;
@@ -713,15 +803,13 @@ var willRender = false;
 
 
 function render(forceNoTransition, onlyRender){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
-	ctx.fillStyle = '#66BBFF';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
 	
 	var realRender = function(){
-		
 		willRender = false;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+		ctx.fillStyle = '#66BBFF';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		
 		switch(state){
 			case ST_MAP:
@@ -745,7 +833,7 @@ function render(forceNoTransition, onlyRender){
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
 					}else{
-						ctx.drawImage(gameCanvas, 10, 10);
+						ctx.drawImage(gameCanvas, 0, 0);
 					}
 					
 					if(inBattle && battle.step == 0){
@@ -758,13 +846,24 @@ function render(forceNoTransition, onlyRender){
 					throw new Error('No map in memory');
 				}
 				
-				if(!isPhone && !inBattle){
-					drawPokemonParty();
+				if(!isPhone){
 					drawChat();
 				}
+				if(!isPhone && !inBattle){
+					drawPokemonParty();
+				}
+				
+				for(var i=0;i<renderHooks.length;++i) renderHooks[i]();
 			break;
 			case ST_LOADING:
 				loadingMapRender();
+			break;
+			case ST_DISCONNECTED:
+				ctx.fillStyle = '#000000';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.fillStyle = '#FFFFFF';
+				ctx.font = '12pt Courier New';
+				ctx.fillText("Disconnected from the server", 10, 30);
 			break;
 		}
 		
@@ -772,7 +871,7 @@ function render(forceNoTransition, onlyRender){
 			ctx.drawImage(iOSUI, 0, 0);
 		}
 		
-		for(var i=0;i<renderHooks.length;++i) renderHooks[i]();
+		
 	
 		if(!onlyRender){
 			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
@@ -799,6 +898,20 @@ function render(forceNoTransition, onlyRender){
 			realRender();
 		}
 	}
+}
+
+function getImage(src, onload, onerror){
+	if(!src) return new Image();
+	if(loadedResources[src]){
+		if(onload) setTimeout(onload, 4);
+		return loadedResources[src];
+	}
+	
+	var img = new Image();
+	if(onload) img.onload = onload;
+	if(onerror) img.onerror = onerror;
+	img.src = src;
+	return loadedResources[src] = img;
 }
 
 function createGrassAnimation(x, y){
@@ -848,17 +961,20 @@ function Character(data){
 	var battleLastX, battleLastY;
 	var battleFolX, battleFolY;
 	
+	var noclip = false;
+	var transmitWalk = true;
+	
+	var createdTick = numRTicks;
+	
 	self.battleEnemy = null;
 	
 	self.lastX = self.x;
 	self.lastY = self.y;
 	
-	self.image = new Image();
-	self.image.onload = function(){
+	self.image = getImage('resources/chars/'+data.type+'.png', function(){
 		self.loaded = true;
 		render();
-	}
-	self.image.src = 'resources/chars/'+data.type+'.png';
+	});
 	
 	self.lockDirection = -1;
 	
@@ -878,7 +994,7 @@ function Character(data){
 	}
 	
 	function isControllable(){
-		return self.id == myId && !inBattle;
+		return self.id == myId && !inBattle && playerCanMove && !inChat;
 	}
 	
 	self.getRenderPos = function(){
@@ -907,12 +1023,18 @@ function Character(data){
 	}
 	
 	self.tick = function(){
+		tickWalking();
+		
+		if(self.id == myId) tickWildBattle();
+	}
+	
+	function tickWalking(){
 		if(!self.walking){
 			self.walkingHasMoved = false;
 			self.walkingPerc = 0.0;
 			
 			if(self.id == myId){
-				if (!inChat && !inBattle) {
+				if(isControllable()) {
 					if(isKeyDown(37)){ // Left
 						self.walking = true;
 						if(self.direction == DIR_LEFT) self.walkingPerc = CHAR_MOVE_WAIT;
@@ -981,13 +1103,23 @@ function Character(data){
 			self.animationStep += 0.20;
 			if(self.animationStep > 4.0) self.animationStep -= 4.0;
 			if(self.walkingPerc >= (1.0-CHAR_MOVE_WAIT)/2 && !self.walkingHasMoved){
-				if(self.id == myId){
-					if(willMoveIntoAWall()){
+				if(self.id == myId && !noclip){
+					var tmpPos = getFrontPosition();
+					var tmpWarp;
+					if(tmpWarp = getDoorAt(tmpPos.x, tmpPos.y)){
+						enterDoor(tmpWarp);
+						return;
+					}else if(tmpWarp = getWarpArrowAt(tmpPos.x, tmpPos.y)){
+						enterWarpArrow(tmpWarp);
+						return;
+					}else if(willMoveIntoAWall()){
 						socket.emit('turn', {'dir':self.direction});
 						self.walking = false;
 						//TODO: Play block sound
 						return;
 					}
+					
+					
 				}
 				
 				if(!self.inBattle || self.id != myId){
@@ -1009,7 +1141,7 @@ function Character(data){
 					createGrassAnimation(self.x, self.y);
 				}
 				
-				if(self.id == myId){
+				if(self.id == myId && transmitWalk){
 					socket.emit('walk', {ack: lastAckMove, x: self.x, y: self.y, dir:self.direction});
 				}
 			}
@@ -1035,112 +1167,202 @@ function Character(data){
 		}else{
 			self.animationStep = 0;
 		}
-		
-		if(self.id == myId){
-			if(self.inBattle){
-				var tmpX, tmpY;
-				if(!wildPokemon && self.battleEnemy && !self.walking){
-					if(battleHasWalkedBack){
-						var tmpDir;
-						tmpX = battleX;
-						tmpY = battleY;
-						if(self.walking && !self.walkingHasMoved){
-							switch(self.direction){
-								case DIR_LEFT: tmpX -= 1;; break;
-								case DIR_RIGHT: tmpX += 1; break;
-								case DIR_UP: tmpY -= 1; break;
-								case DIR_DOWN: tmpY += 1; break;
-							}
+	}
+	
+	function tickWildBattle(){
+		if(self.inBattle){
+			var tmpX, tmpY;
+			if(!wildPokemon && self.battleEnemy && !self.walking){
+				if(battleHasWalkedBack){
+					var tmpDir;
+					tmpX = battleX;
+					tmpY = battleY;
+					if(self.walking && !self.walkingHasMoved){
+						switch(self.direction){
+							case DIR_LEFT: tmpX -= 1;; break;
+							case DIR_RIGHT: tmpX += 1; break;
+							case DIR_UP: tmpY -= 1; break;
+							case DIR_DOWN: tmpY += 1; break;
 						}
-							
-						wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
+					}
 						
-						transitionStep = 7;
-					}else{
-						battleX = self.x;
-						battleY = self.y;
-						
-						self.lockDirection = self.direction;
-						self.direction = (self.direction + 2) % 4;
-						self.walking = true;
-						self.walkingHasMoved = false;
-						self.walkingPerc = 0.0;
-						
-						battleHasWalkedBack = true;
-						
+					wildPokemon = new TWildPokemon(self.battleEnemy, tmpX, tmpY, tmpDir, self);
+					
+					transitionStep = 7;
+				}else{
+					battleX = self.x;
+					battleY = self.y;
+					
+					self.lockDirection = self.direction;
+					self.direction = (self.direction + 2) % 4;
+					self.walking = true;
+					self.walkingHasMoved = false;
+					self.walkingPerc = 0.0;
+					
+					battleHasWalkedBack = true;
+					
+					tmpX = battleX;
+					tmpY = battleY;
+					
+					switch(self.direction){
+						case DIR_LEFT: tmpX -= 1; break;
+						case DIR_RIGHT: tmpX += 1; break;
+						case DIR_UP: tmpY -= 1; break;
+						case DIR_DOWN: tmpY += 1; break;
+					}
+					
+					battleLastX = tmpX;
+					battleLastY = tmpY;
+					
+					tmpX = battleX;
+					tmpY = battleY;
+					
+					switch(self.direction){
+						case DIR_LEFT: tmpX -= 2; break;
+						case DIR_RIGHT: tmpX += 2; break;
+						case DIR_UP: tmpY -= 2; break;
+						case DIR_DOWN: tmpY += 2; break;
+					}
+					if(isTileSolid(curMap, tmpX, tmpY) || isTileWater(curMap, tmpX, tmpY)){
 						tmpX = battleX;
 						tmpY = battleY;
-						
 						switch(self.direction){
 							case DIR_LEFT: tmpX -= 1; break;
 							case DIR_RIGHT: tmpX += 1; break;
 							case DIR_UP: tmpY -= 1; break;
 							case DIR_DOWN: tmpY += 1; break;
 						}
-						
-						battleLastX = tmpX;
-						battleLastY = tmpY;
-						
-						tmpX = battleX;
-						tmpY = battleY;
-						
-						switch(self.direction){
-							case DIR_LEFT: tmpX -= 2; break;
-							case DIR_RIGHT: tmpX += 2; break;
-							case DIR_UP: tmpY -= 2; break;
-							case DIR_DOWN: tmpY += 2; break;
-						}
-						if(isTileSolid(curMap, tmpX, tmpY) || isTileWater(curMap, tmpX, tmpY)){
-							tmpX = battleX;
-							tmpY = battleY;
-							switch(self.direction){
-								case DIR_LEFT: tmpX -= 1; break;
-								case DIR_RIGHT: tmpX += 1; break;
-								case DIR_UP: tmpY -= 1; break;
-								case DIR_DOWN: tmpY += 1; break;
-							}
-						}
-						
-						battleFolX = tmpX;
-						battleFolY = tmpY;
 					}
+					
+					battleFolX = tmpX;
+					battleFolY = tmpY;
 				}
-				
-				
+			}
+			
+			if(battleHasWalkedBack){
 				followerObj.forceTarget = true;
 				self.lastX = battleFolX;
 				self.lastY = battleFolY;
-				
-				
-			}else{
-				followerObj.forceTarget = false;
-				
-				if(wildPokemon){
-					wildPokemon.destroy();
-					wildPokemon = null;
-				}
-				
-				if(self.lockDirection != -1){
-					self.direction = self.lockDirection;
-					self.lockDirection = -1;
-					self.lastX = battleLastX;
-					self.lastY = battleLastY;
-				}
-				
-				battleHasWalkedBack = false
 			}
+			
+		}else{
+			followerObj.forceTarget = false;
+			
+			if(wildPokemon){
+				wildPokemon.destroy();
+				wildPokemon = null;
+			}
+			
+			if(self.lockDirection != -1){
+				self.direction = self.lockDirection;
+				self.lockDirection = -1;
+				self.lastX = battleLastX;
+				self.lastY = battleLastY;
+				
+				tmpX = battleX;
+				tmpY = battleY;
+				switch(self.direction){
+					case DIR_LEFT: tmpX += 1; break;
+					case DIR_RIGHT: tmpX -= 1; break;
+					case DIR_UP: tmpY += 1; break;
+					case DIR_DOWN: tmpY -= 1; break;
+				}
+				followerObj.pok.x = tmpX;
+				followerObj.pok.y = tmpY;
+			}
+			
+			battleHasWalkedBack = false
 		}
 	}
 	
-	function willMoveIntoAWall(){
-		switch(self.direction){
-			case DIR_LEFT: return isTileSolid(curMap, self.x - 1, self.y) || isTileWater(curMap, self.x - 1, self.y); break;
-			case DIR_RIGHT: return isTileSolid(curMap, self.x + 1, self.y) || isTileWater(curMap, self.x + 1, self.y); break;
-			case DIR_UP: return isTileSolid(curMap, self.x, self.y - 1) || isTileWater(curMap, self.x, self.y - 1); break;
-			case DIR_DOWN: return isTileSolid(curMap, self.x, self.y + 1) || isTileWater(curMap, self.x, self.y + 1); break;
-		}
+	function enterDoor(door){
+		var tmpX = self.x;
+		var tmpY = self.y;
+		door.open();
+		self.walking = false;
+		playerCanMove = false;
 		
-		return false;
+		queueLoadMap = true;
+		
+		var tmpCount = 0;
+		var doorRenderTransition = function(){
+			++tmpCount;
+			
+			if(tmpCount < 15) return;
+			if(tmpCount == 15){
+				self.walking = true;
+				noclip = true;
+				transmitWalk = false;
+			}
+			
+			self.lastX = tmpX;
+			self.lastY = tmpY;
+			
+			if(tmpCount == 23){
+				drawPlayerChar = false;
+			}
+			
+			var perc = clamp((tmpCount - 20) / 10, 0, 1);
+			ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			
+			if(tmpCount == 30){
+				noclip = false;
+				transmitWalk = true;
+				queueLoadMap = false;
+				if(queuedMap){
+					loadMap(queuedMap, queuedChars);
+				}
+			}
+		};
+		
+		socket.emit('useWarp', {name:door.name});
+		
+		hookRender(doorRenderTransition);
+	}
+	
+	function enterWarpArrow(warp){
+		var tmpX = self.x;
+		var tmpY = self.y;
+		warp.disable = true;
+		self.walking = false;
+		playerCanMove = false;
+		
+		queueLoadMap = true;
+		
+		var tmpCount = 0;
+		var warpRenderTransition = function(){
+			++tmpCount;
+			
+			var perc = clamp(tmpCount / 10, 0, 1);
+			ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			
+			if(tmpCount == 10){
+				queueLoadMap = false;
+				if(queuedMap){
+					loadMap(queuedMap, queuedChars);
+				}
+			}
+		};
+		
+		socket.emit('useWarp', {name:warp.name});
+		
+		hookRender(warpRenderTransition);
+	}
+	
+	function willMoveIntoAWall(){
+		var pos = getFrontPosition();
+		return isTileSolid(curMap, pos.x, pos.y) || isTileWater(curMap, pos.x, pos.y);
+	}
+	
+	function getFrontPosition(){
+		switch(self.direction){
+			case DIR_LEFT: return {x: self.x - 1, y: self.y};
+			case DIR_RIGHT: return {x: self.x + 1, y: self.y};
+			case DIR_UP: return {x: self.x, y: self.y - 1};
+			case DIR_DOWN: return {x: self.x, y: self.y + 1};
+		}
 	}
 	
 	function tickBot(){
@@ -1168,17 +1390,16 @@ function Character(data){
 		
 		if(self.id == myId && !drawPlayerChar) return;
 		
+		ctx.save();
+		
+		if(numRTicks - createdTick < 10){
+			ctx.globalAlpha = (numRTicks - createdTick) / 10;
+		}
+		
 		var offsetX = getRenderOffsetX();
 		var offsetY = getRenderOffsetY();
 		
-		if(self.follower){
-			var src = 'resources/followers/'+self.follower+'.png';
-			if(followerObj.pok.image.src != src){
-				followerObj.pok.image.src = src;
-			}
-		}else{
-			followerObj.pok.image.src = '';
-		}
+		
 		var renderPos = self.getRenderPos();
 		
 		var dirId = self.direction * CHAR_WIDTH;
@@ -1206,18 +1427,20 @@ function Character(data){
 			ctx.drawImage(res.uiCharInBattle, -10, -10);
 			ctx.restore();
 		}
+		
+		if(numRTicks - createdTick < 10) ctx.restore();
 	}
 }
 var POKEMON_WIDTH = 64;
 var POKEMON_HEIGHT = 64;
 
-function TPokemon(x, y){
+function TPokemon(x, y, id){
 	var self = this;
 	
 	
 	var randInt = Math.floor(Math.random() * 100);
 	
-	self.image = new Image();
+	self.image = id ? getImage('resources/followers/'+id+'.png') : null;
 	self.direction = DIR_DOWN;
 	self.x = x || 0;
 	self.y = y || 0;
@@ -1243,12 +1466,14 @@ function TPokemon(x, y){
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();
 		
-		ctx.save();
-		ctx.drawImage(self.image, POKEMON_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
-		ctx.restore();
-		
-		if(self.canDrawGrass && isTileGrass(curMap, self.x, self.y) && !self.walking){
-			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+		if(self.image){
+			ctx.save();
+			ctx.drawImage(self.image, POKEMON_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
+			ctx.restore();
+			
+			if(self.canDrawGrass && isTileGrass(curMap, self.x, self.y) && !self.walking){
+				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+			}
 		}
 	}
 	
@@ -1343,11 +1568,16 @@ function TPokemon(x, y){
 }
 function Follower(chr){
 	var self = this;
-	var pok = new TPokemon(chr.lastX || chr.x, chr.lastY || chr.y);
+	var pok = new TPokemon(chr.lastX || chr.x, chr.lastY || chr.y, chr.follower ? chr.follower : null);
 	self.pok = pok;
 	self.x = pok.x;
 	self.y = pok.y;
 	self.forceTarget = false;
+	self.randInt = Math.floor(Math.random() * 10000);
+	
+	var createdTick = numRTicks;
+	
+	
 	self.init = function(){
 		gameObjects.push(self);
 	}
@@ -1357,8 +1587,26 @@ function Follower(chr){
 	}
 	
 	self.render = function(ctx){
-		if(chr.id == myId && !drawPlayerChar) return;
+		if(chr.follower){
+			var src = 'resources/followers/'+chr.follower+'.png';
+			if(!pok.image || pok.image.src != src){
+				pok.image = getImage(src);
+			}
+		}else if(pok.image){
+			pok.image = null;
+		}
+		
+		if(chr.id == myId && !drawPlayerFollower) return;
+		if(pok.x == chr.x && pok.y == chr.y && !pok.walking && !chr.walking) return;
+		
+		
+		if(numRTicks - createdTick < 10){
+			ctx.save();
+			ctx.globalAlpha = (numRTicks - createdTick) / 10;
+		}
 		pok.render(ctx);
+		
+		if(numRTicks - createdTick < 10) ctx.restore();
 	}
 	
 	self.tick = function(){
@@ -1473,8 +1721,10 @@ function renderBattle(){
 					battle.textCompleted = true;
 					battle.textCompletedTime = now;
 					
-					if(battle.textDelay != -1){
-						setTimeout(battle.textOnComplete, battle.textDelay);
+					if(battle.textDelay == 0){
+						if(battle.textOnComplete) battle.textOnComplete();
+					}else if(battle.textDelay != -1){
+						if(battle.textOnComplete) setTimeout(function(){battle.textOnComplete();}, battle.textDelay);
 					}else{
 						hookAButton(battle.textOnComplete);
 					}
@@ -1753,12 +2003,15 @@ function renderBattle(){
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 208);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 210);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 210);
-		
+		ctx.fillText(battle.curPokemon.hp, 384, 208);
+		ctx.fillText(battle.curPokemon.hp, 382, 210);
+		ctx.fillText(battle.curPokemon.hp, 384, 210);
 		
 		ctx.fillStyle = 'rgb(64,64,64)';
 		ctx.fillText(pokemonName, 284, 172);
 		ctx.fillText(pokemonLevel, lvlX, 172);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 208);
+		ctx.fillText(battle.curPokemon.hp, 382, 208);
 		
 		
 		var tmpX = ctx.measureText(pokemonName).width + 284;
@@ -1770,9 +2023,6 @@ function renderBattle(){
 		
 		ctx.restore();
 	}
-	
-	
-	
 	
 	if(battle.step == BATTLE_STEP_POKEMON_APPEARED_TMP){
 		battle.step = BATTLE_STEP_POKEMON_APPEARED;
@@ -2045,6 +2295,7 @@ function battleFinish(){
 				inBattle = false;
 				battle = null;
 				drawPlayerChar = true;
+				drawPlayerFollower = true;
 				
 				var chr = getPlayerChar();
 				if(chr){
@@ -2142,15 +2393,12 @@ moves['def'] = (function(){
 function TWildPokemon(id, x, y, dir, chr){
 	var self = this;
 	
-	var pok = new TPokemon(x, y);
+	var pok = new TPokemon(x, y, id);
 	var initTick;
 	
 	self.x = pok.x;
 	self.y = pok.y;
 	self.randInt =  Math.floor(Math.random() * 100);
-	
-	//pok.image.onload = function(){self.init();};
-	pok.image.src = 'resources/followers/'+id+'.png';
 	
 	self.init = function(){
 		gameObjects.push(self);
@@ -2219,8 +2467,94 @@ function TWildPokemon(id, x, y, dir, chr){
 	
 	self.init();
 }
+function TDoor(name, x, y){
+	var self = this;
+	var openStep = 0;
+	
+	self.name = name;
+	self.x = x;
+	self.y = y;
+	
+	gameObjects.push(self);
+	
+	self.renderPriority = 100;
+	
+	self.open = function(){
+		openStep = 1;
+	}
+	
+	self.render = function(ctx){
+		if(openStep > 30) openStep = 0;
+		ctx.drawImage(res.miscSprites, 64, 32 * Math.min(Math.floor(openStep / 4), 3), 32, 32, self.x * curMap.tilewidth + getRenderOffsetX(), self.y * curMap.tileheight + getRenderOffsetY(), 32, 32);
+		if(openStep) ++openStep;
+	}
+}
+
+function getDoorAt(x, y){
+	var i = gameObjects.length;
+	while(i--){
+		if(gameObjects[i].x == x && gameObjects[i].y == y && gameObjects[i] instanceof TDoor){
+			return gameObjects[i];
+		}
+	}
+	
+	return null;
+}
+function TWarpArrow(name, x, y){
+	var self = this;
+	
+	self.name = name;
+	self.x = x;
+	self.y = y;
+	self.disable = false;
+	
+	gameObjects.push(self);
+	
+	self.render = function(ctx){
+		if(self.disable) return;
+		var chr = getPlayerChar();
+		if(!chr) return;
+		
+		if(Math.abs(chr.x - self.x) + Math.abs(chr.y - self.y) > 1) return;
+		
+		var dir;
+		if(chr.x < self.x){
+			dir = DIR_RIGHT;
+		}else if(chr.x > self.x){
+			dir = DIR_LEFT;
+		}else if(chr.y < self.y){
+			dir = DIR_DOWN;
+		}else{
+			dir = DIR_UP;
+		}
+		
+		if(dir != chr.direction) return;
+		
+		ctx.save();
+		ctx.translate(self.x * curMap.tilewidth + getRenderOffsetX() + 16, self.y * curMap.tileheight + getRenderOffsetY() + 16);
+		
+		ctx.rotate(Math.PI / 2 * dir);
+		if((numRTicks % 30) < 15){
+			ctx.translate(0, 4);
+		}
+		
+		ctx.drawImage(res.miscSprites, 0, 32, 32, 32, -16, -16, 32, 32);
+		ctx.restore();
+	}
+}
+
+function getWarpArrowAt(x, y){
+	var i = gameObjects.length;
+	while(i--){
+		if(gameObjects[i].x == x && gameObjects[i].y == y && gameObjects[i] instanceof TWarpArrow){
+			return gameObjects[i];
+		}
+	}
+	
+	return null;
+}
 function filterChatText(){
-	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"]/, '');
+	chatBox.value = chatBox.value.replace(/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"!?@#$%&*]/, '');
 }
 
 function generateRandomString(len){
@@ -2367,8 +2701,11 @@ function setPokemonParty(arr){
 	pokemonParty = arr;
 	
 	for(var i=0;i<pokemonParty.length;++i){
-		pokemonParty[i].icon = new Image();
-		pokemonParty[i].icon.src = 'resources/picons/'+pokemonParty[i].id+'_1.png';
+		pokemonParty[i].icon = getImage('resources/picons/'+pokemonParty[i].id+'_1.png');
+		
+		console.log('Preloading pokemon '+pokemonParty[i].id);
+		getImage('resources/back/'+pokemonParty[i].id+'.png');
+		getImage('resources/followers/'+pokemonParty[i].id+'.png');
 	}
 }
 
@@ -2506,6 +2843,10 @@ window.initGame = function($canvas, $container){
 		console.log('Connected');
 	});
 	
+	socket.on('disconnect', function(){
+		state = ST_DISCONNECTED;
+	});
+	
 	socket.on('setInfo', function(data){
 		console.log('setInfo: '+data.id);
 		myId = data.id;
@@ -2513,19 +2854,15 @@ window.initGame = function($canvas, $container){
 	});
 	
 	socket.on('loadMap', function(data){
-		console.log('loadMap: '+data.mapid);
-		loadMap(data.mapid);
-	});
-	
-	
-	socket.on('createChars', function(data){
-		loadedChars = true;
-		var arr = data.arr;
-		for(var i=0;i<arr.length;++i){
-			var chr = new Character(arr[i]);
-			chr.init();
+		if(queueLoadMap){
+			queuedMap = data.mapid;
+			queuedChars = data.chars;
+			return;
 		}
+		console.log('loadMap: '+data.mapid);
+		loadMap(data.mapid, data.chars);
 	});
+	
 	
 	
 	socket.on('invalidMove', function(data){
@@ -2541,7 +2878,10 @@ window.initGame = function($canvas, $container){
 	});
 	
 	socket.on('update', function(data){
+		if(typeof data == 'string') data = JSON.parse(data);
 		if(!loadedChars) return;
+		
+		if(data.map != curMapId) return;
 		var chars = data.chars;
 		
 		var charsNotUpdated = [];
@@ -2628,19 +2968,16 @@ window.initGame = function($canvas, $container){
 		battle.x = data.x;
 		battle.y = data.y;
 		battle.type = BATTLE_WILD;
-		battle.background = new Image();
-		battle.background.src = 'resources/ui/battle_background1.png';
+		battle.background = getImage('resources/ui/battle_background1.png');
 		
 		var enemy = data.battle.enemy;
 		
 		
 		battle.enemyPokemon = enemy;
-		battle.enemyPokemon.sprite = new Image();
-		battle.enemyPokemon.sprite.src = 'resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png';
+		battle.enemyPokemon.sprite = getImage('resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png');
 		
 		battle.curPokemon = data.battle.curPokemon;
-		battle.curPokemon.backsprite = new Image();
-		battle.curPokemon.backsprite.src = 'resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png';
+		battle.curPokemon.backsprite = getImage('resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png');
 		
 		var chr = getPlayerChar();
 		if(chr){

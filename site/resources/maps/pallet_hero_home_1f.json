@@ -26,11 +26,35 @@
          "width":14,
          "x":0,
          "y":0
+        }, 
+        {
+         "height":11,
+         "name":"warps",
+         "objects":[
+                {
+                 "height":32,
+                 "name":"pallet_warp",
+                 "properties":
+                    {
+                     "destination":"[\"pallet\", 16, 56, 0]",
+                     "type":"arrow"
+                    },
+                 "type":"warp",
+                 "width":32,
+                 "x":128,
+                 "y":320
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":14,
+         "x":0,
+         "y":0
         }],
  "orientation":"orthogonal",
  "properties":
     {
-
+     "players_per_instance":"1"
     },
  "tileheight":32,
  "tilesets":[
@@ -77,6 +101,10 @@
                 {
                  "solid":"1"
                 },
+             "29":
+                {
+                 "solid":"1"
+                },
              "34":
                 {
                  "solid":"1"
@@ -93,7 +121,39 @@
                 {
                  "solid":"1"
                 },
+             "49":
+                {
+                 "solid":"1"
+                },
              "5":
+                {
+                 "solid":"1"
+                },
+             "53":
+                {
+                 "solid":"1"
+                },
+             "54":
+                {
+                 "solid":"1"
+                },
+             "55":
+                {
+                 "solid":"1"
+                },
+             "56":
+                {
+                 "solid":"1"
+                },
+             "57":
+                {
+                 "solid":"1"
+                },
+             "58":
+                {
+                 "solid":"1"
+                },
+             "59":
                 {
                  "solid":"1"
                 },
@@ -101,7 +161,51 @@
                 {
                  "solid":"1"
                 },
+             "60":
+                {
+                 "solid":"1"
+                },
+             "61":
+                {
+                 "solid":"1"
+                },
+             "62":
+                {
+                 "solid":"1"
+                },
+             "63":
+                {
+                 "solid":"1"
+                },
+             "64":
+                {
+                 "solid":"1"
+                },
+             "65":
+                {
+                 "solid":"1"
+                },
              "7":
+                {
+                 "solid":"1"
+                },
+             "70":
+                {
+                 "solid":"1"
+                },
+             "71":
+                {
+                 "solid":"1"
+                },
+             "72":
+                {
+                 "solid":"1"
+                },
+             "74":
+                {
+                 "solid":"1"
+                },
+             "75":
                 {
                  "solid":"1"
                 },
@@ -109,7 +213,39 @@
                 {
                  "solid":"1"
                 },
+             "80":
+                {
+                 "solid":"1"
+                },
+             "81":
+                {
+                 "solid":"1"
+                },
+             "84":
+                {
+                 "solid":"1"
+                },
+             "85":
+                {
+                 "solid":"1"
+                },
              "9":
+                {
+                 "solid":"1"
+                },
+             "90":
+                {
+                 "solid":"1"
+                },
+             "91":
+                {
+                 "solid":"1"
+                },
+             "92":
+                {
+                 "solid":"1"
+                },
+             "93":
                 {
                  "solid":"1"
                 }

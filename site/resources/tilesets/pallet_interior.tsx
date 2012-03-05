@@ -66,6 +66,11 @@
    <property name="solid" value="1"/>
   </properties>
  </tile>
+ <tile id="29">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
  <tile id="34">
   <properties>
    <property name="solid" value="1"/>
@@ -77,6 +82,71 @@
   </properties>
  </tile>
  <tile id="44">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="49">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="53">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="54">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="55">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="60">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="61">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="62">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="64">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="65">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="74">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="75">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="84">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
+ <tile id="85">
   <properties>
    <property name="solid" value="1"/>
   </properties>

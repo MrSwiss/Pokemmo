@@ -1,13 +1,13 @@
 var POKEMON_WIDTH = 64;
 var POKEMON_HEIGHT = 64;
 
-function TPokemon(x, y){
+function TPokemon(x, y, id){
 	var self = this;
 	
 	
 	var randInt = Math.floor(Math.random() * 100);
 	
-	self.image = new Image();
+	self.image = id ? getImage('resources/followers/'+id+'.png') : null;
 	self.direction = DIR_DOWN;
 	self.x = x || 0;
 	self.y = y || 0;
@@ -33,12 +33,14 @@ function TPokemon(x, y){
 		var offsetY = getRenderOffsetY();
 		var renderPos = self.getRenderPos();
 		
-		ctx.save();
-		ctx.drawImage(self.image, POKEMON_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
-		ctx.restore();
-		
-		if(self.canDrawGrass && isTileGrass(curMap, self.x, self.y) && !self.walking){
-			ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+		if(self.image){
+			ctx.save();
+			ctx.drawImage(self.image, POKEMON_WIDTH * self.direction, Math.floor(((numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
+			ctx.restore();
+			
+			if(self.canDrawGrass && isTileGrass(curMap, self.x, self.y) && !self.walking){
+				ctx.drawImage(res.miscSprites, 0, 0, 32, 32, self.x * curMap.tilewidth + offsetX, self.y * curMap.tileheight + offsetY, 32, 32);
+			}
 		}
 	}
 	

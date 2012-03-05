@@ -83,8 +83,10 @@ function renderBattle(){
 					battle.textCompleted = true;
 					battle.textCompletedTime = now;
 					
-					if(battle.textDelay != -1){
-						setTimeout(battle.textOnComplete, battle.textDelay);
+					if(battle.textDelay == 0){
+						if(battle.textOnComplete) battle.textOnComplete();
+					}else if(battle.textDelay != -1){
+						if(battle.textOnComplete) setTimeout(function(){battle.textOnComplete();}, battle.textDelay);
 					}else{
 						hookAButton(battle.textOnComplete);
 					}
@@ -363,12 +365,15 @@ function renderBattle(){
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 208);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 210);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX + 2, 210);
-		
+		ctx.fillText(battle.curPokemon.hp, 384, 208);
+		ctx.fillText(battle.curPokemon.hp, 382, 210);
+		ctx.fillText(battle.curPokemon.hp, 384, 210);
 		
 		ctx.fillStyle = 'rgb(64,64,64)';
 		ctx.fillText(pokemonName, 284, 172);
 		ctx.fillText(pokemonLevel, lvlX, 172);
 		ctx.fillText(battle.curPokemon.maxHp, maxHpX, 208);
+		ctx.fillText(battle.curPokemon.hp, 382, 208);
 		
 		
 		var tmpX = ctx.measureText(pokemonName).width + 284;
@@ -380,9 +385,6 @@ function renderBattle(){
 		
 		ctx.restore();
 	}
-	
-	
-	
 	
 	if(battle.step == BATTLE_STEP_POKEMON_APPEARED_TMP){
 		battle.step = BATTLE_STEP_POKEMON_APPEARED;
@@ -655,6 +657,7 @@ function battleFinish(){
 				inBattle = false;
 				battle = null;
 				drawPlayerChar = true;
+				drawPlayerFollower = true;
 				
 				var chr = getPlayerChar();
 				if(chr){

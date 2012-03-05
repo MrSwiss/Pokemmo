@@ -1,15 +1,12 @@
 function TWildPokemon(id, x, y, dir, chr){
 	var self = this;
 	
-	var pok = new TPokemon(x, y);
+	var pok = new TPokemon(x, y, id);
 	var initTick;
 	
 	self.x = pok.x;
 	self.y = pok.y;
 	self.randInt =  Math.floor(Math.random() * 100);
-	
-	//pok.image.onload = function(){self.init();};
-	pok.image.src = 'resources/followers/'+id+'.png';
 	
 	self.init = function(){
 		gameObjects.push(self);

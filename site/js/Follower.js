@@ -1,10 +1,15 @@
 function Follower(chr){
 	var self = this;
-	var pok = new TPokemon(chr.lastX || chr.x, chr.lastY || chr.y);
+	var pok = new TPokemon(chr.lastX || chr.x, chr.lastY || chr.y, chr.follower ? chr.follower : null);
 	self.pok = pok;
 	self.x = pok.x;
 	self.y = pok.y;
 	self.forceTarget = false;
+	self.randInt = Math.floor(Math.random() * 10000);
+	
+	var createdTick = numRTicks;
+	
+	
 	self.init = function(){
 		gameObjects.push(self);
 	}
@@ -14,8 +19,26 @@ function Follower(chr){
 	}
 	
 	self.render = function(ctx){
-		if(chr.id == myId && !drawPlayerChar) return;
+		if(chr.follower){
+			var src = 'resources/followers/'+chr.follower+'.png';
+			if(!pok.image || pok.image.src != src){
+				pok.image = getImage(src);
+			}
+		}else if(pok.image){
+			pok.image = null;
+		}
+		
+		if(chr.id == myId && !drawPlayerFollower) return;
+		if(pok.x == chr.x && pok.y == chr.y && !pok.walking && !chr.walking) return;
+		
+		
+		if(numRTicks - createdTick < 10){
+			ctx.save();
+			ctx.globalAlpha = (numRTicks - createdTick) / 10;
+		}
 		pok.render(ctx);
+		
+		if(numRTicks - createdTick < 10) ctx.restore();
 	}
 	
 	self.tick = function(){

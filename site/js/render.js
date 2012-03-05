@@ -1,6 +1,5 @@
 var transitionStep = 0;
-var battleIntroPokeball = new Image();
-battleIntroPokeball.src = 'resources/ui/battle_intro_pokeball.png';
+var battleIntroPokeball = getImage('resources/ui/battle_intro_pokeball.png');
 
 function renderMap(ctx, map){
 	ctx.fillStyle = 'rgb(0,0,0)';
@@ -69,28 +68,62 @@ function drawLayer(ctx, map, layer){
 }
 
 function renderObjects(ctx){
+	/** @const */
+	var A_FIRST = -1,
+		B_FIRST = 1;
 	gameObjects.sort(function(a, b){
 		if(a instanceof Character && a.id == myId){
-			if(b instanceof TGrass) return -1;
-			return 1;
+			if(b instanceof TGrass) return A_FIRST;
+			return B_FIRST;
 		}
 		if(b instanceof Character && b.id == myId){
-			if(a instanceof TGrass) return 1;
-			return -1;
+			if(a instanceof TGrass) return B_FIRST;
+			return A_FIRST;
 		}
-		if(a.y < b.y) return -1;
+		
+		if(a instanceof Character && b instanceof Follower){
+			return B_FIRST;
+		}
+		
+		if(b instanceof Character && a instanceof Follower){
+			return A_FIRST;
+		}
+		
+		if(a.y < b.y){
+			return A_FIRST;
+		}
+		
+		if(a.y > b.y){
+			return B_FIRST;
+		}
+		
 		if(a.y == b.y){
-			if(a instanceof TGrass) return 1;
-			if(b instanceof TGrass) return -1;
+			if((a.renderPriority || 0) > (b.renderPriority || 0)) return B_FIRST;
+			if((b.renderPriority || 0) > (a.renderPriority || 0)) return A_FIRST;
+			
+			
+			if(a instanceof TGrass) return B_FIRST;
+			if(b instanceof TGrass) return A_FIRST;
 			
 			if(a instanceof Character && b instanceof Follower){
-				return 1;
+				return B_FIRST;
 			}else if(b instanceof Character && a instanceof Follower){
-				return -1;
+				return A_FIRST;
+			}
+			
+			if(a.randInt){
+				if(b.randInt){
+					if(a.randInt > b.randInt) return B_FIRST;
+					if(a.randInt < b.randInt) return A_FIRST;
+					return 0;
+				}
+				return B_FIRST;
+			}else if(b.randInt){
+				return A_FIRST;
 			}
 			return 0;
 		}
-		if(a.y > b.y) return 1;
+		
 		console.log(a, b);
 		tick = function(){};
 		render = function(){};
@@ -199,7 +232,7 @@ function drawChat() {
 	var x = 20;
 	var y = 335;
 	
-	ctx.font = '12pt Font1';
+	ctx.font = '12px Font2';
 	
 	if(inChat){
 		ctx.globalAlpha = 0.5;
@@ -229,12 +262,17 @@ function drawChat() {
 	var i = chatLog.length;
 	var now = +new Date();
 	for(var i = Math.max(chatLog.length - 12, 0); i< chatLog.length; ++i){
-		if(!inChat) ctx.globalAlpha = clamp(3 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
+		if(!inChat) ctx.globalAlpha = clamp(5 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
 		var str;
-
+		
+		if(!inChat){
+			ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			ctx.fillRect(x + 6, y + 169 - (14 * (chatLog.length - i)), ctx.measureText(chatLog[i].username + ': ' + chatLog[i].str).width + 6, 14);
+		}
+		
 		str = chatLog[i].username + ': ';
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 12, y + 182 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 11, y + 181 - (14 * (chatLog.length - i)));
 		
 		ctx.fillStyle = 'rgb(255, 255, 0)';
 		ctx.fillText(str, x + 10, y + 180 - (14 * (chatLog.length - i)));
@@ -244,7 +282,7 @@ function drawChat() {
 		str = chatLog[i].str;
 		
 		ctx.fillStyle = 'rgb(0, 0, 0)';
-		ctx.fillText(str, x + 12 + usernameWidth, y + 182 - (14 * (chatLog.length - i)));
+		ctx.fillText(str, x + 11 + usernameWidth, y + 181 - (14 * (chatLog.length - i)));
 		
 		
 		ctx.fillStyle = 'rgb(255, 255, 255)';
@@ -283,6 +321,7 @@ function renderBattleTransition(){
 		}else if(transitionStep < 50){
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			drawPlayerChar = false;
+			drawPlayerFollower = false;
 		}else if(transitionStep < 70){
 			var perc = ((transitionStep - 50) / 20);
 			if(perc > 1) perc = 1;
@@ -332,15 +371,13 @@ var willRender = false;
 
 
 function render(forceNoTransition, onlyRender){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
-	ctx.fillStyle = '#66BBFF';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
 	
 	var realRender = function(){
-		
 		willRender = false;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+		ctx.fillStyle = '#66BBFF';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		
 		switch(state){
 			case ST_MAP:
@@ -364,7 +401,7 @@ function render(forceNoTransition, onlyRender){
 					if(isPhone){
 						ctx.drawImage(gameCanvas, 0, -10, screenWidth, screenHeight);
 					}else{
-						ctx.drawImage(gameCanvas, 10, 10);
+						ctx.drawImage(gameCanvas, 0, 0);
 					}
 					
 					if(inBattle && battle.step == 0){
@@ -377,13 +414,24 @@ function render(forceNoTransition, onlyRender){
 					throw new Error('No map in memory');
 				}
 				
-				if(!isPhone && !inBattle){
-					drawPokemonParty();
+				if(!isPhone){
 					drawChat();
 				}
+				if(!isPhone && !inBattle){
+					drawPokemonParty();
+				}
+				
+				for(var i=0;i<renderHooks.length;++i) renderHooks[i]();
 			break;
 			case ST_LOADING:
 				loadingMapRender();
+			break;
+			case ST_DISCONNECTED:
+				ctx.fillStyle = '#000000';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.fillStyle = '#FFFFFF';
+				ctx.font = '12pt Courier New';
+				ctx.fillText("Disconnected from the server", 10, 30);
 			break;
 		}
 		
@@ -391,7 +439,7 @@ function render(forceNoTransition, onlyRender){
 			ctx.drawImage(iOSUI, 0, 0);
 		}
 		
-		for(var i=0;i<renderHooks.length;++i) renderHooks[i]();
+		
 	
 		if(!onlyRender){
 			onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
@@ -418,6 +466,20 @@ function render(forceNoTransition, onlyRender){
 			realRender();
 		}
 	}
+}
+
+function getImage(src, onload, onerror){
+	if(!src) return new Image();
+	if(loadedResources[src]){
+		if(onload) setTimeout(onload, 4);
+		return loadedResources[src];
+	}
+	
+	var img = new Image();
+	if(onload) img.onload = onload;
+	if(onerror) img.onerror = onerror;
+	img.src = src;
+	return loadedResources[src] = img;
 }
 
 function createGrassAnimation(x, y){

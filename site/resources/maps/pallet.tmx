@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="45" height="79" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="preload_pokemon" value="16,19"/>
+ </properties>
  <tileset firstgid="1" name="pallet" tilewidth="32" tileheight="32">
   <image source="../tilesets/pallet.png" width="320" height="576"/>
   <tile id="0">
@@ -73,6 +76,21 @@
    </properties>
   </tile>
   <tile id="26">
+   <properties>
+    <property name="solid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="solid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="solid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="29">
    <properties>
     <property name="solid" value="1"/>
    </properties>
@@ -466,11 +484,16 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="teleports" width="45" height="79"/>
  <objectgroup name="doors" width="45" height="79">
-  <object type="door" x="512" y="1760" width="32" height="32">
+  <object name="pallet_hero_home_door" type="warp" x="512" y="1760" width="32" height="32">
    <properties>
-    <property name="destination" value="['pallet_hero_home_1f', 4, 9]"/>
+    <property name="destination" value="[&quot;pallet_hero_home_1f&quot;, 4, 9, 2]"/>
+    <property name="type" value="door"/>
+   </properties>
+  </object>
+  <object name="pallet_hero_home_door_out" type="point" x="512" y="1792" width="32" height="32">
+   <properties>
+    <property name="direction" value="0"/>
    </properties>
   </object>
  </objectgroup>

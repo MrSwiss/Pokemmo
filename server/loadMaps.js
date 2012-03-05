@@ -13,8 +13,8 @@ function getTilesetOfTile(n){
 	return null;
 }
 
-for(var i=0;i<mapsNames.length;++i){
-	var mapName = mapsNames[i];
+for(var mi=0;mi<mapsNames.length;++mi){
+	var mapName = mapsNames[mi];
 	console.log('Loading: '+mapName+'...');
 	
 	var map = {};
@@ -22,11 +22,15 @@ for(var i=0;i<mapsNames.length;++i){
 	
 	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
 	
+	map.properties = map.data.properties;
+	
 	var solidData = new Array(map.data.width);
 	tilesets = map.data.tilesets;
 	
 	map.encounterAreas = [];
 	
+	map.warps = {};
+	map.points = {};
 	
 	for(var x=0;x<solidData.length;++x){
 		solidData[x] = new Array(map.data.height);
@@ -66,15 +70,20 @@ for(var i=0;i<mapsNames.length;++i){
 				var x2 = Math.round((obj.x + obj.width) / map.data.tilewidth);
 				var y2 = Math.round((obj.y + obj.height) / map.data.tileheight);
 				switch(obj.type){
-					case 'tall_grass':
-						var encounters = JSON.parse('{"tmp":['+ obj.properties.encounters + ']}').tmp;
-						map.encounterAreas.push({x1:x1, y1:y1, x2:x2, y2:y2, encounters: encounters});
+				case 'tall_grass':
+					var encounters = JSON.parse('{"tmp":['+ obj.properties.encounters + ']}').tmp;
+					map.encounterAreas.push({x1:x1, y1:y1, x2:x2, y2:y2, encounters: encounters});
+				break;
+				case 'warp':
+					map.warps[obj.name] = {type: obj.properties.type, destination: JSON.parse('{"tmp":'+obj.properties.destination+'}').tmp};
+					break;
+				case 'point':
+					map.points[obj.name] = [mapName, x1, y1, obj.properties.direction || DIR_DOWN];
 					break;
 				}
 			}
 		}
 	}
-	
 	
 	
 	map.solidData = solidData;

@@ -163,30 +163,32 @@
         }, 
         {
          "height":79,
-         "name":"teleports",
-         "objects":[],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "width":45,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "height":79,
          "name":"doors",
          "objects":[
                 {
                  "height":32,
-                 "name":"",
+                 "name":"pallet_hero_home_door",
                  "properties":
                     {
-                     "destination":"['pallet_hero_home_1f', 4, 9]"
+                     "destination":"[\"pallet_hero_home_1f\", 4, 9, 2]",
+                     "type":"door"
                     },
-                 "type":"door",
+                 "type":"warp",
                  "width":32,
                  "x":512,
                  "y":1760
+                }, 
+                {
+                 "height":32,
+                 "name":"pallet_hero_home_door_out",
+                 "properties":
+                    {
+                     "direction":"0"
+                    },
+                 "type":"point",
+                 "width":32,
+                 "x":512,
+                 "y":1792
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -198,7 +200,7 @@
  "orientation":"orthogonal",
  "properties":
     {
-
+     "preload_pokemon":"16,19"
     },
  "tileheight":32,
  "tilesets":[
@@ -342,6 +344,18 @@
                  "solid":"1"
                 },
              "26":
+                {
+                 "solid":"1"
+                },
+             "27":
+                {
+                 "solid":"1"
+                },
+             "28":
+                {
+                 "solid":"1"
+                },
+             "29":
                 {
                  "solid":"1"
                 },

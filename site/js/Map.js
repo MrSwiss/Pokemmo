@@ -5,6 +5,7 @@ function Map(data){
 	this.layers = [];
 	this.tilewidth = data.tilewidth;
 	this.tileheight = data.tileheight;
+	this.properties = data.properties || {};
 	
 	for(var i = 0; i< data.tilesets.length; ++i){
 		this.tilesets.push(new Tileset(data.tilesets[i]));
@@ -15,14 +16,27 @@ function Map(data){
 	}
 }
 
-function loadMap(id){
+function loadMap(id, chars){
+	console.log('Loading map '+id);
+	
 	state = ST_LOADING;
 	curMap = null;
 	curMapId = id;
 	
+	inBattle = false;
 	characters = [];
 	gameObjects = [];
+	loadedResources = {};
 	loadedChars = false;
+	playerCanMove = true;
+	drawPlayerChar = true;
+	drawPlayerFollower = true;
+	queueLoadMap = false;
+	queuedMap = undefined;
+	renderHooks = [];
+	gameRenderHooks = [];
+	loadedChars = false;
+	queuedChars = undefined;
 	
 	var pending = 0;
 	var completed = 0;
@@ -68,17 +82,31 @@ function loadMap(id){
 			}
 		}
 		
+		if(map.properties.preload_pokemon){
+			var arr = map.properties.preload_pokemon.split(',');
+			for(var i=0;i<arr.length;++i){
+				getImage('resources/followers/'+arr[i]+'.png');
+				getImage('resources/sprites/'+arr[i]+'.png');
+			}
+		}
+		
+		parseMapObjects(map);
+		
 		curMap = map;
+		
+		loadedChars = true;
+		var arr = chars;
+		for(var i=0;i<arr.length;++i){
+			var chr = new Character(arr[i]);
+			chr.init();
+		}
 		
 		refresh();
 	});
 	
 	function loadImage(name, src){
 		++pending;
-		res[name] = new Image();
-		res[name].onload = function(){--pending;++completed;};
-		res[name].onerror = function(){--pending;error = true;refresh();};
-		res[name].src = src;
+		res[name] = getImage(src, function(){--pending;++completed;}, function(){--pending;error = true;refresh();});
 	}
 	
 	function loadJSON(src, onload){
@@ -102,17 +130,15 @@ function loadMap(id){
 	function refresh(){
 		if(state != ST_LOADING) return;
 		
-		ctx.fillStyle = 'rgb(0,0,0)';
+		ctx.fillStyle = '#000000';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = 'rgb(255,255,255)';
+		ctx.fillStyle = '#FFFFFF';
 		ctx.font = '12pt Courier New';
 		
 		if(error){
-			console.log('Error loading map');
 			ctx.fillText('Failed loading files', 10, 30);
 		}else{
 			if(pending == 0){
-				console.log('Map loaded');
 				state = ST_MAP;
 				
 				var step = 0;
@@ -131,7 +157,6 @@ function loadMap(id){
 				
 				render();
 			}else{
-				console.log('Pending: '+pending);
 				ctx.fillText('Loading... ' + pending, 10, 30);
 			}
 		}
@@ -140,4 +165,23 @@ function loadMap(id){
 	
 	loadingMapRender = refresh;
 	render();
+}
+
+function parseMapObjects(map){
+	for(var i=0;i<map.layers.length;++i){
+		if(map.layers[i].type != 'objectgroup') continue;
+		var objects = map.layers[i].objects;
+		for(var k=0;k<objects.length;++k){
+			var obj = objects[k];
+			switch(obj.type){
+			case "warp":
+				if(obj.properties.type == 'door'){
+					new TDoor(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
+				}else if(obj.properties.type == 'arrow'){
+					new TWarpArrow(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
+				}
+				break;
+			}
+		}
+	}
 }

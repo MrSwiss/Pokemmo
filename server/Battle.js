@@ -270,6 +270,7 @@ function Battle(type, arg1, arg2){
 			}
 		}));
 		flushResults();
+		self.destroy();
 	}
 	
 	function processAction(player, enemy){
