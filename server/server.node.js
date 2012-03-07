@@ -36,6 +36,8 @@ var GENDER_FEMALE = 2;
 var BALL_MULT = 0;
 var BALL_ADD = 1;
 
+var SPEED_HACK_N = 12;
+
 Array.prototype.remove = function(e){
 	var i = 0;
 	var arr = this;
@@ -98,6 +100,7 @@ io.sockets.on('connection', function (socket) {
 		mapInstance: -1,
 		char: {
 			get id(){return client.id},
+			get username(){return client.username},
 			get inBattle(){return client.inBattle},
 			//get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
 			type: 'red',
@@ -115,6 +118,7 @@ io.sockets.on('connection', function (socket) {
 		pokemon: [],
 		lastMessage: 0,
 		playerVars: {},
+		speedHackChecks: [],
 		
 		restorePokemon: function(){
 			for(var i=0;i<client.pokemon.length;++i){
@@ -127,7 +131,7 @@ io.sockets.on('connection', function (socket) {
 		}
 	};
 	
-	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+	
 	client.pokemon.push(new Pokemon(Math.floor(Math.random()*3)*3+1+"", 5));
 	
 	client.respawnLocation = maps['pallet'].points['pallet_hero_home_door_out'];
@@ -137,6 +141,7 @@ io.sockets.on('connection', function (socket) {
 	console.log('Client connected to '+client.map+'#'+client.mapInstance);
 	console.log(clients.length+' clients connected');
 	
+	socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
 	
 	
 	socket.on('disconnect', function(){
@@ -223,7 +228,7 @@ io.sockets.on('connection', function (socket) {
 		
 		if(Math.abs(warp.x - client.char.x) + Math.abs(warp.y - client.char.y) > 1) return;
 		
-		getClientMapInstance().warpsUsed.push([client.id, data.name]);
+		getClientMapInstance().warpsUsed.push({id: client.id, warpName: data.name, x: client.char.x, y: client.char.y, direction: data.direction % 4 || DIR_DOWN});
 		warpPlayer(warp.destination);
 	});
 	
@@ -278,6 +283,23 @@ io.sockets.on('connection', function (socket) {
 	
 	function onPlayerStep(){
 		if(client.inBattle) return;
+		
+		if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
+		client.speedHackChecks.push(+new Date());
+		if(client.speedHackChecks.length >= SPEED_HACK_N){
+			var avgWalkTime = 0;
+			for(var i=1;i<SPEED_HACK_N;++i){
+				avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
+			}
+			avgWalkTime /= SPEED_HACK_N - 1;
+			if(avgWalkTime < 230){
+				console.log('Speed hack detected, kicking client '+client.username);
+				socket.disconnect();
+				return;
+			}
+		}
+		
+		
 		var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
 		for(var i=0;i<encounterAreas.length;++i){
 			var area = encounterAreas[i];
@@ -347,6 +369,8 @@ function createInstance(map){
 		instance.messages.length = 0;
 		instance.warpsUsed.length = 0;
 	}
+	
+	instance.generateUpdate();
 	
 	return instance;
 }

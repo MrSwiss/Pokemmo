@@ -52,7 +52,6 @@ function TPokemon(x, y, id){
 			tickBot();
 		}else{
 			self.walkingPerc += 0.10;
-			self.animationStep += 0.20;
 			if(self.walkingPerc >= (1-CHAR_MOVE_WAIT)/2 && !self.walkingHasMoved){
 				switch(self.direction){
 					case DIR_LEFT: self.x -= 1; break;

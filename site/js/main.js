@@ -7,10 +7,11 @@ Array.prototype.remove = function(e){
 	var i = 0;
 	var arr = this;
 	
-	while((i = arr.indexOf(e, i)) != -1){
+	if((i = arr.indexOf(e, i)) != -1){
 		arr.splice(i, 1);
-		--i;
+		return true;
 	}
+	return false;
 };
 
 (function(window, $q){
@@ -368,7 +369,7 @@ window.initGame = function($canvas, $container){
 	$q(document).on('touchstart',	function(e){e.preventDefault();return false;});
 	$q(document).on('touchmove',	function(e){e.preventDefault();return false;});
 
-	$(onScreenCanvas).on('touchstart', function(e){
+	$q(onScreenCanvas).on('touchstart', function(e){
 		var pressX = event.pageX;
 		var pressY = event.pageY;
 		if((iOSAButtonPos.x - pressX) * (iOSAButtonPos.x - pressX) + (iOSAButtonPos.y - pressY) * (iOSAButtonPos.y - pressY) < 1200){
@@ -382,7 +383,7 @@ window.initGame = function($canvas, $container){
 		//keysDown[38] = true;
 	});
 	
-	$(onScreenCanvas).on('touchend', function(e){
+	$q(onScreenCanvas).on('touchend', function(e){
 		uiAButtonDown = false;
 		uiBButtonDown = false;
 	});
@@ -495,13 +496,44 @@ window.initGame = function($canvas, $container){
 	socket.on('update', function(data){
 		if(typeof data == 'string') data = JSON.parse(data);
 		if(!loadedChars) return;
-		
 		if(data.map != curMapId) return;
+		
+		for(var i=0;i<data.warpsUsed.length;++i){
+			var warp = data.warpsUsed[i];
+			if(warp.id == myId) continue;
+			
+			(function(warp){
+				var chr = getCharById(warp.id);
+				
+				var tmpDoor = getDoorByName(warp.warpName);
+				var tmpWarpArrow = getWarpArrowByName(warp.warpName);
+				
+				chr.canUpdate = false;
+				var animation = function(){
+					chr.direction = warp.direction;
+					if(tmpDoor){
+						chr.enterDoor(tmpDoor);
+						
+					}else if(tmpWarpArrow){
+						chr.enterWarpArrow(tmpWarpArrow);
+					}
+				};
+				
+				if(chr.x != data.warpsUsed[i].x || chr.y != data.warpsUsed[i].y){
+					chr.targetX = warp.x;
+					chr.targetY = warp.y;
+					chr.onTarget = animation;
+				}else{
+					animation();
+				}
+			})(warp);
+		}
+		
 		var chars = data.chars;
 		
 		var charsNotUpdated = [];
 		for(var i=0;i<characters.length;++i){
-			charsNotUpdated.push(characters[i].id);
+			if(characters[i].canUpdate) charsNotUpdated.push(characters[i].id);
 		}
 		
 		for(var i=0;i<chars.length;++i){
@@ -526,30 +558,32 @@ window.initGame = function($canvas, $container){
 			
 			
 			if(chr){
-				chr.inBattle = charData.inBattle;
-				chr.battleEnemy = charData.battleEnemy;
-				chr.targetX = charData.x;
-				chr.targetY = charData.y;
-				chr.targetDirection = charData.direction;
-				
-				if(!chr.moving){
-					chr.lastX = charData.lastX;
-					chr.lastY = charData.lastY;
-				}
-				
-				if(chr.x == charData.x && chr.y == charData.y){
-					chr.direction = charData.direction;
-				}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
-				|| chr.x - 2 == charData.x && chr.y == charData.y
-				|| chr.x + 2 == charData.x && chr.y == charData.y
-				|| chr.x == charData.x && chr.y - 2 == charData.y
-				|| chr.x == charData.x && chr.y + 2 == charData.y){
-					// Let the bot move the character
-				}else{
-					// Character too far to be moved by the bot, move him manually
-					chr.direction = charData.direction;
-					chr.x = charData.x;
-					chr.y = charData.y;
+				if(chr.canUpdate){
+					chr.inBattle = charData.inBattle;
+					chr.battleEnemy = charData.battleEnemy;
+					chr.targetX = charData.x;
+					chr.targetY = charData.y;
+					chr.targetDirection = charData.direction;
+					
+					if(!chr.moving){
+						chr.lastX = charData.lastX;
+						chr.lastY = charData.lastY;
+					}
+					
+					if(chr.x == charData.x && chr.y == charData.y){
+						chr.direction = charData.direction;
+					}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
+					|| chr.x - 2 == charData.x && chr.y == charData.y
+					|| chr.x + 2 == charData.x && chr.y == charData.y
+					|| chr.x == charData.x && chr.y - 2 == charData.y
+					|| chr.x == charData.x && chr.y + 2 == charData.y){
+						// Let the bot move the character
+					}else{
+						// Character too far to be moved by the bot, move him manually
+						chr.direction = charData.direction;
+						chr.x = charData.x;
+						chr.y = charData.y;
+					}
 				}
 			}else{
 				chr = new Character(charData);

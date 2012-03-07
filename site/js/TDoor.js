@@ -31,3 +31,14 @@ function getDoorAt(x, y){
 	
 	return null;
 }
+
+function getDoorByName(name){
+	var i = gameObjects.length;
+	while(i--){
+		if(gameObjects[i] instanceof TDoor && gameObjects[i].name == name){
+			return gameObjects[i];
+		}
+	}
+	
+	return null;
+}

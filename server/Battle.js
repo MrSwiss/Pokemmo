@@ -262,12 +262,19 @@ function Battle(type, arg1, arg2){
 		}
 		
 		pushResult(new BattleTurnResult(winner, 'win', function(res, p){
-			return {
+			var obj = {
 				map: p.client.map,
 				x: p.client.char.x,
 				y: p.client.char.y,
 				pokemon: p.client.pokemon.map(function(v){return v.ownerInfo})
+			};
+			
+			if(winner != p){
+				p.client.getMapInstance().generateUpdate();
+				obj.mapChars = p.client.getMapInstance().cachedUpdate.chars;
 			}
+			
+			return obj;
 		}));
 		flushResults();
 		self.destroy();

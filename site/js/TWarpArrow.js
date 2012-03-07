@@ -51,3 +51,14 @@ function getWarpArrowAt(x, y){
 	
 	return null;
 }
+
+function getWarpArrowByName(name){
+	var i = gameObjects.length;
+	while(i--){
+		if(gameObjects[i] instanceof TWarpArrow && gameObjects[i].name == name){
+			return gameObjects[i];
+		}
+	}
+	
+	return null;
+}

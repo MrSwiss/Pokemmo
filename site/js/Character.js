@@ -18,6 +18,8 @@ function Character(data){
 	self.randInt = Math.floor(Math.random() * 100);
 	self.follower = data.follower || null;
 	self.lastMoveTick = 0;
+	self.canUpdate = true;
+	self.onTarget = null;
 	
 	var followerObj = new Follower(this);
 	
@@ -91,7 +93,16 @@ function Character(data){
 	self.tick = function(){
 		tickWalking();
 		
-		if(self.id == myId) tickWildBattle();
+		if(self.id == myId){
+			tickWildBattle();
+		}else{
+			if(self.x == self.targetX && self.y == self.targetY){
+				if(self.onTarget){
+					self.onTarget();
+					self.onTarget = null;
+				}
+			}
+		}
 	}
 	
 	function tickWalking(){
@@ -173,10 +184,10 @@ function Character(data){
 					var tmpPos = getFrontPosition();
 					var tmpWarp;
 					if(tmpWarp = getDoorAt(tmpPos.x, tmpPos.y)){
-						enterDoor(tmpWarp);
+						self.enterDoor(tmpWarp);
 						return;
 					}else if(tmpWarp = getWarpArrowAt(tmpPos.x, tmpPos.y)){
-						enterWarpArrow(tmpWarp);
+						self.enterWarpArrow(tmpWarp);
 						return;
 					}else if(willMoveIntoAWall()){
 						socket.emit('turn', {'dir':self.direction});
@@ -341,14 +352,18 @@ function Character(data){
 		}
 	}
 	
-	function enterDoor(door){
+	self.enterDoor = function(door){
 		var tmpX = self.x;
 		var tmpY = self.y;
 		door.open();
 		self.walking = false;
-		playerCanMove = false;
 		
-		queueLoadMap = true;
+		if(self.id == myId){
+			playerCanMove = false;
+			queueLoadMap = true;
+		}
+		
+		
 		
 		var tmpCount = 0;
 		var doorRenderTransition = function(){
@@ -364,55 +379,67 @@ function Character(data){
 			self.lastX = tmpX;
 			self.lastY = tmpY;
 			
-			if(tmpCount == 23){
-				drawPlayerChar = false;
-			}
-			
-			var perc = clamp((tmpCount - 20) / 10, 0, 1);
-			ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			
-			if(tmpCount == 30){
-				noclip = false;
-				transmitWalk = true;
-				queueLoadMap = false;
-				if(queuedMap){
-					loadMap(queuedMap, queuedChars);
+			if(self.id == myId){
+				if(tmpCount == 23){
+					drawPlayerChar = false;
 				}
+				
+				var perc = clamp((tmpCount - 20) / 10, 0, 1);
+				ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				if(tmpCount == 30){
+					noclip = false;
+					transmitWalk = true;
+					queueLoadMap = false;
+					if(queuedMap){
+						loadMap(queuedMap, queuedChars);
+					}
+				}
+			}else if(tmpCount == 23){
+				self.destroy();
+				unHookRender(doorRenderTransition);
 			}
 		};
 		
-		socket.emit('useWarp', {name:door.name});
+		if(self.id == myId) socket.emit('useWarp', {name:door.name, direction: self.direction});
 		
 		hookRender(doorRenderTransition);
 	}
 	
-	function enterWarpArrow(warp){
+	self.enterWarpArrow = function(warp){
 		var tmpX = self.x;
 		var tmpY = self.y;
 		warp.disable = true;
 		self.walking = false;
-		playerCanMove = false;
 		
-		queueLoadMap = true;
+		if(self.id == myId){
+			playerCanMove = false;
+			queueLoadMap = true;
+		}
 		
 		var tmpCount = 0;
 		var warpRenderTransition = function(){
 			++tmpCount;
 			
-			var perc = clamp(tmpCount / 10, 0, 1);
-			ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			
-			if(tmpCount == 10){
-				queueLoadMap = false;
-				if(queuedMap){
-					loadMap(queuedMap, queuedChars);
+			if(self.id == myId){
+				var perc = clamp(tmpCount / 10, 0, 1);
+				ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				if(tmpCount == 10){
+					queueLoadMap = false;
+					if(queuedMap){
+						loadMap(queuedMap, queuedChars);
+					}
 				}
+			}else{
+				self.destroy();
+				unHookRender(warpRenderTransition);
 			}
 		};
 		
-		socket.emit('useWarp', {name:warp.name});
+		if(self.id == myId) socket.emit('useWarp', {name:warp.name, direction: self.direction});
 		
 		hookRender(warpRenderTransition);
 	}
