@@ -58,7 +58,8 @@ class Map {
 			Main.mapCacheCtx.fillRect(0, 0, Main.mapCacheCanvas.width, Main.mapCacheCanvas.height);
 			for(i in 0...layers.length){
 				var layer = layers[i];
-				if(layer.properties.overchars == '1') continue;
+				if (layer.properties.overchars == '1') continue;
+				if(layer.properties.animated == '1') continue;
 				layer.render(Main.mapCacheCtx, this);
 			}
 			
@@ -69,6 +70,14 @@ class Map {
 			cacheOffsetY = Renderer.getOffsetY();
 		}else {
 			ctx.drawImage(Main.mapCacheCanvas, 0, 0);
+		}
+	}
+	
+	public function renderAnimated(ctx:CanvasRenderingContext2D):Void {
+		for(i in 0...layers.length){
+			var layer = layers[i];
+			if (layer.properties.animated != '1') continue;
+			layer.render(ctx, this);
 		}
 	}
 	

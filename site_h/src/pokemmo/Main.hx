@@ -3,6 +3,7 @@ package pokemmo;
 import js.Lib;
 import UserAgentContext;
 import SocketIOConnection;
+import pokemmo.Game;
 
 /**
  * ...
@@ -54,8 +55,10 @@ class Main {
 	}
 	
 	static public function tick():Void {
-		UI.tick();
-		if (Game.curGame != null) Game.curGame.tick();
+		if (Game.state == ST_MAP){
+			UI.tick();
+			if (Game.curGame != null) Game.curGame.tick();
+		}
 		
 		Renderer.render();
 	}

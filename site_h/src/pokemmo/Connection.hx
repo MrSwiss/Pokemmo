@@ -8,6 +8,7 @@ import pokemmo.Game;
 import pokemmo.CCharacter;
 import pokemmo.Pokemon;
 import pokemmo.transitions.BattleTransition001;
+import pokemmo.Chat;
 
 /**
  * ...
@@ -30,6 +31,7 @@ class Connection {
 		
 		socket.on('disconnect', function(data:Dynamic){
 			Game.state = ST_DISCONNECTED;
+			Game.curGame = null;
 		});
 		
 		socket.on('setInfo', function(data:Dynamic){
@@ -62,13 +64,7 @@ class Connection {
 		socket.on('update', function(data: {
 				var map:String;
 				var chars:Array<CCharacterData>;
-				var messages:Array<{
-					var username:String;
-					var str:String;
-					var x:Int;
-					var y:Int;
-					var timestamp:Float; // Set on the clientside when received
-				}>;
+				var messages:Array<ChatLogEntry>;
 				
 				var warpsUsed:Array<{
 					var id:String;
@@ -191,11 +187,11 @@ class Connection {
 				}
 			}
 			
-			Chat.chatLog = Chat.chatLog.slice(-64 + data.messages.length);
+			
 			for(i in 0...data.messages.length){
 				var m = data.messages[i];
 				m.timestamp = Date.now().getTime();
-				Chat.chatLog.push(m);
+				Chat.pushMessage(m);
 			}
 			
 		});

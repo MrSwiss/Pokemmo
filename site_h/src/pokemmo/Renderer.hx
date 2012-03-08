@@ -72,12 +72,12 @@ class Renderer {
 		
 		
 		var g = Game.curGame;
-		if (g == null) return;
 		
 		switch(Game.state) {
 		case ST_UNKNOWN:
 			null;
 		case ST_MAP:
+			if (g == null) return;
 			var map = g.map;
 			if(map == null) throw 'No map in memory';
 			
@@ -89,6 +89,7 @@ class Renderer {
 			}
 			
 			map.render(ctx);
+			map.renderAnimated(ctx);
 			Game.curGame.renderObjects(ctx);
 			map.renderOver(ctx);
 			

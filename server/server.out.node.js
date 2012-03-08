@@ -1133,7 +1133,7 @@ io.sockets.on('connection', function (socket) {
 				avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
 			}
 			avgWalkTime /= SPEED_HACK_N - 1;
-			if(avgWalkTime < 230){
+			if(avgWalkTime < 220){
 				console.log('Speed hack detected, kicking client '+client.username);
 				socket.disconnect();
 				return;

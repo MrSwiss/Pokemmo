@@ -36,7 +36,7 @@
                  "name":"pallet_warp",
                  "properties":
                     {
-                     "destination":"[\"pallet\", 16, 56, 0]",
+                     "destination":"[\"pallet\", 121, 227, 0]",
                      "type":"arrow"
                     },
                  "type":"warp",

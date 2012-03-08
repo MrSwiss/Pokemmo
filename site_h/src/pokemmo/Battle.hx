@@ -535,7 +535,7 @@ class Battle {
 				playMove(action.value.move);
 			}, 1000);
 		case "moveMiss":
-			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.move.toUpperCase()+"!");
+			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.toUpperCase()+"!");
 			Main.setTimeout(function():Void{
 				setBattleText('But it missed!');
 				Main.setTimeout(function() { runQueue(true); }, 1000);

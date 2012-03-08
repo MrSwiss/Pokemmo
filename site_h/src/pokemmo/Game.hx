@@ -72,6 +72,7 @@ class Game {
 			loadImageResource('battleHealthBar', 'resources/ui/battle_healthbar.png');
 			loadImageResource('battleEnemyBar', 'resources/ui/battle_enemy_bar.png');
 			loadImageResource('battleIntroPokeball', 'resources/ui/battle_intro_pokeball.png');
+			loadImageResource('animatedTileset', 'resources/tilesets/animated.png');
 			
 			loadJSON('data/pokemon.json', function(data:Dynamic):Void {
 				pokemonData = data;
@@ -212,10 +213,20 @@ class Game {
 	}
 	
 	public function renderObjects(ctx:CanvasRenderingContext2D):Void {
+		var arr = [];
+		var icx = Math.floor(Renderer.cameraX);
+		var icy = Math.floor(Renderer.cameraY);
+		var fcx = icx + Main.screenWidth / map.tilewidth;
+		var fcy = icy + Main.screenHeight / map.tileheight;
+		for (i in 0...gameObjects.length) {
+			if (gameObjects[i].x + 2 > icx && gameObjects[i].y + 2 > icy && gameObjects[i].x - 2 < fcx && gameObjects[i].y - 2 < fcy) {
+				arr.push(gameObjects[i]);
+			}
+		}
 		
 		var A_FIRST = -1;
 		var B_FIRST = 1;
-		gameObjects.sort(function(a:GameObject, b:GameObject):Int {
+		arr.sort(function(a:GameObject, b:GameObject):Int {
 			if(Std.is(a, CCharacter) && untyped a.id == myId){
 				if(Std.is(b, CGrassAnimation)) return A_FIRST;
 				return B_FIRST;
@@ -262,7 +273,6 @@ class Game {
 			return 0;
 		});
 		
-		var arr = gameObjects.copy();
 		for (i in 0...arr.length) {
 			arr[i].render(ctx);
 		}
@@ -275,6 +285,13 @@ class Game {
 	public function getCharById(id:String):CCharacter {
 		for (i in 0...characters.length) {
 			if (characters[i].id == id) return characters[i];
+		}
+		return null;
+	}
+	
+	public function getCharByUsername(username:String):CCharacter {
+		for (i in 0...characters.length) {
+			if (characters[i].username == username) return characters[i];
 		}
 		return null;
 	}

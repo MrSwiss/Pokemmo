@@ -17,6 +17,7 @@ class Layer {
 	public var properties: {
 		var solid:String;
 		var overchars:String;
+		var animated:String;
 	};
 	
 	public var objects:Array<Dynamic>;
@@ -31,7 +32,7 @@ class Layer {
 		type = data.type;
 		properties = data.properties;
 		objects = data.objects;
-		if (properties == null) properties = {solid: '1', overchars: '0'};
+		if (properties == null) properties = {solid: '1', overchars: '0', animated: '0'};
 	}
 	
 	public function render(ctx:CanvasRenderingContext2D, map:Map):Void {
@@ -72,12 +73,19 @@ class Layer {
 				if(tileset == null) throw "Tileset is null";
 				
 				var curTilesetTileid = tileid - tileset.firstgid;
-				var numTilesX = Math.floor(tileset.imagewidth / tileset.tilewidth);
 				
-				var srcx = (curTilesetTileid % numTilesX) * tileset.tilewidth;
-				var srcy = Math.floor(curTilesetTileid / numTilesX) * tileset.tileheight;
-				
-				ctx.drawImage(tileset.image, srcx, srcy, tileset.tilewidth, tileset.tileheight, (px + x) * tileset.tilewidth + offsetX, (py + y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
+				if (tileset.tileproperties[curTilesetTileid] != null && tileset.tileproperties[curTilesetTileid].animated != null) {
+					var id = (untyped __js__("Number"))(tileset.tileproperties[curTilesetTileid].animated);
+					var numFrames = (untyped __js__("Number"))(tileset.tileproperties[curTilesetTileid].numFrames);
+					ctx.drawImage(Game.getRes('animatedTileset').obj, tileset.tilewidth * Math.floor((Renderer.numRTicks / 15) % numFrames), id * tileset.tileheight, tileset.tilewidth, tileset.tileheight, (px + x) * tileset.tilewidth + offsetX, (py + y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
+				}else{
+					var numTilesX = Math.floor(tileset.imagewidth / tileset.tilewidth);
+					
+					var srcx = (curTilesetTileid % numTilesX) * tileset.tilewidth;
+					var srcy = Math.floor(curTilesetTileid / numTilesX) * tileset.tileheight;
+					
+					ctx.drawImage(tileset.image, srcx, srcy, tileset.tilewidth, tileset.tileheight, (px + x) * tileset.tilewidth + offsetX, (py + y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
+				}
 				++j;
 			}
 		}

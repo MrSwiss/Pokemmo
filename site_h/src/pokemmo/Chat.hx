@@ -28,7 +28,7 @@ class Chat {
 			
 			var chatLog = Chat.chatLog;
 			for (i in untyped Math.max(chatLog.length - 12, 0)...chatLog.length) {
-				chatLog[i].timestamp = Math.max(now - 2500, chatLog[i].timestamp);
+				chatLog[i].timestamp2 = Math.max(now - 2500, chatLog[i].timestamp2);
 			}
 		}
 		
@@ -40,6 +40,19 @@ class Chat {
 		}
 		
 		untyped __js__("document").body.appendChild(chatBox);
+	}
+	
+	static public function pushMessage(msg:ChatLogEntry):Void {
+		var chr = Game.curGame.getPlayerChar();
+		msg.timestamp2 = msg.timestamp;
+		if(chr != null){
+			if ((msg.x - chr.x) * (msg.x - chr.x) + (msg.y - chr.y) * (msg.x - chr.y) > 35 * 35) {
+				return;
+			}
+		}
+		if (chatLog.length > 64) chatLog.shift();
+		
+		chatLog.push(msg);
 	}
 	
 	static public function sendMessage():Void {
@@ -88,7 +101,7 @@ class Chat {
 		var i = chatLog.length;
 		var now = Date.now().getTime();
 		for (i in untyped Math.max(chatLog.length - 12, 0)...chatLog.length) {
-			if(!inChat) ctx.globalAlpha = Util.clamp(5 - (now - chatLog[i].timestamp)/1000 + 2, 0, 1);
+			if(!inChat) ctx.globalAlpha = Util.clamp(5 - (now - chatLog[i].timestamp2)/1000 + 2, 0, 1);
 			var str;
 			
 			if(!inChat){
@@ -118,6 +131,49 @@ class Chat {
 		}
 		
 		ctx.globalAlpha = 1;
+		
+		var BUBBLE_TIME = 2500;
+		var CORNER_RADIUS = 10;
+		var BORDER_SIZE = 5;
+		var offx = Renderer.getOffsetX();
+		var offy = Renderer.getOffsetY();
+		var tmpCanvas = Main.tmpCanvas;
+		var tmpCtx = Main.tmpCtx;
+		for (msg in chatLog) {
+			if (now - msg.timestamp >= BUBBLE_TIME) continue;
+			if (msg.chr == null) msg.chr = Game.curGame.getCharByUsername(msg.username);
+			if (msg.chr == null)  continue;
+			var perc = Util.clamp((BUBBLE_TIME - (now - msg.timestamp)) / 750, 0, 0.7);
+			
+			var x:Int, y:Int, width:Int, height:Int;
+			
+			var pos:Point = msg.chr.getRenderPos();
+			x = pos.x + offx + Math.floor(CCharacter.CHAR_WIDTH / 2);
+			y = pos.y + offy + 20;
+			width = Math.round(ctx.measureText(msg.str).width + BORDER_SIZE * 2);
+			height = 16;
+			
+			x -= Math.floor(width / 2);
+			y -= height;
+			
+			y -= Math.floor((now - msg.timestamp) / 150);
+			
+			tmpCtx.clearRect(0, 0, width, height);
+			tmpCtx.save();
+			tmpCtx.lineJoin = "round";
+			tmpCtx.lineWidth = CORNER_RADIUS;
+			tmpCtx.fillStyle = tmpCtx.strokeStyle = '#FFFFFF';
+			tmpCtx.strokeRect(CORNER_RADIUS / 2, CORNER_RADIUS / 2, width - CORNER_RADIUS, height - CORNER_RADIUS);
+			tmpCtx.fillRect(CORNER_RADIUS / 2, CORNER_RADIUS / 2, width - CORNER_RADIUS, height - CORNER_RADIUS);
+			tmpCtx.restore();
+			
+			ctx.save();
+			ctx.globalAlpha = perc;
+			ctx.drawImage(tmpCanvas, 0, 0, width, height, x, y, width, height);
+			ctx.fillStyle = '#000000';
+			ctx.fillText(msg.str, x + BORDER_SIZE, y + 12);
+			ctx.restore();
+		}
 	}
 	
 	static private function filterChatText():Void {
@@ -129,4 +185,8 @@ typedef ChatLogEntry = {
 	var username:String;
 	var str:String;
 	var timestamp:Float;
+	var timestamp2:Float;
+	var chr:CCharacter;
+	var x:Int;
+	var y:Int;
 }
