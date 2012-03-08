@@ -3,6 +3,7 @@ package pokemmo;
 import pokemmo.entities.CDoor;
 import pokemmo.entities.CFollower;
 import pokemmo.entities.CGrassAnimation;
+import pokemmo.entities.CStairs;
 import pokemmo.entities.CWarpArrow;
 import pokemmo.Pokemon;
 import pokemmo.CCharacter;
@@ -119,6 +120,7 @@ class Game {
 			var arr = chars;
 			for(i in 0...arr.length){
 				var chr = new CCharacter(arr[i]);
+				if (chr.id == myId) chr.freezeTicks = 10;
 			}
 		});
 	}
@@ -206,6 +208,8 @@ class Game {
 	}
 	
 	public function tick():Void {
+		if (state != ST_MAP) return;
+		
 		var arr = gameObjects.copy();
 		for (i in 0...arr.length) {
 			arr[i].tick();
@@ -321,8 +325,11 @@ class Game {
 						new CDoor(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
 					}else if(obj.properties.type == 'arrow'){
 						new CWarpArrow(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight));
+					}else if (obj.properties.type == 'stairs_up') {
+						new CStairs(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight), DIR_UP, Std.parseInt(obj.properties.from_dir));
+					}else if(obj.properties.type == 'stairs_down'){
+						new CStairs(obj.name, Math.floor(obj.x / map.tilewidth), Math.floor(obj.y / map.tileheight), DIR_DOWN, Std.parseInt(obj.properties.from_dir));
 					}
-					break;
 				}
 			}
 		}

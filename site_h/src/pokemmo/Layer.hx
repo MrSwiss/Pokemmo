@@ -77,7 +77,9 @@ class Layer {
 				if (tileset.tileproperties[curTilesetTileid] != null && tileset.tileproperties[curTilesetTileid].animated != null) {
 					var id = (untyped __js__("Number"))(tileset.tileproperties[curTilesetTileid].animated);
 					var numFrames = (untyped __js__("Number"))(tileset.tileproperties[curTilesetTileid].numFrames);
-					ctx.drawImage(Game.getRes('animatedTileset').obj, tileset.tilewidth * Math.floor((Renderer.numRTicks / 15) % numFrames), id * tileset.tileheight, tileset.tilewidth, tileset.tileheight, (px + x) * tileset.tilewidth + offsetX, (py + y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
+					var animDelay = (untyped __js__("Number"))(tileset.tileproperties[curTilesetTileid].animDelay);
+					if (Math.isNaN(animDelay)) animDelay = 0;
+					ctx.drawImage(Game.getRes('animatedTileset').obj, tileset.tilewidth * Math.floor(((Renderer.numRTicks + animDelay) / 8) % numFrames), id * tileset.tileheight, tileset.tilewidth, tileset.tileheight, (px + x) * tileset.tilewidth + offsetX, (py + y) * tileset.tileheight + offsetY, tileset.tilewidth, tileset.tileheight);
 				}else{
 					var numTilesX = Math.floor(tileset.imagewidth / tileset.tilewidth);
 					

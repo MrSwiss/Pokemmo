@@ -12,7 +12,7 @@ pokemmo.Chat.setup = function() {
 	pokemmo.Chat.chatBox.style.position = "fixed";
 	pokemmo.Chat.chatBox.maxLength = 128;
 	pokemmo.Chat.chatBox.onblur = function(e) {
-		$s.push("pokemmo.Chat::setup@23");
+		$s.push("pokemmo.Chat::setup@26");
 		var $spos = $s.length;
 		pokemmo.Chat.inChat = false;
 		var now = Date.now().getTime();
@@ -25,7 +25,7 @@ pokemmo.Chat.setup = function() {
 		$s.pop();
 	};
 	pokemmo.Chat.chatBox.onkeydown = function(e) {
-		$s.push("pokemmo.Chat::setup@35");
+		$s.push("pokemmo.Chat::setup@38");
 		var $spos = $s.length;
 		e = window.event || e;
 		if(e.keyCode == 13) pokemmo.Chat.sendMessage();
@@ -40,12 +40,31 @@ pokemmo.Chat.pushMessage = function(msg) {
 	var chr = pokemmo.Game.curGame.getPlayerChar();
 	msg.timestamp2 = msg.timestamp;
 	if(chr != null) {
-		if((msg.x - chr.x) * (msg.x - chr.x) + (msg.y - chr.y) * (msg.x - chr.y) > 1225) {
+		if((msg.x - chr.x) * (msg.x - chr.x) + (msg.y - chr.y) * (msg.x - chr.y) > 2025) {
 			$s.pop();
 			return;
 		}
 	}
 	if(pokemmo.Chat.chatLog.length > 64) pokemmo.Chat.chatLog.shift();
+	msg.bubbleLines = [];
+	var ctx = pokemmo.Main.ctx;
+	ctx.font = "12px Font2";
+	var width = Math.round(ctx.measureText(msg.str).width + 10);
+	var height = 16;
+	msg.bubbleLines.push(msg.str);
+	if(width > 150) {
+		width = 150;
+		do {
+			var curLineArr = msg.bubbleLines[msg.bubbleLines.length - 1].split(" ");
+			var nextLineArr = [];
+			while(ctx.measureText(curLineArr.join(" ")).width > 150) nextLineArr.unshift(curLineArr.pop());
+			msg.bubbleLines[msg.bubbleLines.length - 1] = curLineArr.join(" ");
+			msg.bubbleLines.push(nextLineArr.join(" "));
+			height += 14;
+		} while(ctx.measureText(msg.bubbleLines[msg.bubbleLines.length - 1]).width > 150);
+	}
+	msg.bubbleWidth = width;
+	msg.bubbleHeight = height;
 	pokemmo.Chat.chatLog.push(msg);
 	$s.pop();
 }
@@ -111,7 +130,6 @@ pokemmo.Chat.render = function(ctx) {
 	ctx.globalAlpha = 1;
 	var BUBBLE_TIME = 2500;
 	var CORNER_RADIUS = 10;
-	var BORDER_SIZE = 5;
 	var offx = pokemmo.Renderer.getOffsetX();
 	var offy = pokemmo.Renderer.getOffsetY();
 	var tmpCanvas = pokemmo.Main.tmpCanvas;
@@ -124,12 +142,10 @@ pokemmo.Chat.render = function(ctx) {
 		if(msg.chr == null) msg.chr = pokemmo.Game.curGame.getCharByUsername(msg.username);
 		if(msg.chr == null) continue;
 		var perc = pokemmo.Util.clamp((BUBBLE_TIME - (now - msg.timestamp)) / 750,0,0.7);
-		var x1, y1, width, height;
+		var x1, y1, width = msg.bubbleWidth, height = msg.bubbleHeight;
 		var pos = msg.chr.getRenderPos();
 		x1 = pos.x + offx + Math.floor(32 / 2);
 		y1 = pos.y + offy + 20;
-		width = Math.round(ctx.measureText(msg.str).width + BORDER_SIZE * 2);
-		height = 16;
 		x1 -= Math.floor(width / 2);
 		y1 -= height;
 		y1 -= Math.floor((now - msg.timestamp) / 150);
@@ -145,7 +161,11 @@ pokemmo.Chat.render = function(ctx) {
 		ctx.globalAlpha = perc;
 		ctx.drawImage(tmpCanvas,0,0,width,height,x1,y1,width,height);
 		ctx.fillStyle = "#000000";
-		ctx.fillText(msg.str,x1 + BORDER_SIZE,y1 + 12);
+		var _g3 = 0, _g2 = msg.bubbleLines.length;
+		while(_g3 < _g2) {
+			var i1 = _g3++;
+			ctx.fillText(msg.bubbleLines[i1],x1 + 5,y1 + 12 + 14 * i1);
+		}
 		ctx.restore();
 	}
 	$s.pop();
@@ -221,7 +241,9 @@ pokemmo.Layer.prototype.render = function(ctx,map) {
 			if(tileset.tileproperties[curTilesetTileid] != null && tileset.tileproperties[curTilesetTileid].animated != null) {
 				var id = Number(tileset.tileproperties[curTilesetTileid].animated);
 				var numFrames = Number(tileset.tileproperties[curTilesetTileid].numFrames);
-				ctx.drawImage(pokemmo.Game.res["animatedTileset"].obj,tileset.tilewidth * Math.floor(pokemmo.Renderer.numRTicks / 15 % numFrames),id * tileset.tileheight,tileset.tilewidth,tileset.tileheight,(px + this.x) * tileset.tilewidth + offsetX,(py + this.y) * tileset.tileheight + offsetY,tileset.tilewidth,tileset.tileheight);
+				var animDelay = Number(tileset.tileproperties[curTilesetTileid].animDelay);
+				if(Math.isNaN(animDelay)) animDelay = 0;
+				ctx.drawImage(pokemmo.Game.res["animatedTileset"].obj,tileset.tilewidth * Math.floor((pokemmo.Renderer.numRTicks + animDelay) / 8 % numFrames),id * tileset.tileheight,tileset.tilewidth,tileset.tileheight,(px + this.x) * tileset.tilewidth + offsetX,(py + this.y) * tileset.tileheight + offsetY,tileset.tilewidth,tileset.tileheight);
 			} else {
 				var numTilesX = Math.floor(tileset.imagewidth / tileset.tilewidth);
 				var srcx = curTilesetTileid % numTilesX * tileset.tilewidth;
@@ -1346,10 +1368,13 @@ pokemmo.Renderer.realRender = function() {
 		pokemmo.Chat.render(ctx);
 		if(!g.inBattle) pokemmo.UI.renderPokemonParty(ctx);
 		if(pokemmo.Renderer.curTransition != null) pokemmo.Renderer.curTransition.render(ctx);
-		var _g1 = 0, _g = pokemmo.Renderer.renderHooks.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			pokemmo.Renderer.renderHooks[i]();
+		if(pokemmo.Renderer.renderHooks.length > 0) {
+			var arr = pokemmo.Renderer.renderHooks.copy();
+			var _g1 = 0, _g = arr.length;
+			while(_g1 < _g) {
+				var i = _g1++;
+				arr[i]();
+			}
 		}
 		break;
 	case 1:
@@ -1362,7 +1387,7 @@ pokemmo.Renderer.realRender = function() {
 			var step = 0;
 			var func = null;
 			func = function() {
-				$s.push("pokemmo.Renderer::realRender@125");
+				$s.push("pokemmo.Renderer::realRender@128");
 				var $spos = $s.length;
 				ctx.fillStyle = "#000000";
 				ctx.globalAlpha = 1 - step / 8;
@@ -2290,8 +2315,11 @@ pokemmo.CCharacter = function(data) {
 	this.noclip = false;
 	this.lockDirection = -1;
 	this.battleHasWalkedBack = false;
+	this.renderOffsetX = this.renderOffsetY = 0;
+	this.renderAlpha = 1.0;
+	this.freezeTicks = 0;
 	this.image = pokemmo.Game.curGame.getImage("resources/chars/" + data.type + ".png",function() {
-		$s.push("pokemmo.CCharacter::new@84");
+		$s.push("pokemmo.CCharacter::new@93");
 		var $spos = $s.length;
 		me.loaded = true;
 		$s.pop();
@@ -2323,6 +2351,7 @@ pokemmo.CCharacter.prototype.canUpdate = null;
 pokemmo.CCharacter.prototype.onTarget = null;
 pokemmo.CCharacter.prototype.battleEnemy = null;
 pokemmo.CCharacter.prototype.image = null;
+pokemmo.CCharacter.prototype.freezeTicks = null;
 pokemmo.CCharacter.prototype.followerObj = null;
 pokemmo.CCharacter.prototype.transmitWalk = null;
 pokemmo.CCharacter.prototype.createdTick = null;
@@ -2336,6 +2365,9 @@ pokemmo.CCharacter.prototype.battleLastX = null;
 pokemmo.CCharacter.prototype.battleLastY = null;
 pokemmo.CCharacter.prototype.battleFolX = null;
 pokemmo.CCharacter.prototype.battleFolY = null;
+pokemmo.CCharacter.prototype.renderOffsetX = null;
+pokemmo.CCharacter.prototype.renderOffsetY = null;
+pokemmo.CCharacter.prototype.renderAlpha = null;
 pokemmo.CCharacter.prototype.destroy = function() {
 	$s.push("pokemmo.CCharacter::destroy");
 	var $spos = $s.length;
@@ -2349,7 +2381,7 @@ pokemmo.CCharacter.prototype.destroy = function() {
 pokemmo.CCharacter.prototype.isControllable = function() {
 	$s.push("pokemmo.CCharacter::isControllable");
 	var $spos = $s.length;
-	var $tmp = this.id == pokemmo.Game.myId && !pokemmo.Game.curGame.inBattle && pokemmo.Game.curGame.playerCanMove && !pokemmo.Chat.inChat;
+	var $tmp = this.id == pokemmo.Game.myId && !pokemmo.Game.curGame.inBattle && pokemmo.Game.curGame.playerCanMove && !pokemmo.Chat.inChat && this.freezeTicks == 0;
 	$s.pop();
 	return $tmp;
 	$s.pop();
@@ -2358,7 +2390,7 @@ pokemmo.CCharacter.prototype.getRenderPos = function() {
 	$s.push("pokemmo.CCharacter::getRenderPos");
 	var $spos = $s.length;
 	if(!this.walking) {
-		var $tmp = { x : this.x * pokemmo.Map.getCurMap().tilewidth, y : this.y * pokemmo.Map.getCurMap().tileheight - Math.floor(64 / 2)};
+		var $tmp = { x : Math.floor(this.x * pokemmo.Map.getCurMap().tilewidth + this.renderOffsetX), y : Math.floor(this.y * pokemmo.Map.getCurMap().tileheight - 64 / 2 + this.renderOffsetY)};
 		$s.pop();
 		return $tmp;
 	}
@@ -2394,7 +2426,7 @@ pokemmo.CCharacter.prototype.getRenderPos = function() {
 			break;
 		}
 	}
-	var $tmp = { x : Math.floor(destX), y : Math.floor(destY)};
+	var $tmp = { x : Math.floor(destX + this.renderOffsetX), y : Math.floor(destY + this.renderOffsetY)};
 	$s.pop();
 	return $tmp;
 	$s.pop();
@@ -2404,12 +2436,13 @@ pokemmo.CCharacter.prototype.tick = function() {
 	var $spos = $s.length;
 	pokemmo.GameObject.prototype.tick.call(this);
 	this.tickWalking();
-	if(this.id == pokemmo.Game.myId) this.tickWildBattle(); else if(this.x == this.targetX && this.y == this.targetY) {
+	if(this.id == pokemmo.Game.myId) this.tickWildBattle(); else if(this.x == this.targetX && this.y == this.targetY && !this.walking) {
 		if(this.onTarget != null) {
 			this.onTarget();
 			this.onTarget = null;
 		}
 	}
+	if(this.freezeTicks > 0) --this.freezeTicks;
 	$s.pop();
 }
 pokemmo.CCharacter.prototype.tickWalking = function() {
@@ -2492,7 +2525,7 @@ pokemmo.CCharacter.prototype.tickWalking = function() {
 				var tmpPos = this.getFrontPosition();
 				var tmpWarp = pokemmo.entities.CWarp.getWarpAt(tmpPos.x,tmpPos.y);
 				if(tmpWarp != null) {
-					if(Std["is"](tmpWarp,pokemmo.entities.CDoor)) this.enterDoor(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CWarpArrow)) this.enterWarpArrow(tmpWarp);
+					if(Std["is"](tmpWarp,pokemmo.entities.CDoor)) this.enterDoor(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CWarpArrow)) this.enterWarpArrow(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CStairs)) this.enterStairs(tmpWarp);
 					$s.pop();
 					return;
 				} else if(this.willMoveIntoAWall()) {
@@ -2530,7 +2563,11 @@ pokemmo.CCharacter.prototype.tickWalking = function() {
 				if(!pokemmo.Game.curGame.inBattle && !this.willMoveIntoAWall() && (this.direction == 1 && !!pokemmo.UI.keysDown[37] || this.direction == 0 && !!pokemmo.UI.keysDown[40] || this.direction == 3 && !!pokemmo.UI.keysDown[39] || this.direction == 2 && !!pokemmo.UI.keysDown[38])) {
 					this.walkingHasMoved = false;
 					this.walkingPerc = 0.4;
-				} else this.walking = false;
+				} else {
+					this.walking = false;
+					this.walkingHasMoved = false;
+					this.walkingPerc = 0.0;
+				}
 			} else {
 				this.walkingHasMoved = false;
 				this.walkingPerc = 0.4;
@@ -2689,7 +2726,7 @@ pokemmo.CCharacter.prototype.enterDoor = function(door) {
 	var tmpCount = 0;
 	var doorRenderTransition = null;
 	doorRenderTransition = function() {
-		$s.push("pokemmo.CCharacter::enterDoor@420");
+		$s.push("pokemmo.CCharacter::enterDoor@436");
 		var $spos = $s.length;
 		++tmpCount;
 		if(tmpCount < 15) {
@@ -2741,7 +2778,7 @@ pokemmo.CCharacter.prototype.enterWarpArrow = function(warp) {
 	var tmpCount = 0;
 	var warpRenderTransition = null;
 	warpRenderTransition = function() {
-		$s.push("pokemmo.CCharacter::enterWarpArrow@477");
+		$s.push("pokemmo.CCharacter::enterWarpArrow@493");
 		var $spos = $s.length;
 		++tmpCount;
 		if(me.id == pokemmo.Game.myId) {
@@ -2755,6 +2792,60 @@ pokemmo.CCharacter.prototype.enterWarpArrow = function(warp) {
 		} else {
 			me.destroy();
 			pokemmo.Renderer.unHookRender(warpRenderTransition);
+		}
+		$s.pop();
+	};
+	if(this.id == pokemmo.Game.myId) pokemmo.Connection.socket.emit("useWarp",{ name : warp.name, direction : this.direction});
+	pokemmo.Renderer.hookRender(warpRenderTransition);
+	$s.pop();
+}
+pokemmo.CCharacter.prototype.enterStairs = function(warp) {
+	$s.push("pokemmo.CCharacter::enterStairs");
+	var $spos = $s.length;
+	var me = this;
+	if(this.direction != warp.fromDir) {
+		$s.pop();
+		return;
+	}
+	var tmpX = this.x;
+	var tmpY = this.y;
+	var canvas = pokemmo.Main.canvas;
+	var ctx = pokemmo.Main.ctx;
+	this.walking = true;
+	if(this.id == pokemmo.Game.myId) {
+		pokemmo.Game.curGame.playerCanMove = false;
+		pokemmo.Game.curGame.queueLoadMap = true;
+	}
+	var tmpCount = 0;
+	var warpRenderTransition = null;
+	warpRenderTransition = function() {
+		$s.push("pokemmo.CCharacter::enterStairs@536");
+		var $spos = $s.length;
+		++tmpCount;
+		me.walking = true;
+		me.noclip = true;
+		me.transmitWalk = false;
+		if(me.walkingPerc <= 0.3) me.walkingPerc += 0.3;
+		me.lastX = tmpX;
+		me.lastY = tmpY;
+		if(warp.direction == 0) me.renderOffsetY += 16 / 9; else if(warp.direction == 2) me.renderOffsetY -= 16 / 9; else throw "Assertion error";
+		if(me.id == pokemmo.Game.myId) {
+			var perc = pokemmo.Util.clamp(tmpCount / 10,0,1);
+			ctx.fillStyle = "rgba(0,0,0," + perc + ")";
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			if(tmpCount == 10) {
+				pokemmo.Game.curGame.drawPlayerChar = false;
+				me.noclip = false;
+				me.transmitWalk = true;
+				pokemmo.Game.curGame.queueLoadMap = false;
+				if(pokemmo.Game.curGame.queuedMap != null) pokemmo.Game.loadMap(pokemmo.Game.curGame.queuedMap,pokemmo.Game.curGame.queuedChars);
+			}
+		} else {
+			me.renderAlpha = pokemmo.Util.clamp(1 - tmpCount / 10,0,1);
+			if(tmpCount == 10) {
+				me.destroy();
+				pokemmo.Renderer.unHookRender(warpRenderTransition);
+			}
 		}
 		$s.pop();
 	};
@@ -2828,7 +2919,8 @@ pokemmo.CCharacter.prototype.render = function(ctx) {
 	}
 	var tmpCtx = pokemmo.Main.tmpCtx;
 	ctx.save();
-	if(pokemmo.Renderer.numRTicks - this.createdTick < 10) ctx.globalAlpha = (pokemmo.Renderer.numRTicks - this.createdTick) / 10;
+	ctx.globalAlpha *= this.renderAlpha;
+	if(pokemmo.Renderer.numRTicks - this.createdTick < 10) ctx.globalAlpha *= (pokemmo.Renderer.numRTicks - this.createdTick) / 10;
 	var offsetX = pokemmo.Renderer.getOffsetX();
 	var offsetY = pokemmo.Renderer.getOffsetY();
 	var renderPos = this.getRenderPos();
@@ -2836,7 +2928,7 @@ pokemmo.CCharacter.prototype.render = function(ctx) {
 	if(this.lockDirection != -1) dirId = this.lockDirection * 32;
 	if(this.id != pokemmo.Game.myId && (pokemmo.UI.mouseX >= renderPos.x + offsetX - 5 && pokemmo.UI.mouseY >= renderPos.y + offsetY - 5 && pokemmo.UI.mouseX < renderPos.x + 32 + offsetX + 10 && pokemmo.UI.mouseY < renderPos.y + 64 + offsetY + 10)) {
 		pokemmo.Renderer.drawOverlay(ctx,renderPos.x + offsetX,renderPos.y + offsetY,32,64,function(ctx1) {
-			$s.push("pokemmo.CCharacter::render@562");
+			$s.push("pokemmo.CCharacter::render@644");
 			var $spos = $s.length;
 			ctx1.drawImage(me.image.obj,dirId,Math.floor(me.animationStep) * 64,32,64,0,0,32,64);
 			$s.pop();
@@ -3019,6 +3111,20 @@ pokemmo.Map.prototype.hasTileProp = function(x,y,prop) {
 	$s.pop();
 }
 pokemmo.Map.prototype.__class__ = pokemmo.Map;
+pokemmo.entities.CStairs = function(name,x,y,direction,fromDir) {
+	if( name === $_ ) return;
+	$s.push("pokemmo.entities.CStairs::new");
+	var $spos = $s.length;
+	pokemmo.entities.CWarp.call(this,name,x,y);
+	this.direction = direction;
+	this.fromDir = fromDir;
+	$s.pop();
+}
+pokemmo.entities.CStairs.__name__ = ["pokemmo","entities","CStairs"];
+pokemmo.entities.CStairs.__super__ = pokemmo.entities.CWarp;
+for(var k in pokemmo.entities.CWarp.prototype ) pokemmo.entities.CStairs.prototype[k] = pokemmo.entities.CWarp.prototype[k];
+pokemmo.entities.CStairs.prototype.fromDir = null;
+pokemmo.entities.CStairs.prototype.__class__ = pokemmo.entities.CStairs;
 Hash = function(p) {
 	if( p === $_ ) return;
 	$s.push("Hash::new");
@@ -3198,14 +3304,14 @@ pokemmo.Game.loadMap = function(id,chars) {
 		pokemmo.Game.loadImageResource("battleIntroPokeball","resources/ui/battle_intro_pokeball.png");
 		pokemmo.Game.loadImageResource("animatedTileset","resources/tilesets/animated.png");
 		pokemmo.Game.loadJSON("data/pokemon.json",function(data) {
-			$s.push("pokemmo.Game::loadMap@77");
+			$s.push("pokemmo.Game::loadMap@78");
 			var $spos = $s.length;
 			pokemmo.Game.pokemonData = data;
 			$s.pop();
 		});
 	}
 	pokemmo.Game.loadJSON("resources/maps/" + id + ".json",function(data) {
-		$s.push("pokemmo.Game::loadMap@82");
+		$s.push("pokemmo.Game::loadMap@83");
 		var $spos = $s.length;
 		var map = new pokemmo.Map(id,data);
 		var _g1 = 0, _g = map.tilesets.length;
@@ -3221,13 +3327,13 @@ pokemmo.Game.loadMap = function(id,chars) {
 				} else {
 					++pokemmo.Game.pendingLoad;
 					tileset.onload = function() {
-						$s.push("pokemmo.Game::loadMap@82@93");
+						$s.push("pokemmo.Game::loadMap@83@94");
 						var $spos = $s.length;
 						--pokemmo.Game.pendingLoad;
 						$s.pop();
 					};
 					tileset.onerror = function() {
-						$s.push("pokemmo.Game::loadMap@82@97");
+						$s.push("pokemmo.Game::loadMap@83@98");
 						var $spos = $s.length;
 						--pokemmo.Game.pendingLoad;
 						pokemmo.Game.loadError = true;
@@ -3254,6 +3360,7 @@ pokemmo.Game.loadMap = function(id,chars) {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var chr = new pokemmo.CCharacter(arr[i]);
+			if(chr.id == pokemmo.Game.myId) chr.freezeTicks = 10;
 		}
 		$s.pop();
 	});
@@ -3264,12 +3371,12 @@ pokemmo.Game.loadImageResource = function(id,src) {
 	var $spos = $s.length;
 	++pokemmo.Game.pendingLoad;
 	pokemmo.Game.res[id] = new pokemmo.ImageResource(src,function() {
-		$s.push("pokemmo.Game::loadImageResource@128");
+		$s.push("pokemmo.Game::loadImageResource@130");
 		var $spos = $s.length;
 		--pokemmo.Game.pendingLoad;
 		$s.pop();
 	},function() {
-		$s.push("pokemmo.Game::loadImageResource@130");
+		$s.push("pokemmo.Game::loadImageResource@132");
 		var $spos = $s.length;
 		--pokemmo.Game.pendingLoad;
 		pokemmo.Game.loadError = true;
@@ -3286,14 +3393,14 @@ pokemmo.Game.loadJSON = function(src,onload) {
 	obj.cache = true;
 	obj.dataType = "text";
 	obj.success = function(data,textStatus,jqXHR) {
-		$s.push("pokemmo.Game::loadJSON@142");
+		$s.push("pokemmo.Game::loadJSON@144");
 		var $spos = $s.length;
 		--pokemmo.Game.pendingLoad;
 		onload(JSON.parse(data));
 		$s.pop();
 	};
 	obj.error = function(jqXHR,textStatus,errorThrown) {
-		$s.push("pokemmo.Game::loadJSON@146");
+		$s.push("pokemmo.Game::loadJSON@148");
 		var $spos = $s.length;
 		--pokemmo.Game.pendingLoad;
 		pokemmo.Game.loadError = true;
@@ -3351,6 +3458,10 @@ pokemmo.Game.prototype.initBattle = function(type) {
 pokemmo.Game.prototype.tick = function() {
 	$s.push("pokemmo.Game::tick");
 	var $spos = $s.length;
+	if(pokemmo.Game.state != pokemmo.GameState.ST_MAP) {
+		$s.pop();
+		return;
+	}
 	var arr = this.gameObjects.copy();
 	var _g1 = 0, _g = arr.length;
 	while(_g1 < _g) {
@@ -3375,7 +3486,7 @@ pokemmo.Game.prototype.renderObjects = function(ctx) {
 	var A_FIRST = -1;
 	var B_FIRST = 1;
 	arr.sort(function(a,b) {
-		$s.push("pokemmo.Game::renderObjects@229");
+		$s.push("pokemmo.Game::renderObjects@233");
 		var $spos = $s.length;
 		if(Std["is"](a,pokemmo.CCharacter) && a.id == pokemmo.Game.myId) {
 			if(Std["is"](b,pokemmo.entities.CGrassAnimation)) {
@@ -3521,18 +3632,15 @@ pokemmo.Game.prototype.parseMapObjects = function() {
 		if(this.map.layers[i].type != "objectgroup") continue;
 		var objects = this.map.layers[i].objects;
 		var _g3 = 0, _g2 = objects.length;
-		try {
-			while(_g3 < _g2) {
-				var k = _g3++;
-				var obj = objects[k];
-				switch(obj.type) {
-				case "warp":
-					if(obj.properties.type == "door") new pokemmo.entities.CDoor(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight)); else if(obj.properties.type == "arrow") new pokemmo.entities.CWarpArrow(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight));
-					throw "__break__";
-					break;
-				}
+		while(_g3 < _g2) {
+			var k = _g3++;
+			var obj = objects[k];
+			switch(obj.type) {
+			case "warp":
+				if(obj.properties.type == "door") new pokemmo.entities.CDoor(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight)); else if(obj.properties.type == "arrow") new pokemmo.entities.CWarpArrow(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight)); else if(obj.properties.type == "stairs_up") new pokemmo.entities.CStairs(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight),2,Std.parseInt(obj.properties.from_dir)); else if(obj.properties.type == "stairs_down") new pokemmo.entities.CStairs(obj.name,Math.floor(obj.x / this.map.tilewidth),Math.floor(obj.y / this.map.tileheight),0,Std.parseInt(obj.properties.from_dir));
+				break;
 			}
-		} catch( e ) { if( e != "__break__" ) throw e; }
+		}
 	}
 	$s.pop();
 }
@@ -4023,25 +4131,31 @@ pokemmo.Connection.setup = function() {
 			$s.pop();
 			return;
 		}
+		if(data.chars == null) data.chars = [];
+		if(data.messages == null) data.messages = [];
+		if(data.cremoved == null) data.cremoved = [];
+		if(data.warpsUsed == null) data.warpsUsed = [];
+		var cremoved = data.cremoved;
 		var _g1 = 0, _g = data.warpsUsed.length;
 		while(_g1 < _g) {
 			var i = [_g1++];
 			var warp = data.warpsUsed[i[0]];
+			cremoved.remove(warp.id);
 			if(warp.id == pokemmo.Game.myId) continue;
 			((function(i) {
-				$s.push("pokemmo.Connection::setup@64@89");
+				$s.push("pokemmo.Connection::setup@64@96");
 				var $spos = $s.length;
 				var $tmp = function(warp1) {
-					$s.push("pokemmo.Connection::setup@64@89@89");
+					$s.push("pokemmo.Connection::setup@64@96@96");
 					var $spos = $s.length;
 					var chr = pokemmo.Game.curGame.getCharById(warp1.id);
 					var tmpWarp = pokemmo.entities.CWarp.getWarpByName(data.warpsUsed[i[0]].warpName);
 					chr.canUpdate = false;
 					var animation = (function() {
-						$s.push("pokemmo.Connection::setup@64@89@89@95");
+						$s.push("pokemmo.Connection::setup@64@96@96@103");
 						var $spos = $s.length;
 						var $tmp = function() {
-							$s.push("pokemmo.Connection::setup@64@89@89@95@95");
+							$s.push("pokemmo.Connection::setup@64@96@96@103@103");
 							var $spos = $s.length;
 							chr.direction = warp1.direction;
 							if(Std["is"](tmpWarp,pokemmo.entities.CDoor)) chr.enterDoor(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CWarpArrow)) chr.enterWarpArrow(tmpWarp);
@@ -4051,7 +4165,7 @@ pokemmo.Connection.setup = function() {
 						return $tmp;
 						$s.pop();
 					})();
-					if(chr.x != data.warpsUsed[i[0]].x || chr.y != data.warpsUsed[i[0]].y) {
+					if(chr.x != data.warpsUsed[i[0]].x || chr.y != data.warpsUsed[i[0]].y || chr.walking) {
 						chr.targetX = warp1.x;
 						chr.targetY = warp1.y;
 						chr.onTarget = animation;
@@ -4064,19 +4178,10 @@ pokemmo.Connection.setup = function() {
 			})(i))(warp);
 		}
 		var chars = data.chars;
-		var characters = pokemmo.Game.curGame.characters;
-		var charsNotUpdated = [];
-		var _g1 = 0, _g = characters.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			if(characters[i].canUpdate) charsNotUpdated.push(characters[i].id);
-		}
 		var _g1 = 0, _g = chars.length;
 		while(_g1 < _g) {
 			var i = _g1++;
 			var charData = chars[i];
-			var tmp = charsNotUpdated.indexOf(charData.id);
-			if(tmp != -1) charsNotUpdated.splice(tmp,1);
 			var chr = pokemmo.Game.curGame.getCharById(charData.id);
 			if(chr != null) chr.follower = charData.follower;
 			if(charData.id == pokemmo.Game.myId) {
@@ -4085,34 +4190,27 @@ pokemmo.Connection.setup = function() {
 				continue;
 			}
 			if(chr != null) {
-				if(chr.canUpdate) {
-					chr.inBattle = charData.inBattle;
-					chr.battleEnemy = charData.battleEnemy;
-					chr.targetX = charData.x;
-					chr.targetY = charData.y;
-					chr.targetDirection = charData.direction;
-					chr.lastX = charData.lastX;
-					chr.lastY = charData.lastY;
-					if(chr.x == charData.x && chr.y == charData.y) chr.direction = charData.direction; else if(Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1 || chr.x - 2 == charData.x && chr.y == charData.y || chr.x + 2 == charData.x && chr.y == charData.y || chr.x == charData.x && chr.y - 2 == charData.y || chr.x == charData.x && chr.y + 2 == charData.y) {
-					} else {
-						chr.direction = charData.direction;
-						chr.x = charData.x;
-						chr.y = charData.y;
-					}
+				if(!chr.canUpdate) continue;
+				chr.inBattle = charData.inBattle;
+				chr.battleEnemy = charData.battleEnemy;
+				chr.targetX = charData.x;
+				chr.targetY = charData.y;
+				chr.targetDirection = charData.direction;
+				chr.lastX = charData.lastX;
+				chr.lastY = charData.lastY;
+				if(chr.x == charData.x && chr.y == charData.y) chr.direction = charData.direction; else if(Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1 || chr.x - 2 == charData.x && chr.y == charData.y || chr.x + 2 == charData.x && chr.y == charData.y || chr.x == charData.x && chr.y - 2 == charData.y || chr.x == charData.x && chr.y + 2 == charData.y) {
+				} else {
+					chr.direction = charData.direction;
+					chr.x = charData.x;
+					chr.y = charData.y;
 				}
 			} else chr = new pokemmo.CCharacter(charData);
 		}
-		var _g1 = 0, _g = charsNotUpdated.length;
+		var _g1 = 0, _g = cremoved.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			var _g3 = 0, _g2 = characters.length;
-			while(_g3 < _g2) {
-				var j = _g3++;
-				if(characters[j].id == charsNotUpdated[i]) {
-					characters[j].destroy();
-					break;
-				}
-			}
+			var chr = pokemmo.Game.curGame.getCharById(cremoved[i]);
+			if(chr != null) chr.destroy();
 		}
 		var _g1 = 0, _g = data.messages.length;
 		while(_g1 < _g) {
@@ -4124,7 +4222,7 @@ pokemmo.Connection.setup = function() {
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("battleWild",function(data) {
-		$s.push("pokemmo.Connection::setup@199");
+		$s.push("pokemmo.Connection::setup@189");
 		var $spos = $s.length;
 		var battle = pokemmo.Game.curGame.initBattle(0);
 		battle.x = data.x;
@@ -4144,7 +4242,7 @@ pokemmo.Connection.setup = function() {
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("battleTurn",function(data) {
-		$s.push("pokemmo.Connection::setup@231");
+		$s.push("pokemmo.Connection::setup@221");
 		var $spos = $s.length;
 		pokemmo.Game.curGame.battle.resultQueue = pokemmo.Game.curGame.battle.resultQueue.concat(data.results);
 		pokemmo.Game.curGame.battle.runQueue();
@@ -4418,7 +4516,7 @@ pokemmo.entities.CFollower.prototype.tick = function() {
 	var $spos = $s.length;
 	this.targetX = this.chr.lastX;
 	this.targetY = this.chr.lastY;
-	if(!this.forceTarget && this.chr.walking && !this.chr.walkingHasMoved && this.chr.walkingPerc >= 0.3) {
+	if(!this.forceTarget && this.chr.walking && !this.chr.walkingHasMoved && this.chr.walkingPerc >= 0.3 && !this.chr.willMoveIntoAWall()) {
 		this.targetX = this.chr.x;
 		this.targetY = this.chr.y;
 	}
@@ -4575,6 +4673,8 @@ js.Boot.__init();
 	d.prototype.__class__ = d;
 	d.__name__ = ["Date"];
 }
+pokemmo.Chat.BUBBLE_BORDER_SIZE = 5;
+pokemmo.Chat.BUBBLE_MAX_WIDTH = 150;
 pokemmo.Chat.inChat = false;
 pokemmo.Chat.chatLog = new Array();
 pokemmo.Chat.justSentMessage = false;

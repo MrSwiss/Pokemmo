@@ -14,14 +14,16 @@ function getTilesetOfTile(n){
 }
 
 for(var mi=0;mi<mapsNames.length;++mi){
+	var sStart = +new Date();
 	var mapName = mapsNames[mi];
-	console.log('Loading: '+mapName+'...');
+	process.stdout.write('Loading: '+mapName+'...');
 	
 	var map = {};
 	maps[mapName] = map;
 	
 	map.data = JSON.parse(fs.readFileSync('../site/resources/maps/'+mapName+'.json', 'utf8'));
-	
+	map.width = map.data.width;
+	map.height = map.data.height;
 	map.properties = map.data.properties;
 	
 	var solidData = new Array(map.data.width);
@@ -89,6 +91,9 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	map.solidData = solidData;
 	
 	recursiveFreeze(map);
+	
+	var sEnd = +new Date();
+	process.stdout.write(' ('+(sEnd - sStart)+' ms)\n');
 	
 }
 

@@ -65,7 +65,7 @@ class Connection {
 				var map:String;
 				var chars:Array<CCharacterData>;
 				var messages:Array<ChatLogEntry>;
-				
+				var cremoved:Array<String>;
 				var warpsUsed:Array<{
 					var id:String;
 					var warpName:String;
@@ -81,13 +81,23 @@ class Connection {
 			if (!Game.curGame.loaded) return;
 			if (data.map != Game.curGame.map.id) return;
 			
+			// The server doesn't trasmit some messages if there's nothing in them,
+			// create the arrays so the script below doesn't fail
+			if (data.chars == null) data.chars = [];
+			if (data.messages == null) data.messages = [];
+			if (data.cremoved == null) data.cremoved = [];
+			if (data.warpsUsed == null) data.warpsUsed = [];
+			
+			var cremoved = data.cremoved;
 			
 			for(i in 0...data.warpsUsed.length){
 				var warp = data.warpsUsed[i];
+				cremoved.remove(warp.id);
 				if(warp.id == Game.myId) continue;
 				
 				(function(warp){
 					var chr = Game.curGame.getCharById(warp.id);
+					
 					
 					var tmpWarp = CWarp.getWarpByName(data.warpsUsed[i].warpName);
 					chr.canUpdate = false;
@@ -102,7 +112,7 @@ class Connection {
 						}
 					};
 					
-					if(chr.x != data.warpsUsed[i].x || chr.y != data.warpsUsed[i].y){
+					if(chr.x != data.warpsUsed[i].x || chr.y != data.warpsUsed[i].y || chr.walking){
 						chr.targetX = warp.x;
 						chr.targetY = warp.y;
 						chr.onTarget = animation;
@@ -113,20 +123,9 @@ class Connection {
 			}
 			
 			var chars = data.chars;
-			var characters = Game.curGame.characters;
-			
-			var charsNotUpdated = [];
-			for(i in 0...characters.length){
-				if(characters[i].canUpdate) charsNotUpdated.push(characters[i].id);
-			}
 			
 			for (i in 0...chars.length) {
 				var charData = chars[i];
-				
-				var tmp = charsNotUpdated.indexOf(charData.id);
-				if(tmp != -1){
-					charsNotUpdated.splice(tmp, 1);
-				}
 				
 				var chr = Game.curGame.getCharById(charData.id);
 				
@@ -144,49 +143,42 @@ class Connection {
 				
 				
 				if(chr != null){
-					if (chr.canUpdate) {
+					if (!chr.canUpdate) continue;
 						
-						chr.inBattle = charData.inBattle;
-						chr.battleEnemy = charData.battleEnemy;
-						chr.targetX = charData.x;
-						chr.targetY = charData.y;
-						chr.targetDirection = charData.direction;
-						
-						//if(!chr.walking){
-							chr.lastX = charData.lastX;
-							chr.lastY = charData.lastY;
-						//}
-						
-						if(chr.x == charData.x && chr.y == charData.y){
-							chr.direction = charData.direction;
-						}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
-						|| chr.x - 2 == charData.x && chr.y == charData.y
-						|| chr.x + 2 == charData.x && chr.y == charData.y
-						|| chr.x == charData.x && chr.y - 2 == charData.y
-						|| chr.x == charData.x && chr.y + 2 == charData.y){
-							// Let the bot move the character
-						}else{
-							// Character too far to be moved by the bot, move him manually
-							chr.direction = charData.direction;
-							chr.x = charData.x;
-							chr.y = charData.y;
-						}
+					chr.inBattle = charData.inBattle;
+					chr.battleEnemy = charData.battleEnemy;
+					chr.targetX = charData.x;
+					chr.targetY = charData.y;
+					chr.targetDirection = charData.direction;
+					
+					//if(!chr.walking){
+						chr.lastX = charData.lastX;
+						chr.lastY = charData.lastY;
+					//}
+					
+					if(chr.x == charData.x && chr.y == charData.y){
+						chr.direction = charData.direction;
+					}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
+					|| chr.x - 2 == charData.x && chr.y == charData.y
+					|| chr.x + 2 == charData.x && chr.y == charData.y
+					|| chr.x == charData.x && chr.y - 2 == charData.y
+					|| chr.x == charData.x && chr.y + 2 == charData.y){
+						// Let the bot move the character
+					}else{
+						// Character too far to be moved by the bot, move him manually
+						chr.direction = charData.direction;
+						chr.x = charData.x;
+						chr.y = charData.y;
 					}
 				}else{
 					chr = new CCharacter(charData);
 				}
 			}
 			
-			for(i in 0...charsNotUpdated.length){
-				for(j in 0...characters.length){
-					if(characters[j].id == charsNotUpdated[i]){
-						characters[j].destroy();
-						
-						break;
-					}
-				}
+			for (i in 0...cremoved.length) {
+				var chr = Game.curGame.getCharById(cremoved[i]);
+				if (chr != null) chr.destroy();
 			}
-			
 			
 			for(i in 0...data.messages.length){
 				var m = data.messages[i];

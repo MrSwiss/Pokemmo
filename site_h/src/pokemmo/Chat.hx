@@ -8,6 +8,9 @@ import UserAgentContext;
  */
 
 class Chat {
+	inline static private var BUBBLE_BORDER_SIZE = 5;
+	inline static private var BUBBLE_MAX_WIDTH = 150;
+	
 	static public var inChat:Bool = false;
 	static public var chatLog:Array<ChatLogEntry> = { new Array<ChatLogEntry>(); }
 	static public var justSentMessage:Bool = false;
@@ -46,11 +49,40 @@ class Chat {
 		var chr = Game.curGame.getPlayerChar();
 		msg.timestamp2 = msg.timestamp;
 		if(chr != null){
-			if ((msg.x - chr.x) * (msg.x - chr.x) + (msg.y - chr.y) * (msg.x - chr.y) > 35 * 35) {
+			if ((msg.x - chr.x) * (msg.x - chr.x) + (msg.y - chr.y) * (msg.x - chr.y) > 45 * 45) {
 				return;
 			}
 		}
 		if (chatLog.length > 64) chatLog.shift();
+		
+		msg.bubbleLines = [];
+		
+		var ctx = Main.ctx;
+		ctx.font = '12px Font2';
+		
+		
+		var width = Math.round(ctx.measureText(msg.str).width + BUBBLE_BORDER_SIZE * 2);
+		var height = 16;
+		msg.bubbleLines.push(msg.str);
+		
+		if (width > BUBBLE_MAX_WIDTH) {
+			width = BUBBLE_MAX_WIDTH;
+			do{
+				var curLineArr = msg.bubbleLines[msg.bubbleLines.length - 1].split(' ');
+				var nextLineArr = [];
+				
+				while (ctx.measureText(curLineArr.join(' ')).width > BUBBLE_MAX_WIDTH) {
+					nextLineArr.unshift(curLineArr.pop());
+				}
+				
+				msg.bubbleLines[msg.bubbleLines.length - 1] = curLineArr.join(' ');
+				msg.bubbleLines.push(nextLineArr.join(' '));
+				height += 14;
+			} while(ctx.measureText(msg.bubbleLines[msg.bubbleLines.length - 1]).width > BUBBLE_MAX_WIDTH);
+		}
+		
+		msg.bubbleWidth = width;
+		msg.bubbleHeight = height;
 		
 		chatLog.push(msg);
 	}
@@ -134,7 +166,6 @@ class Chat {
 		
 		var BUBBLE_TIME = 2500;
 		var CORNER_RADIUS = 10;
-		var BORDER_SIZE = 5;
 		var offx = Renderer.getOffsetX();
 		var offy = Renderer.getOffsetY();
 		var tmpCanvas = Main.tmpCanvas;
@@ -145,13 +176,12 @@ class Chat {
 			if (msg.chr == null)  continue;
 			var perc = Util.clamp((BUBBLE_TIME - (now - msg.timestamp)) / 750, 0, 0.7);
 			
-			var x:Int, y:Int, width:Int, height:Int;
+			var x:Int, y:Int, width:Int = msg.bubbleWidth, height:Int = msg.bubbleHeight;
 			
 			var pos:Point = msg.chr.getRenderPos();
 			x = pos.x + offx + Math.floor(CCharacter.CHAR_WIDTH / 2);
 			y = pos.y + offy + 20;
-			width = Math.round(ctx.measureText(msg.str).width + BORDER_SIZE * 2);
-			height = 16;
+			
 			
 			x -= Math.floor(width / 2);
 			y -= height;
@@ -171,7 +201,9 @@ class Chat {
 			ctx.globalAlpha = perc;
 			ctx.drawImage(tmpCanvas, 0, 0, width, height, x, y, width, height);
 			ctx.fillStyle = '#000000';
-			ctx.fillText(msg.str, x + BORDER_SIZE, y + 12);
+			for (i in 0...msg.bubbleLines.length) {
+				ctx.fillText(msg.bubbleLines[i], x + BUBBLE_BORDER_SIZE, y + 12 + 14 * i);
+			}
 			ctx.restore();
 		}
 	}
@@ -189,4 +221,8 @@ typedef ChatLogEntry = {
 	var chr:CCharacter;
 	var x:Int;
 	var y:Int;
+	
+	var bubbleWidth:Int;
+	var bubbleHeight:Int;
+	var bubbleLines:Array<String>;
 }

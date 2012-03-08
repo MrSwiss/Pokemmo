@@ -3,6 +3,7 @@ package pokemmo;
 import pokemmo.entities.CDoor;
 import pokemmo.entities.CFollower;
 import pokemmo.entities.CGrassAnimation;
+import pokemmo.entities.CStairs;
 import pokemmo.entities.CWarp;
 import pokemmo.entities.CWarpArrow;
 import pokemmo.entities.CWildPokemon;
@@ -39,6 +40,7 @@ class CCharacter extends GameObject {
 	public var onTarget:Void->Void;
 	public var battleEnemy:String;
 	public var image:ImageResource;
+	public var freezeTicks:Int;
 	
 	private var followerObj:CFollower;
 	private var transmitWalk:Bool;
@@ -53,6 +55,10 @@ class CCharacter extends GameObject {
 	private var battleLastY:Int;
 	private var battleFolX:Int;
 	private var battleFolY:Int;
+	
+	public var renderOffsetX:Float;
+	public var renderOffsetY:Float;
+	public var renderAlpha:Float;
 	
 	public function new(data:CCharacterData) {
 		super(data.x, data.y, data.direction);
@@ -80,6 +86,9 @@ class CCharacter extends GameObject {
 		noclip = false;
 		lockDirection = -1;
 		battleHasWalkedBack = false;
+		renderOffsetX = renderOffsetY = 0;
+		renderAlpha = 1.0;
+		freezeTicks = 0;
 		
 		image = Game.curGame.getImage('resources/chars/'+data.type+'.png', function(){
 			loaded = true;
@@ -101,11 +110,11 @@ class CCharacter extends GameObject {
 	}
 	
 	public function isControllable():Bool {
-		return id == Game.myId && !Game.curGame.inBattle && Game.curGame.playerCanMove && !Chat.inChat;
+		return id == Game.myId && !Game.curGame.inBattle && Game.curGame.playerCanMove && !Chat.inChat && freezeTicks == 0;
 	}
 	
 	public function getRenderPos():Point {
-		if (!walking) return { x: x * Map.cur.tilewidth, y: y * Map.cur.tileheight - Math.floor(CHAR_HEIGHT / 2)};
+		if (!walking) return { x: Math.floor(x * Map.cur.tilewidth + renderOffsetX), y: Math.floor(y * Map.cur.tileheight - CHAR_HEIGHT / 2 + renderOffsetY)};
 		
 		var destX:Float = x * Map.cur.tilewidth;
 		var destY:Float = y * Map.cur.tileheight - CHAR_HEIGHT/2;
@@ -127,7 +136,8 @@ class CCharacter extends GameObject {
 				}
 			}
 		}
-		return {x:Math.floor(destX), y:Math.floor(destY)};
+		
+		return {x:Math.floor(destX + renderOffsetX), y:Math.floor(destY + renderOffsetY)};
 	}
 	
 	override public function tick():Void {
@@ -138,13 +148,15 @@ class CCharacter extends GameObject {
 		if(id == Game.myId){
 			tickWildBattle();
 		}else{
-			if(x == targetX && y == targetY){
+			if(x == targetX && y == targetY && !walking){
 				if(onTarget != null){
 					onTarget();
 					onTarget = null;
 				}
 			}
 		}
+		
+		if(freezeTicks > 0) --freezeTicks;
 	}
 	
 	private function tickWalking():Void {
@@ -226,9 +238,11 @@ class CCharacter extends GameObject {
 					var tmpWarp = CWarp.getWarpAt(tmpPos.x, tmpPos.y);
 					if(tmpWarp != null){
 						if (Std.is(tmpWarp, CDoor)) {
-							enterDoor(untyped tmpWarp);
+							enterDoor(cast tmpWarp);
 						}else if(Std.is(tmpWarp, CWarpArrow)){
-							enterWarpArrow(untyped tmpWarp);
+							enterWarpArrow(cast tmpWarp);
+						}else if (Std.is(tmpWarp, CStairs)) {
+							enterStairs(cast tmpWarp);
 						}
 						return;
 					}else if(willMoveIntoAWall()){
@@ -275,6 +289,8 @@ class CCharacter extends GameObject {
 						walkingPerc = CHAR_MOVE_WAIT + 0.10;
 					}else{
 						walking = false;
+						walkingHasMoved = false;
+						walkingPerc = 0.0;
 					}
 				}else{
 					walkingHasMoved = false;
@@ -499,7 +515,72 @@ class CCharacter extends GameObject {
 		Renderer.hookRender(warpRenderTransition);
 	}
 	
-	private function willMoveIntoAWall():Bool{
+	public function enterStairs(warp:CStairs) {
+		if (direction != warp.fromDir) return;
+		
+		var tmpX = x;
+		var tmpY = y;
+		
+		var canvas = Main.canvas;
+		var ctx = Main.ctx;
+		
+		walking = true;
+		
+		if(id == Game.myId){
+			Game.curGame.playerCanMove = false;
+			Game.curGame.queueLoadMap = true;
+		}
+		
+		var tmpCount = 0;
+		var warpRenderTransition:Void->Void = null;
+		warpRenderTransition = function() {
+			++tmpCount;
+			
+			walking = true;
+			noclip = true;
+			transmitWalk = false;
+			if (walkingPerc <= CHAR_MOVE_WAIT) walkingPerc += CHAR_MOVE_WAIT;
+			
+			lastX = tmpX;
+			lastY = tmpY;
+			
+			if (warp.direction == Game.DIR_DOWN) {
+				renderOffsetY += 16/9;
+			}else if (warp.direction == Game.DIR_UP) {
+				renderOffsetY -= 16/9;
+			}else {
+				throw "Assertion error";
+			}
+			
+			if(id == Game.myId){
+				var perc = Util.clamp((tmpCount) / 10, 0, 1);
+				ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				if (tmpCount == 10) {
+					Game.curGame.drawPlayerChar = false;
+					noclip = false;
+					transmitWalk = true;
+					Game.curGame.queueLoadMap = false;
+					if(Game.curGame.queuedMap != null){
+						Game.loadMap(Game.curGame.queuedMap, Game.curGame.queuedChars);
+					}
+				}
+			}else {
+				renderAlpha = Util.clamp(1 - tmpCount / 10, 0, 1);
+				if(tmpCount == 10){
+					destroy();
+					Renderer.unHookRender(warpRenderTransition);
+				}
+			}
+		};
+		
+		if(id == Game.myId) Connection.socket.emit('useWarp', {name:warp.name, direction: direction});
+		
+		Renderer.hookRender(warpRenderTransition);
+	}
+	
+	public function willMoveIntoAWall():Bool{
 		var pos = getFrontPosition();
 		var map = Game.curGame.map;
 		return map.isTileSolid(pos.x, pos.y) || map.isTileWater(pos.x, pos.y);
@@ -544,8 +625,9 @@ class CCharacter extends GameObject {
 		
 		ctx.save();
 		
+		ctx.globalAlpha *= renderAlpha;
 		if(Renderer.numRTicks - createdTick < 10){
-			ctx.globalAlpha = (Renderer.numRTicks - createdTick) / 10;
+			ctx.globalAlpha *= (Renderer.numRTicks - createdTick) / 10;
 		}
 		
 		var offsetX = Renderer.getOffsetX();

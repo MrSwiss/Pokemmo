@@ -107,7 +107,10 @@ class Renderer {
 			
 			if (curTransition != null) curTransition.render(ctx);
 			
-			for(i in 0...renderHooks.length) renderHooks[i]();
+			if (renderHooks.length > 0) {
+				var arr = renderHooks.copy();
+				for (i in 0...arr.length) arr[i]();
+			}
 		case ST_LOADING:
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);

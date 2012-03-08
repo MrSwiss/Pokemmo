@@ -271,7 +271,7 @@ function Battle(type, arg1, arg2){
 			
 			if(winner != p){
 				p.client.getMapInstance().generateUpdate();
-				obj.mapChars = p.client.getMapInstance().cachedUpdate.chars;
+				obj.mapChars = p.client.getMapInstance().chars;
 			}
 			
 			return obj;

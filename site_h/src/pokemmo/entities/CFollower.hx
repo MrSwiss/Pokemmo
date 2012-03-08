@@ -49,7 +49,7 @@ class CFollower extends CPokemon {
 		targetX = chr.lastX;
 		targetY = chr.lastY;
 		
-		if(!forceTarget && chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CCharacter.CHAR_MOVE_WAIT){
+		if(!forceTarget && chr.walking && !chr.walkingHasMoved && chr.walkingPerc >= CCharacter.CHAR_MOVE_WAIT && !chr.willMoveIntoAWall()){
 			targetX = chr.x;
 			targetY = chr.y;
 		}

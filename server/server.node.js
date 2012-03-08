@@ -6,7 +6,14 @@ var io = require('socket.io').listen(2828).set('close timeout', 0).set('log leve
 var fs = require('fs');
 var util = require('util');
 
-var mapsNames = ['pallet', 'pallet_hero_home_1f'];
+var mapsNames = [
+	'pallet',
+	'pallet_hero_home_1f',
+	'pallet_hero_home_2f',
+	'pallet_oaklab',
+	'pallet_rival_home'
+];
+
 var clients = [];
 var maps = {};
 var mapInstances = {};
@@ -44,8 +51,10 @@ Array.prototype.remove = function(e){
 	
 	while((i = arr.indexOf(e, i)) != -1){
 		arr.splice(i, 1);
-		--i;
+		return true;
 	}
+	
+	return false;
 };
 
 // var starters = [1, 4, 7, 10, 13, 16, 25, 29, 32, 43, 60, 66, 69, 74, 92, 133];
@@ -119,6 +128,7 @@ io.sockets.on('connection', function (socket) {
 		lastMessage: 0,
 		playerVars: {},
 		speedHackChecks: [],
+		retransmitChar: true,
 		
 		restorePokemon: function(){
 			for(var i=0;i<client.pokemon.length;++i){
@@ -145,7 +155,7 @@ io.sockets.on('connection', function (socket) {
 	
 	
 	socket.on('disconnect', function(){
-		getClientMapInstance().chars.remove(client.char);
+		getClientMapInstance().removeClient(client);
 		clients.remove(client);
 		console.log('Client disconnected');
 	});
@@ -156,6 +166,9 @@ io.sockets.on('connection', function (socket) {
 		
 		var chr = client.char;
 		var invalidMove = false;
+		
+		if(data.x < 0 || data.x >= maps[client.map].width) return;
+		if(data.y < 0 || data.y >= maps[client.map].height) return;
 		
 		var destSolid = maps[client.map].solidData[data.x][data.y];
 		
@@ -210,6 +223,7 @@ io.sockets.on('connection', function (socket) {
 		
 		if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
 		client.char.direction = data.dir
+		client.retransmitChar = true;
 	});
 	
 	socket.on('sendMessage', function(data){
@@ -250,7 +264,7 @@ io.sockets.on('connection', function (socket) {
 		var oldMap = client.map;
 		
 		if(oldMap != map && oldMap && client.mapInstance != null){
-			getClientMapInstance().chars.remove(client.char);
+			getClientMapInstance().removeClient(client);
 		}
 		
 		var instance = 0;
@@ -275,14 +289,18 @@ io.sockets.on('connection', function (socket) {
 		}
 		
 		
+		client.retransmitChar = true;
+		
 		if(oldMap != map){
-			getClientMapInstance().chars.push(client.char);
+			getClientMapInstance().addClient(client);
 			socket.emit('loadMap', {mapid: client.map, chars: getClientMapInstance().chars});
 		}
 	}
 	
 	function onPlayerStep(){
-		if(client.inBattle) return;
+		client.retransmitChar = true;
+		
+		
 		
 		if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
 		client.speedHackChecks.push(+new Date());
@@ -299,22 +317,23 @@ io.sockets.on('connection', function (socket) {
 			}
 		}
 		
-		
-		var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
-		for(var i=0;i<encounterAreas.length;++i){
-			var area = encounterAreas[i];
-			for(var j=0;j<area.encounters.length;++j){
-				var areaEncounter = area.encounters[j];
-				if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
-					var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
-					var enemy = new Pokemon(areaEncounter.id, level);
-					var battle = new Battle(BATTLE_WILD, client, enemy);
-					
-					
-					client.inBattle = true;
-					client.battle = battle;
-					battle.init();
-					return;
+		if(!client.inBattle){
+			var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
+			for(var i=0;i<encounterAreas.length;++i){
+				var area = encounterAreas[i];
+				for(var j=0;j<area.encounters.length;++j){
+					var areaEncounter = area.encounters[j];
+					if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+						var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
+						var enemy = new Pokemon(areaEncounter.id, level);
+						var battle = new Battle(BATTLE_WILD, client, enemy);
+						
+						
+						client.inBattle = true;
+						client.battle = battle;
+						battle.init();
+						return;
+					}
 				}
 			}
 		}
@@ -354,20 +373,45 @@ function createInstance(map){
 	var instance = {};
 	instance.map = map;
 	instance.chars = [];
+	instance.clients = [];
 	instance.messages = [];
 	instance.warpsUsed = [];
+	instance.cremoved = [];
 	
 	instance.cachedUpdate = null;
 	instance.generateUpdate = function(){
+		var charArr = [];
+		for(var i=0;i<instance.clients.length;++i){
+			if(instance.clients[i].retransmitChar){
+				charArr.push(instance.clients[i].char);
+				instance.clients[i].retransmitChar = false;
+			}
+		}
+		
 		var obj = {
 			map: instance.map,
-			chars: instance.chars,
-			messages: instance.messages,
-			warpsUsed: instance.warpsUsed
 		};
+		
+		if(charArr.length > 0) obj.chars = charArr;
+		if(instance.messages > 0) obj.messages = instance.messages;
+		if(instance.warpsUsed > 0) obj.warpsUsed = instance.warpsUsed;
+		if(instance.cremoved > 0) obj.cremoved = instance.cremoved;
+		
 		instance.cachedUpdate = JSON.stringify(obj);
 		instance.messages.length = 0;
 		instance.warpsUsed.length = 0;
+		instance.cremoved.length = 0;
+	}
+	
+	instance.addClient = function(client){
+		instance.clients.push(client);
+		instance.chars.push(client.char);
+	}
+	
+	instance.removeClient = function(client){
+		instance.clients.remove(client);
+		instance.chars.remove(client.char);
+		instance.cremoved.push(client.id);
 	}
 	
 	instance.generateUpdate();
