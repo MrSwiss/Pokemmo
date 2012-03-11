@@ -17,7 +17,7 @@ class BlackScreen extends Transition{
 	override public function render(ctx:CanvasRenderingContext2D):Void {
 		ctx.fillStyle = '#000000';
 		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-		++step;
+		if(step >= 0) ++step;
 		
 		if (step >= duration) {
 			complete();

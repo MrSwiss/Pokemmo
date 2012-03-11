@@ -70,8 +70,14 @@ function Pokemon(arg1, arg2){
 	var MAX_EV = 510;
 	var MAX_INDIVIDUAL_EV = 255;
 	
-	if(arg1 && !arg2){
-		loadSaveObject(arg1);
+	self.loadSaveObject = function(obj){
+		for(var i in obj){
+			self[i] = obj[i];
+		}
+	}
+	
+	if(arg1 && arg2 == null){
+		self.loadSaveObject(arg1);
 	}else{
 		self.id = String(arg1);
 		self.level = Math.min(Math.max(2, arg2), 100);
@@ -140,7 +146,6 @@ function Pokemon(arg1, arg2){
 			j = (j+1) % 4;
 		}
 		
-		self.hp = self.maxHp;
 	}
 	
 	
@@ -217,12 +222,6 @@ function Pokemon(arg1, arg2){
 			ivSpDef: self.ivSpDef,
 			ivSpeed: self.ivSpeed
 		};
-	}
-	
-	self.loadSaveObject = function loadSaveObject(obj){
-		for(var i in obj){
-			self[i] = obj[i];
-		}
 	}
 	
 	
@@ -332,6 +331,10 @@ function Pokemon(arg1, arg2){
 	}
 	
 	self.calculateStats();
+	
+	if(!arg1 | arg2 != null){
+		self.hp = self.maxHp;
+	}
 }
 var BATTLE_WILD = 0;
 var BATTLE_TRAINER = 1;
@@ -1043,7 +1046,7 @@ function startIO(){
 			lastAckMove: 0,
 			inBattle: false,
 			battle: null,
-			respawnLocation: ["pallet", 16, 56, DIR_DOWN],
+			respawnLocation: null,
 			pokemon: [],
 			lastMessage: 0,
 			playerVars: {},
@@ -1063,6 +1066,8 @@ function startIO(){
 			}
 		};
 		
+		client.respawnLocation = maps['pallet'].points['pallet_hero_home_door_out'];
+		
 		socket.on('login', function(data){
 			var isValid = true;
 			if(data.username == null || data.password == null){
@@ -1077,6 +1082,7 @@ function startIO(){
 				}
 				
 				client.username = realUsername;
+				
 				loadClientChar();
 			});
 		});
@@ -1087,6 +1093,7 @@ function startIO(){
 				x: client.char.x,
 				y: client.char.y,
 				direction: client.char.direction,
+				charType: client.char.type,
 				pokemon: client.pokemon.map(function(v){return v.getSaveObject()}),
 				respawnLocation: client.respawnLocation,
 				playerVars: client.playerVars
@@ -1106,31 +1113,56 @@ function startIO(){
 				if(docs.length > 0){
 					var obj = docs[0];
 					
-					client.respawnLocation = obj.respawnLocation;
-					client.playerVars = obj.playerVars;
-					client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
-					putClientInGame(obj.map, obj.x, obj.y, obj.direction);
+					socket.emit('startGame', {username: client.username, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+					socket.on('startGame', function(data){
+						loginClient();
+						client.char.type = obj.charType;
+						client.respawnLocation = obj.respawnLocation;
+						client.playerVars = obj.playerVars;
+						client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
+						putClientInGame(obj.map, obj.x, obj.y, obj.direction);
+					});
 				}else{
 					client.newAccount = true;
-					socket.emit('newGame', {starters:pokemonStarters, characters: characterSprites});
+					socket.emit('newGame', {username: client.username, starters:pokemonStarters, characters: characterSprites});
+					socket.on('newGame', function(data){
+						console.log('Server received '+data);
+						if(!client.newAccount) return;
+						if(data.starter == null || data.character == null || pokemonStarters.indexOf(data.starter) == -1 || characterSprites.indexOf(data.character) == -1){
+							socket.disconnect();
+							return;
+						}
+						
+						client.newAccount = false;
+						loginClient();
+						
+						client.char.type = data.character;
+						client.pokemon.push(new Pokemon(data.starter, 5));
+						putClientInGame(client.respawnLocation[0], client.respawnLocation[1], client.respawnLocation[2], client.respawnLocation[3]);
+					});
 				}
 			});
 		}
 		
-		function putClientInGame(destMap, destX, destY, destDir){
-			//client.pokemon.push(new Pokemon(Math.floor(Math.random()*3)*3+1+"", 5));
-			
-			//client.respawnLocation = maps['pallet'].points['pallet_hero_home_door_out'];
-			//client.moveToSpawn();
-			
+		function loginClient(){
+			// Check to see if there's another connection using this account
+			for(var i=0;i<clients.length;++i){
+				if(clients[i].username == client.username){
+					clients[i].socket.disconnect();
+				}
+			}
 			clients.push(client);
+		}
+		
+		function putClientInGame(destMap, destX, destY, destDir){
+			warpPlayer(destMap, destX, destY, destDir);
+			socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+			
 			console.log('Client connected to '+client.map+'#'+client.mapInstance);
 			console.log(clients.length+' clients connected');
 			
-			socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
-			warpPlayer(destMap, destX, destY, destDir);
-			
 			socket.on('disconnect', function(){
+				saveClientChar();
 				getClientMapInstance().removeClient(client);
 				clients.remove(client);
 				console.log('Client disconnected');

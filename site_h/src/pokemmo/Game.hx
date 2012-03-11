@@ -22,6 +22,7 @@ class Game {
 	inline static public var DIR_RIGHT:Int = 3;
 	
 	static public var state:GameState;
+	static public var username:String;
 	static public var myId:String;
 	
 	static public var curGame:Game;

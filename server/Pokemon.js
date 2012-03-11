@@ -7,8 +7,14 @@ function Pokemon(arg1, arg2){
 	var MAX_EV = 510;
 	var MAX_INDIVIDUAL_EV = 255;
 	
-	if(arg1 && !arg2){
-		loadSaveObject(arg1);
+	self.loadSaveObject = function(obj){
+		for(var i in obj){
+			self[i] = obj[i];
+		}
+	}
+	
+	if(arg1 && arg2 == null){
+		self.loadSaveObject(arg1);
 	}else{
 		self.id = String(arg1);
 		self.level = Math.min(Math.max(2, arg2), 100);
@@ -77,7 +83,6 @@ function Pokemon(arg1, arg2){
 			j = (j+1) % 4;
 		}
 		
-		self.hp = self.maxHp;
 	}
 	
 	
@@ -154,12 +159,6 @@ function Pokemon(arg1, arg2){
 			ivSpDef: self.ivSpDef,
 			ivSpeed: self.ivSpeed
 		};
-	}
-	
-	self.loadSaveObject = function loadSaveObject(obj){
-		for(var i in obj){
-			self[i] = obj[i];
-		}
 	}
 	
 	
@@ -269,4 +268,8 @@ function Pokemon(arg1, arg2){
 	}
 	
 	self.calculateStats();
+	
+	if(!arg1 | arg2 != null){
+		self.hp = self.maxHp;
+	}
 }

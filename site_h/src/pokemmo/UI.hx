@@ -162,6 +162,8 @@ class UI {
 	static public function tick():Void {
 		setCursor('auto');
 		
+		if (Renderer.curTransition != null) return;
+		
 		for (i in 0...inputs.length) {
 			inputs[i].tick();
 		}

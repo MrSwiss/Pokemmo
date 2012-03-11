@@ -30,7 +30,7 @@ class ImageResource {
 	public function addLoadHook(func:Void->Void):Void {
 		if (func == null) return;
 		if (loaded) {
-			untyped __js__("setTimeout(func, 0)");
+			untyped __js__("setTimeout")(func, 0);
 		}else {
 			loadHooks.push(func);
 		}
@@ -39,7 +39,7 @@ class ImageResource {
 	public function addErrorHook(func:Void->Void):Void {
 		if (func == null) return;
 		if (error) {
-			untyped __js__("setTimeout(func, 0)");
+			untyped __js__("setTimeout")(func, 0);
 		}else {
 			errorHooks.push(func);
 		}

@@ -234,16 +234,27 @@ class Connection {
 			TitleScreen.loginFailed();
 		});
 		
-		socket.on('newGame', function(data:{
+		socket.on('newGame', function(data: {
+			var username:String;
 			var starters:Array<String>;
 			var characters:Array<String>;
 		}) {
+			Game.username = data.username;
 			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
-				Renderer.startTransition(new BlackScreen(10)).onComplete = function():Void {
-					TitleScreen.destroy();
-					Game.state = ST_NEWGAME;
-					Renderer.startTransition(new FadeIn(10));
-				}
+				TitleScreen.destroy();
+				Game.state = ST_NEWGAME;
+				NewGameScreen.init(data.starters, data.characters);
+			};
+		});
+		
+		socket.on('startGame', function(data: {
+			var username:String;
+			var pokemon:Array<PokemonOwned>;
+		}) {
+			Game.username = data.username;
+			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+				TitleScreen.destroy();
+				socket.emit('startGame', {});
 			};
 		});
 	}
