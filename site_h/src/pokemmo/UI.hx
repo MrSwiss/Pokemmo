@@ -1,6 +1,11 @@
 package pokemmo;
 
+import pokemmo.ui.UIButton;
+import pokemmo.ui.UIInput;
 import UserAgentContext;
+import pokemmo.Game;
+import pokemmo.Chat;
+import pokemmo.ui.TextInput;
 
 /**
  * ...
@@ -12,30 +17,159 @@ class UI {
 	
 	static public var uiAButtonDown:Bool = false;
 	static public var uiBButtonDown:Bool = false;
+	static public var mouseDown:Bool = false;
 	
 	static public var fireAHooks:Bool = false;
 	static public var fireBHooks:Bool = false;
+	static public var fireEnterHooks:Bool = false;
 	static public var arrowKeysPressed = { new Array<Int>(); };
 	static public var AButtonHooks:Array<Void->Void>;
 	static public var BButtonHooks:Array<Void->Void>;
+	static public var enterButtonHooks:Array<Void->Void>;
 	static public var dirButtonHooks:Array<Int->Void>;
 	
-	static public var mouseX:Int ;
+	static public var mouseX:Int;
 	static public var mouseY:Int;
+	
+	static public var inputs:Array<UIInput>;
+	static public var selectedInput:UIInput;
+	static public var lastSelectedInput:UIInput;
+	static public var hiddenInput:HTMLInputElement;
 	
 	static public function setup():Void {
 		AButtonHooks = [];
 		BButtonHooks = [];
 		dirButtonHooks = [];
+		enterButtonHooks = [];
+		inputs = [];
 		
 		mouseX = mouseY = 0;
+		
+		var w = Main.window;
+		
+		hiddenInput = untyped document.createElement('input');
+		hiddenInput.type = 'text';
+		untyped hiddenInput.style.opacity = '0';
+		hiddenInput.style.position = 'fixed';
+		
+		untyped __js__("document").body.appendChild(hiddenInput);
+		
+		Main.jq(w).keydown(function(e:KeyboardEvent) {
+			if (e.keyCode == 13) { // ENTER
+				if(Game.state == ST_MAP){
+					if(!Chat.inChat && !Chat.justSentMessage){
+						Chat.inChat = true;
+						Main.jq(Chat.chatBox).focus();
+					}
+				}else {
+					fireEnterHooks = true;
+				}
+			}else if (e.keyCode == 9) { // TAB
+				selectNextInput();
+				e.preventDefault();
+			}
+			
+			if(!Chat.inChat && !UI.keysDown[e.keyCode]){
+				UI.keysDown[e.keyCode] = true;
+				if(e.keyCode == 90){
+					UI.uiAButtonDown = true;
+					UI.fireAHooks = true;
+				}else if(e.keyCode == 88){
+					UI.uiBButtonDown = true;
+					UI.fireBHooks = true;
+				}else if(e.keyCode == 37){
+					UI.arrowKeysPressed.push(Game.DIR_LEFT);
+				}else if(e.keyCode == 40){
+					UI.arrowKeysPressed.push(Game.DIR_DOWN);
+				}else if(e.keyCode == 39){
+					UI.arrowKeysPressed.push(Game.DIR_RIGHT);
+				}else if(e.keyCode == 38){
+					UI.arrowKeysPressed.push(Game.DIR_UP);
+				}
+			}
+		});
+		
+		Main.jq(w).keyup(function(e:KeyboardEvent){
+			UI.keysDown[e.keyCode] = false;
+			if(e.keyCode == 13){
+				Chat.justSentMessage = false;
+			}else if(e.keyCode == 90){
+				UI.uiAButtonDown = false;
+			}else if(e.keyCode == 88){
+				UI.uiBButtonDown = false;
+			}
+		});
+		
+		Main.jq(w).blur(function():Void {
+			for (i in 0...UI.keysDown.length) {
+				UI.keysDown[i] = false;
+			}
+			
+			mouseDown = false;
+		});
+		
+		Main.jq(w).mousedown(function(e:MouseEvent):Void {
+			mouseDown = true;
+			
+			var selectedAny = false;
+			
+			for (i in 0...inputs.length) {
+				if (inputs[i].isUnderMouse()) {
+					inputs[i].select();
+					selectedAny = true;
+				}
+			}
+			
+			if (!selectedAny && selectedInput != null) {
+				lastSelectedInput = selectedInput;
+				selectedInput.blur();
+			}
+			
+			e.preventDefault();
+		});
+		
+		Main.jq(w).mouseup(function():Void {
+			mouseDown = false;
+		});
+	}
+	
+	static public function selectNextInput() {
+		if (selectedInput != null) {
+			inputs[(inputs.indexOf(selectedInput) + 1) % inputs.length].select();
+		}else if(lastSelectedInput != null){
+			inputs[(inputs.indexOf(lastSelectedInput) + 1) % inputs.length].select();
+		}else if(inputs.length > 0){
+			inputs[0].select();
+		}
+		
+		if (selectedInput.disabled) {
+			var i = inputs.indexOf(selectedInput);
+			for (j in i...inputs.length) {
+				if (!inputs[j].disabled) {
+					inputs[j].select();
+					return;
+				}
+			}
+			for (j in 0...i) {
+				if (!inputs[j].disabled) {
+					inputs[j].select();
+					return;
+				}
+			}
+		}
 	}
 	
 	static public function tick():Void {
+		setCursor('auto');
+		
+		for (i in 0...inputs.length) {
+			inputs[i].tick();
+		}
+		
 		if(fireAHooks){
 			fireAHooks = false;
 			var arr = AButtonHooks.copy();
-			while(AButtonHooks.length > 0) AButtonHooks.pop();
+			AButtonHooks = [];
 			
 			for(i in 0...arr.length){
 				arr[i]();
@@ -45,12 +179,23 @@ class UI {
 		if(fireBHooks){
 			fireBHooks = false;
 			var arr = BButtonHooks.copy();
-			while(BButtonHooks.length > 0) BButtonHooks.pop();
+			BButtonHooks = [];
 			
 			for(i in 0...arr.length){
 				arr[i]();
 			}
 		}
+		
+		if(fireEnterHooks){
+			fireEnterHooks = false;
+			var arr = enterButtonHooks.copy();
+			enterButtonHooks = [];
+			
+			for(i in 0...arr.length){
+				arr[i]();
+			}
+		}
+		
 		
 		for (i in 0...arrowKeysPressed.length) {
 			for (j in 0...dirButtonHooks.length) {
@@ -61,6 +206,12 @@ class UI {
 		while(arrowKeysPressed.length > 0) arrowKeysPressed.pop();
 	}
 	
+	static public function render(ctx:CanvasRenderingContext2D):Void {
+		for (i in 0...inputs.length) {
+			inputs[i].render(ctx);
+		}
+	}
+	
 	inline static public function hookAButton(func:Void->Void):Void {
 		AButtonHooks.push(func);
 	}
@@ -69,12 +220,28 @@ class UI {
 		BButtonHooks.push(func);
 	}
 	
+	inline static public function hookEnterButton(func:Void->Void):Void {
+		enterButtonHooks.push(func);
+	}
+	
 	inline static public function unHookAButton(func:Void->Void):Void {
 		AButtonHooks.remove(func);
 	}
 	
 	inline static public function unHookBButton(func:Void->Void):Void {
 		BButtonHooks.remove(func);
+	}
+	
+	inline static public function unHookEnterButton(func:Void->Void):Void {
+		AButtonHooks.remove(func);
+	}
+	
+	inline static public function hookDirButtons(func:Int->Void):Void {
+		dirButtonHooks.push(func);
+	}
+	
+	inline static public function unHookDirButtons(func:Int->Void):Void {
+		dirButtonHooks.remove(func);
 	}
 	
 	inline static public function isKeyDown(n:Int):Bool {
@@ -178,5 +345,23 @@ class UI {
 		ctx.globalAlpha = 0.8;
 		ctx.drawImage(tmpCanvas, 480, 0);
 		ctx.globalAlpha = 1;
+	}
+	
+	static public function createTextInput(x:Int, y:Int, width:Int):TextInput {
+		var ti = new TextInput(x, y, width);
+		inputs.push(ti);
+		return ti;
+	}
+	
+	static inline public function pushInput(i:UIInput):Void {
+		inputs.push(i);
+	}
+	
+	static inline public function removeInput(i:UIInput):Void {
+		inputs.remove(i);
+	}
+	
+	inline static public function setCursor(str:String):Void {
+		Main.onScreenCanvas.style.cursor = str;
 	}
 }

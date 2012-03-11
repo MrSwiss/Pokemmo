@@ -74,7 +74,7 @@ class BattleTransition001 extends Transition{
 			ctx.globalAlpha = 1;
 		}else{
 			g.battle.step = BATTLE_STEP_POKEMON_APPEARED_TMP;
-			Renderer.stopTransition();
+			complete();
 		}
 		
 		++step;

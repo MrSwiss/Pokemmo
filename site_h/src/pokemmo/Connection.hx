@@ -1,6 +1,7 @@
 package pokemmo;
 
 import pokemmo.entities.CDoor;
+import pokemmo.entities.CStairs;
 import pokemmo.entities.CWarp;
 import pokemmo.entities.CWarpArrow;
 import pokemmo.Main;
@@ -9,6 +10,9 @@ import pokemmo.CCharacter;
 import pokemmo.Pokemon;
 import pokemmo.transitions.BattleTransition001;
 import pokemmo.Chat;
+import pokemmo.transitions.BlackScreen;
+import pokemmo.transitions.FadeIn;
+import pokemmo.transitions.FadeOut;
 
 /**
  * ...
@@ -106,9 +110,10 @@ class Connection {
 						chr.direction = warp.direction;
 						if(Std.is(tmpWarp, CDoor)){
 							chr.enterDoor(cast tmpWarp);
-							
 						}else if(Std.is(tmpWarp, CWarpArrow)){
 							chr.enterWarpArrow(cast tmpWarp);
+						}else if (Std.is(tmpWarp, CStairs)) {
+							chr.enterStairs(cast tmpWarp);
 						}
 					};
 					
@@ -223,6 +228,23 @@ class Connection {
 		socket.on('battleTurn', function(data){
 			Game.curGame.battle.resultQueue = Game.curGame.battle.resultQueue.concat(data.results);
 			Game.curGame.battle.runQueue();
+		});
+		
+		socket.on('loginFail', function(data) {
+			TitleScreen.loginFailed();
+		});
+		
+		socket.on('newGame', function(data:{
+			var starters:Array<String>;
+			var characters:Array<String>;
+		}) {
+			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+				Renderer.startTransition(new BlackScreen(10)).onComplete = function():Void {
+					TitleScreen.destroy();
+					Game.state = ST_NEWGAME;
+					Renderer.startTransition(new FadeIn(10));
+				}
+			};
 		});
 	}
 }

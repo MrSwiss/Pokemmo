@@ -83,6 +83,8 @@ class Battle {
 		shakeEnemyStatus = false;
 		shakePokemonStatus = false;
 		resultQueue = [];
+		
+		UI.hookDirButtons(buttonHandler);
 	}
 	
 	public function render(ctx:CanvasRenderingContext2D):Void {
@@ -703,7 +705,40 @@ class Battle {
 		}
 	}
 	
+	private function buttonHandler(dir:Int):Void {
+		if(step == BATTLE_STEP_ACTION_MENU){
+			switch(selectedAction){
+			case 0:
+				if(dir == Game.DIR_RIGHT){
+					selectedAction = 1;
+				}else if(dir == Game.DIR_DOWN){
+					selectedAction = 2;
+				}
+			case 1:
+				if(dir == Game.DIR_LEFT){
+					selectedAction = 0;
+				}else if(dir == Game.DIR_DOWN){
+					selectedAction = 3;
+				}
+			case 2:
+				if(dir == Game.DIR_UP){
+					selectedAction = 0;
+				}else if(dir == Game.DIR_RIGHT){
+					selectedAction = 3;
+				}
+			case 3:
+				if(dir == Game.DIR_UP){
+					selectedAction = 1;
+				}else if(dir == Game.DIR_LEFT){
+					selectedAction = 2;
+				}
+			}
+		}
+	}
+	
 	public function finish():Void {
+		UI.unHookDirButtons(buttonHandler);
+		
 		var step = 0;
 		var func = null;
 		

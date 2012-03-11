@@ -63,6 +63,8 @@ class Renderer {
 		var canvas = Main.canvas;
 		var onScreenCtx = Main.onScreenCtx;
 		var onScreenCanvas = Main.onScreenCanvas;
+		var tmpCtx = Main.tmpCtx;
+		var tmpCanvas = Main.tmpCanvas;
 		
 		
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -105,12 +107,12 @@ class Renderer {
 				UI.renderPokemonParty(ctx);
 			}
 			
-			if (curTransition != null) curTransition.render(ctx);
-			
 			if (renderHooks.length > 0) {
 				var arr = renderHooks.copy();
 				for (i in 0...arr.length) arr[i]();
 			}
+			
+			UI.render(ctx);
 		case ST_LOADING:
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -143,14 +145,24 @@ class Renderer {
 					ctx.fillText('Loading... ' + Game.pendingLoad, 10, 30);
 				}
 			}
+			
 		case ST_DISCONNECTED:
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			ctx.fillStyle = '#FFFFFF';
 			ctx.font = '12pt Courier New';
 			ctx.fillText("Disconnected from the server", 10, 30);
+		case ST_TITLE:
+			TitleScreen.render(ctx);
+			UI.render(ctx);
+		case ST_REGISTER:
+			null;
+		case ST_NEWGAME:
+			NewGameScreen.render(ctx);
+			UI.render(ctx);
 		}
 		
+		if (curTransition != null) curTransition.render(ctx);
 		
 		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
 		onScreenCtx.drawImage(canvas, 0, 0);
@@ -168,15 +180,14 @@ class Renderer {
 		tmpCtx.save();
 		tmpCtx.fillStyle = '#FFFF00';
 		tmpCtx.fillRect(0, 0, overlayWidth, overlayHeight);
-		tmpCtx.translate(2, 2);
 		tmpCtx.globalCompositeOperation = "destination-atop";
 		drawFunc(tmpCtx);
 		tmpCtx.restore();
 		
-		ctx.drawImage(Main.tmpCanvas, 0, 0, overlayWidth, overlayHeight, x - 4, y - 2, overlayWidth, overlayHeight);
-		ctx.drawImage(Main.tmpCanvas, 0, 0, overlayWidth, overlayHeight, x - 2, y - 4, overlayWidth, overlayHeight);
-		ctx.drawImage(Main.tmpCanvas, 0, 0, overlayWidth, overlayHeight, x, y - 2, overlayWidth, overlayHeight);
-		ctx.drawImage(Main.tmpCanvas, 0, 0, overlayWidth, overlayHeight, x - 2, y, overlayWidth, overlayHeight);
+		ctx.drawImage(Main.tmpCanvas, 0, 0, width, height, x - 2, y, width, height);
+		ctx.drawImage(Main.tmpCanvas, 0, 0, width, height, x, y - 2, width, height);
+		ctx.drawImage(Main.tmpCanvas, 0, 0, width, height, x, y + 2, width, height);
+		ctx.drawImage(Main.tmpCanvas, 0, 0, width, height, x + 2, y, width, height);
 	}
 	
 	inline static public function drawShadowText2(ctx:CanvasRenderingContext2D, str:String, x:Int, y:Int, color:String, shadowColor:String):Void {

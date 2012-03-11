@@ -31,6 +31,8 @@ class Main {
 	static public var canvas:HTMLCanvasElement;
 	static public var ctx:CanvasRenderingContext2D;
 	
+	static public var container:HTMLDivElement;
+	
 	static public var jq:Dynamic = { untyped __js__("jQuery"); };
 	
 	
@@ -55,8 +57,8 @@ class Main {
 	}
 	
 	static public function tick():Void {
+		UI.tick();
 		if (Game.state == ST_MAP){
-			UI.tick();
 			if (Game.curGame != null) Game.curGame.tick();
 		}
 		
@@ -67,7 +69,8 @@ class Main {
 		untyped console.log(obj);
 	}
 	
-	static public function initGame(canvas_:HTMLCanvasElement, container:HTMLDivElement):Void {
+	static public function initGame(canvas_:HTMLCanvasElement, container_:HTMLDivElement):Void {
+		container = container_;
 		onScreenCanvas = canvas_;
 		onScreenCtx = onScreenCanvas.getContext('2d');
 		//onScreenCanvas.style.position = 'relative';
@@ -81,61 +84,12 @@ class Main {
 		mapCacheCanvas = untyped Lib.document.createElement('canvas');
 		mapCacheCtx = mapCacheCanvas.getContext('2d');
 		
+		
 		jq(window).mousemove(function(e:MouseEvent):Void {
 			var offset = jq(onScreenCanvas).offset();
 			UI.mouseX = untyped e.pageX - offset.left;
 			UI.mouseY = untyped e.pageY - offset.top;
 		});
-		
-		if (!isPhone) {
-			Chat.setup();
-		}
-		
-		jq(window).blur(function():Void {
-			for (i in 0...UI.keysDown.length) {
-				UI.keysDown[i] = false;
-			}
-		});
-		
-		jq(window).keydown(function(e:KeyboardEvent){
-			if (e.keyCode == 13 && !Chat.inChat && !Chat.justSentMessage) {
-				Chat.inChat = true;
-				jq(Chat.chatBox).focus();
-			}
-			
-			if(!Chat.inChat && !UI.keysDown[e.keyCode]){
-				UI.keysDown[e.keyCode] = true;
-				if(e.keyCode == 90){
-					UI.uiAButtonDown = true;
-					UI.fireAHooks = true;
-				}else if(e.keyCode == 88){
-					UI.uiBButtonDown = true;
-					UI.fireBHooks = true;
-				}else if(e.keyCode == 37){
-					UI.arrowKeysPressed.push(Game.DIR_LEFT);
-				}else if(e.keyCode == 40){
-					UI.arrowKeysPressed.push(Game.DIR_DOWN);
-				}else if(e.keyCode == 39){
-					UI.arrowKeysPressed.push(Game.DIR_RIGHT);
-				}else if(e.keyCode == 38){
-					UI.arrowKeysPressed.push(Game.DIR_UP);
-				}
-			}
-		});
-		
-		jq(window).keyup(function(e:KeyboardEvent){
-			UI.keysDown[e.keyCode] = false;
-			if(e.keyCode == 13){
-				Chat.justSentMessage = false;
-			}else if(e.keyCode == 90){
-				UI.uiAButtonDown = false;
-			}else if(e.keyCode == 88){
-				UI.uiBButtonDown = false;
-			}
-		});
-		
-		var tickFunc = tick;
-		untyped __js__("setInterval(tickFunc, 1000/30)");
 		
 		jq(window).resize(function(){
 			if(isPhone){
@@ -166,12 +120,24 @@ class Main {
 		
 		UI.setup();
 		Game.setup();
-		Renderer.setup();
 		Connection.setup();
+		Renderer.setup();
+		Chat.setup();
+		
+		Game.state = ST_TITLE;
+		
+		TitleScreen.setup();
+		
+		setInterval(tick, 1000 / 30);
+		
 	}
 	
 	inline static public function setTimeout(func:Void->Void, delay:Float):Void {
 		untyped __js__("setTimeout")(func, delay);
+	}
+	
+	inline static public function setInterval(func:Void->Void, delay:Float):Void {
+		untyped __js__("setInterval")(func, delay);
 	}
 	
 	inline static public function clearTmpCanvas():Void {

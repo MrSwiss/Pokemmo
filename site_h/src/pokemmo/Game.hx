@@ -34,10 +34,14 @@ class Game {
 	static private var res:Dynamic;
 	static private var pokemonData:Dynamic;
 	
+	
+	static private var loadedBasicUI:Bool;
+	
 	static public function setup():Void {
 		loadError = false;
+		loadedBasicUI = false;
 		state = ST_UNKNOWN;
-		
+		res = untyped __js__("({})");
 	}
 	
 	static public function setPokemonParty(arr:Array<PokemonOwned>):Void {
@@ -56,8 +60,8 @@ class Game {
 		var g = curGame = new Game();
 		Game.state = ST_LOADING;
 		
-		if (res == null) {
-			res = untyped __js__("({})");
+		if (!loadedBasicUI) {
+			loadedBasicUI = true;
 			loadImageResource('miscSprites', 'resources/tilesets/misc.png');
 			loadImageResource('uiPokemon', 'resources/ui/pokemon.png');
 			loadImageResource('uiChat', 'resources/ui/chat.png');
@@ -125,9 +129,9 @@ class Game {
 		});
 	}
 	
-	static private function loadImageResource(id:String, src:String):Void {
+	static public function loadImageResource(id:String, src:String):ImageResource {
 		++pendingLoad;
-		res[untyped id] = new ImageResource(src, function():Void {
+		return res[untyped id] = new ImageResource(src, function():Void {
 			--pendingLoad;
 		},function():Void {
 			--pendingLoad;
@@ -341,4 +345,7 @@ enum GameState {
 	ST_LOADING;
 	ST_MAP;
 	ST_DISCONNECTED;
+	ST_TITLE;
+	ST_NEWGAME;
+	ST_REGISTER;
 }

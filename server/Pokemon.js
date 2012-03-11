@@ -1,67 +1,84 @@
 var VIRUS_NONE = 0;
 var VIRUS_POKERUS = 1;
 
-function Pokemon(id, level){
+function Pokemon(arg1, arg2){
 	var self = this;
 	
 	var MAX_EV = 510;
 	var MAX_INDIVIDUAL_EV = 255;
 	
-	self.id = String(id);
-	self.level = Math.min(Math.max(2, level), 100);
-	
-	self.unique = generateRandomString(16);
-	
-	self.nickname = null;
-	self.gender = GENDER_UNKNOWN;
-	
-	if(Number(pokemonData[self.id].genderRatio) != -1){
-		self.gender = (Math.random() < Number(pokemonData[self.id].genderRatio)) ? GENDER_MALE : GENDER_FEMALE;
+	if(arg1 && !arg2){
+		loadSaveObject(arg1);
+	}else{
+		self.id = String(arg1);
+		self.level = Math.min(Math.max(2, arg2), 100);
+		
+		self.unique = generateRandomString(16);
+		
+		self.nickname = null;
+		self.gender = GENDER_UNKNOWN;
+		
+		if(Number(pokemonData[self.id].genderRatio) != -1){
+			self.gender = (Math.random() < Number(pokemonData[self.id].genderRatio)) ? GENDER_MALE : GENDER_FEMALE;
+		}
+		
+		self.hp = 0;
+		self.maxHp = 0;
+		self.atk = 0;
+		self.def = 0;
+		self.spAtk = 0;
+		self.spDef = 0;
+		self.speed = 0;
+		
+		self.ability = 0;
+		self.nature = 1 + Math.floor(Math.random() * 25)
+		
+		// If it has 2 available abilities, choose one of them randomly
+		if(pokemonData[self.id].ability2){
+			self.ability = Math.floor(Math.random() * 2) + 1;
+		}else if(pokemonData[self.id].ability1){
+			self.ability = 1;
+		}
+		
+		self.experience = 0;
+		self.experienceNeeded = 0;
+		
+		self.evHp = 0;
+		self.evAtk = 0;
+		self.evDef = 0;
+		self.evSpAtk = 0;
+		self.evSpDef = 0;
+		self.evSpeed = 0;
+		
+		self.ivHp = Math.floor(Math.random() * 32);
+		self.ivAtk = Math.floor(Math.random() * 32);
+		self.ivDef = Math.floor(Math.random() * 32);
+		self.ivSpAtk = Math.floor(Math.random() * 32);
+		self.ivSpDef = Math.floor(Math.random() * 32);
+		self.ivSpeed = Math.floor(Math.random() * 32);
+		
+		self.status = STATUS_NONE;
+		
+		self.virus = VIRUS_NONE;
+		
+		self.shiny = (1/8192 > Math.random());
+		self.moves = [null, null, null, null];
+		self.movesPP = [0, 0, 0, 0];
+		self.movesMaxPP = [0, 0, 0, 0];
+		// Make it learn the 4 highest level moves for his level
+		var j = 0;
+		var learnset = pokemonData[self.id].learnset;
+		for(var i=0;i<learnset.length;++i){
+			if(movesData[learnset[i].move] == null) continue;
+			if(learnset[i].level > self.level) continue;
+			self.moves[j] = learnset[i].move;
+			self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
+			
+			j = (j+1) % 4;
+		}
+		
+		self.hp = self.maxHp;
 	}
-	
-	self.hp = 0;
-	self.maxHp = 0;
-	self.atk = 0;
-	self.def = 0;
-	self.spAtk = 0;
-	self.spDef = 0;
-	self.speed = 0;
-	
-	self.ability = 0;
-	self.nature = 1 + Math.floor(Math.random() * 25)
-	
-	// If it has 2 available abilities, choose one of them randomly
-	if(pokemonData[self.id].ability2){
-		self.ability = Math.floor(Math.random() * 2) + 1;
-	}else if(pokemonData[self.id].ability1){
-		self.ability = 1;
-	}
-	
-	self.experience = 0;
-	self.experienceNeeded = 0;
-	
-	self.evHp = 0;
-	self.evAtk = 0;
-	self.evDef = 0;
-	self.evSpAtk = 0;
-	self.evSpDef = 0;
-	self.evSpeed = 0;
-	
-	self.ivHp = Math.floor(Math.random() * 32);
-	self.ivAtk = Math.floor(Math.random() * 32);
-	self.ivDef = Math.floor(Math.random() * 32);
-	self.ivSpAtk = Math.floor(Math.random() * 32);
-	self.ivSpDef = Math.floor(Math.random() * 32);
-	self.ivSpeed = Math.floor(Math.random() * 32);
-	
-	self.status = STATUS_NONE;
-	
-	self.virus = VIRUS_NONE;
-	
-	self.shiny = (1/8192 > Math.random());
-	self.moves = [null, null, null, null];
-	self.movesPP = [0, 0, 0, 0];
-	self.movesMaxPP = [0, 0, 0, 0];
 	
 	
 	// Data to be sent to clients battling this pokemon
@@ -104,6 +121,46 @@ function Pokemon(id, level){
 		get training(){return (self.evHp + self.evAtk + self.evDef + self.evSpAtk + self.evSpDef + self.evSpeed) / MAX_EV},
 		get virus(){return self.virus}
 	};
+	
+	self.getSaveObject = function(){
+		return {
+			id: self.id,
+			level: self.level,
+			unique: self.unique,
+			gender: self.gender,
+			ability: self.ability,
+			experience: self.experience,
+			nature: self.nature,
+			status: self.status,
+			virus: self.virus,
+			shiny: self.shiny,
+			moves: self.moves,
+			movesPP: self.movesPP,
+			movesMaxPP: self.movesMaxPP,
+			
+			hp: self.hp,
+			
+			evHp: self.evHp,
+			evAtk: self.evAtk,
+			evDef: self.evDef,
+			evSpAtk: self.evSpAtk,
+			evSpDef: self.evSpDef,
+			evSpeed: self.evSpeed,
+			
+			ivHp: self.ivHp,
+			ivAtk: self.ivAtk,
+			ivDef: self.ivDef,
+			ivSpAtk: self.ivSpAtk,
+			ivSpDef: self.ivSpDef,
+			ivSpeed: self.ivSpeed
+		};
+	}
+	
+	self.loadSaveObject = function loadSaveObject(obj){
+		for(var i in obj){
+			self[i] = obj[i];
+		}
+	}
 	
 	
 	self.calculateExpGain = function(isTrainer){
@@ -211,18 +268,5 @@ function Pokemon(id, level){
 		return list;
 	}
 	
-	// Make it learn the 4 highest level moves for his level
-	var j = 0;
-	var learnset = pokemonData[self.id].learnset;
-	for(var i=0;i<learnset.length;++i){
-		if(movesData[learnset[i].move] == null) continue;
-		if(learnset[i].level > self.level) continue;
-		self.moves[j] = learnset[i].move;
-		self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
-		
-		j = (j+1) % 4;
-	}
-	
 	self.calculateStats();
-	self.hp = self.maxHp;
 }

@@ -45,6 +45,14 @@ class Chat {
 		untyped __js__("document").body.appendChild(chatBox);
 	}
 	
+	static public function resetChat():Void {
+		chatLog = [];
+		chatBox.value = '';
+		inChat = false;
+		justSentMessage = true;
+		Main.jq(chatBox).blur();
+	}
+	
 	static public function pushMessage(msg:ChatLogEntry):Void {
 		var chr = Game.curGame.getPlayerChar();
 		msg.timestamp2 = msg.timestamp;
@@ -90,10 +98,7 @@ class Chat {
 	static public function sendMessage():Void {
 		filterChatText();
 		Connection.socket.emit('sendMessage', {str:chatBox.value } );
-		chatBox.value = '';
-		inChat = false;
-		justSentMessage = true;
-		Main.jq(chatBox).blur();
+		resetChat();
 		Main.jq(Main.onScreenCanvas).focus();
 	}
 	
@@ -187,6 +192,8 @@ class Chat {
 			y -= height;
 			
 			y -= Math.floor((now - msg.timestamp) / 150);
+			
+			//Util.drawRoundedRect(x, y, width, height, CORNER_RADIUS, '#FFFFFF' perc);
 			
 			tmpCtx.clearRect(0, 0, width, height);
 			tmpCtx.save();
