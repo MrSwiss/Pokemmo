@@ -59,7 +59,7 @@ Array.prototype.remove = function(e){
 };
 
 var pokemonStarters = ["1", "4", "7", "10", "13", "16", "25", "29", "32", "43", "60", "66", "69", "74", "92", "133"];
-var characterSprites = ["red", "red_-135"];
+var characterSprites = ["red", "red_-135", "JZJot"];
 
 // #include "Pokemon.js"
 
@@ -160,6 +160,8 @@ function startIO(){
 			speedHackChecks: [],
 			retransmitChar: true,
 			
+			save: null,
+			loaded: false,
 			newAccount: false,
 			
 			restorePokemon: function(){
@@ -174,6 +176,7 @@ function startIO(){
 		};
 		
 		client.respawnLocation = maps['pallet'].points['pallet_hero_home_door_out'];
+		client.save = saveClientChar;
 		
 		socket.on('login', function(data){
 			var isValid = true;
@@ -195,6 +198,7 @@ function startIO(){
 		});
 		
 		function saveClientChar(){
+			if(!client.loaded) return;
 			dbchars.update({username: client.username}, {$set:{
 				map: client.map,
 				x: client.char.x,
@@ -228,6 +232,8 @@ function startIO(){
 						client.playerVars = obj.playerVars;
 						client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
 						putClientInGame(obj.map, obj.x, obj.y, obj.direction);
+						
+						client.loaded = true;
 					});
 				}else{
 					client.newAccount = true;
@@ -246,6 +252,8 @@ function startIO(){
 						client.char.type = data.character;
 						client.pokemon.push(new Pokemon(data.starter, 5));
 						putClientInGame(client.respawnLocation[0], client.respawnLocation[1], client.respawnLocation[2], client.respawnLocation[3]);
+						
+						client.loaded = true;
 					});
 				}
 			});
@@ -484,8 +492,7 @@ function sha512(pass, salt){
 	return hasher.digest('base64');
 }
 
-
-setInterval(function(){
+function sendUpdateToClients(){
 	for(var i in mapInstances){
 		for(var k=0;k<mapInstances[i].length;++k){
 			mapInstances[i][k].generateUpdate();
@@ -494,7 +501,16 @@ setInterval(function(){
 	for(var i=0;i<clients.length;++i){
 		clients[i].sendUpdate();
 	}
-}, 250);
+}
+
+setInterval(sendUpdateToClients, 250);
+
+setInterval(function(){
+	for(var i=0;i<clients.length;++i){
+		clients[i].save();
+	}
+}, 30 * 60 * 1000);
+
 
 function getEncounterAreasAt(mapName, x, y){
 	var map = maps[mapName];
@@ -533,10 +549,11 @@ function createInstance(map){
 			map: instance.map,
 		};
 		
+		
 		if(charArr.length > 0) obj.chars = charArr;
-		if(instance.messages > 0) obj.messages = instance.messages;
-		if(instance.warpsUsed > 0) obj.warpsUsed = instance.warpsUsed;
-		if(instance.cremoved > 0) obj.cremoved = instance.cremoved;
+		if(instance.messages.length > 0) obj.messages = instance.messages;
+		if(instance.warpsUsed.length > 0) obj.warpsUsed = instance.warpsUsed;
+		if(instance.cremoved.length > 0) obj.cremoved = instance.cremoved;
 		
 		instance.cachedUpdate = JSON.stringify(obj);
 		instance.messages.length = 0;

@@ -1,4 +1,7 @@
 package pokemmo;
+import pokemmo.transitions.BlackScreen;
+import pokemmo.transitions.FadeIn;
+import pokemmo.transitions.FadeOut;
 import pokemmo.ui.TextInput;
 import pokemmo.ui.UIButton;
 import UserAgentContext;
@@ -13,6 +16,7 @@ class TitleScreen {
 	static private var passwordTxt:TextInput;
 	static private var loginButton:UIButton;
 	static private var registerButton:UIButton;
+	static private var donateButton:UIButton;
 	
 	static public var titleScreen:ImageResource;
 	static public var titleLogo:ImageResource;
@@ -27,7 +31,9 @@ class TitleScreen {
 		titleLogo = Game.loadImageResource('titleLogo', 'resources/ui/title_logo.png');
 		titleButtons = Game.loadImageResource('titleButtons', 'resources/ui/title_buttons.png');
 		loadingImg = Game.loadImageResource('loading', 'resources/ui/loading.png');
-		
+	}
+	
+	static public function init():Void {
 		usernameTxt = UI.createTextInput(350, 321, 130);
 		usernameTxt.maxLength = 10;
 		
@@ -64,8 +70,28 @@ class TitleScreen {
 		registerButton.drawDisabled = function(ctx:CanvasRenderingContext2D):Void {
 			ctx.drawImage(titleButtons.obj, 50, 150, 150, 50, 300, 365, 150, 50);
 		};
-		
+		registerButton.onSubmit = onRegisterSubmit;
 		UI.pushInput(registerButton);
+		
+		donateButton = new UIButton(305, 470, 190, 30);
+		donateButton.drawIdle = function(ctx:CanvasRenderingContext2D):Void {
+			ctx.drawImage(titleButtons.obj, 500, 0, 210, 50, 295, 460, 210, 50);
+		};
+		donateButton.drawHover = function(ctx:CanvasRenderingContext2D):Void {
+			ctx.drawImage(titleButtons.obj, 500, 50, 210, 50, 295, 460, 210, 50);
+		};
+		donateButton.drawDown = function(ctx:CanvasRenderingContext2D):Void {
+			ctx.drawImage(titleButtons.obj, 500, 100, 210, 50, 295, 460, 210, 50);
+		};
+		donateButton.drawDisabled = function(ctx:CanvasRenderingContext2D):Void {
+			ctx.drawImage(titleButtons.obj, 500, 150, 210, 50, 295, 460, 210, 50);
+		};
+		donateButton.instantSubmit = true;
+		donateButton.onSubmit = function():Void {
+			(untyped __js__('window')).open('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QBXGPHQPQ5G5Y', '_blank');
+		}
+		UI.pushInput(donateButton);
+		
 		
 		UI.hookEnterButton(onEnterButton);
 	}
@@ -75,6 +101,7 @@ class TitleScreen {
 		UI.removeInput(passwordTxt);
 		UI.removeInput(loginButton);
 		UI.removeInput(registerButton);
+		UI.removeInput(donateButton);
 	}
 	
 	static private function onLoginSubmit():Void {
@@ -84,13 +111,27 @@ class TitleScreen {
 		Connection.socket.emit('login', {username: usernameTxt.value, password: passwordTxt.value});
 	}
 	
+	static private function onRegisterSubmit():Void {
+		if (sentLogin) return;
+		Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+			destroy();
+			Game.state = ST_REGISTER;
+			RegisterScreen.init();
+			RegisterScreen.usernameTxt.value = usernameTxt.value;
+			RegisterScreen.passwordTxt.value = passwordTxt.value;
+			Renderer.startTransition(new BlackScreen(5)).onComplete = function():Void {
+				Renderer.startTransition(new FadeIn(10));
+			}
+		};
+	}
+	
 	static public function loginFailed():Void {
 		sentLogin = false;
 		loginInitTime = Date.now().getTime();
 	}
 	
 	static private function onEnterButton():Void {
-		onLoginSubmit();
+		if(UI.selectedInput == usernameTxt || UI.selectedInput == passwordTxt) onLoginSubmit();
 		UI.hookEnterButton(onEnterButton);
 	}
 	

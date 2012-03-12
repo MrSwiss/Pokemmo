@@ -15,6 +15,7 @@ class UIButton extends UIInput{
 	public var drawDisabled:CanvasRenderingContext2D->Void;
 	
 	public var onSubmit:Void->Void;
+	public var instantSubmit:Bool;
 	
 	public var width:Int;
 	public var height:Int;
@@ -28,6 +29,8 @@ class UIButton extends UIInput{
 		this.height = height;
 		
 		mouseWasDown = false;
+		keyWasDown = false;
+		instantSubmit = false;
 	}
 	
 	override public function tick():Void {
@@ -35,6 +38,15 @@ class UIButton extends UIInput{
 		if (isUnderMouse()) {
 			UI.setCursor('pointer');
 		}
+	}
+	
+	public function submit():Void {
+		if (onSubmit != null) {
+			onSubmit();
+		}
+		
+		mouseWasDown = false;
+		keyWasDown = false;
 	}
 	
 	override public function render(ctx:CanvasRenderingContext2D):Void {
@@ -51,11 +63,9 @@ class UIButton extends UIInput{
 			}else {
 				drawHover(ctx);
 				
-				if ((mouseWasDown && isUnderMouse())) {
-					if (onSubmit != null) {
-						onSubmit();
-					}
+				if ((mouseWasDown && isUnderMouse()) || keyWasDown) {
 					if(!keyWasDown) blur();
+					submit();
 				}
 			}
 		}else {

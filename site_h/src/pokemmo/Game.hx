@@ -47,11 +47,16 @@ class Game {
 	
 	static public function setPokemonParty(arr:Array<PokemonOwned>):Void {
 		for (i in 0...arr.length) {
-			arr[i].icon = curGame.getImage('resources/picons/' + arr[i].id + '_1.png');
+			arr[i].icon = curGame != null ? curGame.getImage('resources/picons/' + arr[i].id + '_1.png') : new ImageResource('resources/picons/' + arr[i].id + '_1.png');
 			
 			// Preload pokemon images
-			curGame.getImage('resources/back/' + arr[i].id + '.png');
-			curGame.getImage('resources/followers/' + arr[i].id + '.png');
+			if(curGame != null){
+				curGame.getImage('resources/back/' + arr[i].id + '.png');
+				curGame.getImage('resources/followers/' + arr[i].id + '.png');
+			}else {
+				(untyped __js__('new Image()')).src = 'resources/back/' + arr[i].id + '.png';
+				(untyped __js__('new Image()')).src = 'resources/followers/' + arr[i].id + '.png';
+			}
 		}
 		
 		pokemonParty = arr;

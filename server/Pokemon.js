@@ -75,7 +75,10 @@ function Pokemon(arg1, arg2){
 		var j = 0;
 		var learnset = pokemonData[self.id].learnset;
 		for(var i=0;i<learnset.length;++i){
-			if(movesData[learnset[i].move] == null) continue;
+			if(movesData[learnset[i].move] == null){
+				console.warn('Move "'+learnset[i].move+'" doesn\'t exist for '+pokemonData[self.id].name);
+				continue;
+			}
 			if(learnset[i].level > self.level) continue;
 			self.moves[j] = learnset[i].move;
 			self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);

@@ -156,7 +156,8 @@ class Renderer {
 			TitleScreen.render(ctx);
 			UI.render(ctx);
 		case ST_REGISTER:
-			null;
+			RegisterScreen.render(ctx);
+			UI.render(ctx);
 		case ST_NEWGAME:
 			NewGameScreen.render(ctx);
 			UI.render(ctx);

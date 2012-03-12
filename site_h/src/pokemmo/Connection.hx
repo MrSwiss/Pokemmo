@@ -20,7 +20,8 @@ import pokemmo.transitions.FadeOut;
  */
 
 class Connection {
-	static public var SERVER_HOST:String = "http://localhost:2828";
+	inline static public var SERVER_HOST:String = "http://localhost:2828";
+	inline static public var REGSERVER_HOST:String = "http://localhost:2827";
 	
 	static public var socket:SocketIOConnection;
 	static public var lastAckMove:Int = 0;

@@ -127,6 +127,7 @@ class Main {
 		Game.state = ST_TITLE;
 		
 		TitleScreen.setup();
+		TitleScreen.init();
 		
 		setInterval(tick, 1000 / 30);
 		

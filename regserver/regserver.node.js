@@ -53,25 +53,39 @@ function createAccount(username, password, email, callback){
 		return;
 	}
 	
-	if(!isEmail(email)){
+	if(email.length > 100 || !isEmail(email)){
 		callback('invalid_email');
 		return;
 	}
 	
 	var passsalt = sha512(+new Date().getTime() + '#' + Math.random() + '#' + Math.random());
 	var passhash = sha512(password, passsalt);
-	accounts.insert({username: username, lcusername: username.toLowerCase(), password: passhash, email: email, salt: passsalt}, {safe: true}, function(err, objects) {
+	
+	accounts.count(function(err, count) {
 		if(err){
-			if(err.code == 11000){
-				callback('username_already_exists');
-				return;
-			}
 			console.warn(err.message);
 			callback('internal_error');
 			return;
 		}
 		
-		callback('success');
+		if(count >= MAX_ACCOUNTS){
+			callback('registration_disabled');
+			return;
+		}
+		
+		accounts.insert({username: username, lcusername: username.toLowerCase(), password: passhash, email: email, salt: passsalt}, {safe: true}, function(err, objects) {
+			if(err){
+				if(err.code == 11000){
+					callback('username_already_exists');
+					return;
+				}
+				console.warn(err.message);
+				callback('internal_error');
+				return;
+			}
+			
+			callback('success');
+		});
 	});
 }
 
@@ -101,7 +115,7 @@ function verifyCaptcha(ip, challenge, response, callback){
 		},
 	}, function(err, response, str){
 		var arr = str.split('\n');
-		var success = !!arr[0];
+		var success = arr[0] == 'true';
 		var result = arr[1];
 		callback(success, result);
 	});
@@ -109,7 +123,7 @@ function verifyCaptcha(ip, challenge, response, callback){
 
 function startIO(){
 	accounts.count(function(err, count) {
-	  console.log('Registered accounts: '+count);
+		console.log('Registered accounts: '+count);
 	});
 	
 	var io = require('socket.io').listen(2827).set('close timeout', 0).set('log level', 3);
@@ -119,7 +133,8 @@ function startIO(){
 			
 			if(data.username == null || data.password == null || data.challenge == null || data.response == null || data.email == null) return;
 			
-			verifyCaptcha(ip, data.challege, data.response, function(success, result){
+			verifyCaptcha(ip, data.challenge, data.response, function(success, result){
+				console.log(success, result);
 				if(!success){
 					socket.emit('registration', {result: 'invalid_captcha'});
 					return;

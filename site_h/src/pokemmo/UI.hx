@@ -130,6 +130,13 @@ class UI {
 		
 		Main.jq(w).mouseup(function():Void {
 			mouseDown = false;
+			
+			if (selectedInput != null && selectedInput.isUnderMouse() && Std.is(selectedInput, UIButton)) {
+				var b:UIButton = cast selectedInput;
+				if (b.instantSubmit) {
+					b.submit();
+				}
+			}
 		});
 	}
 	
@@ -161,6 +168,9 @@ class UI {
 	
 	static public function tick():Void {
 		setCursor('auto');
+		
+		hiddenInput.selectionStart = hiddenInput.value.length;
+		hiddenInput.selectionEnd =  hiddenInput.value.length;
 		
 		if (Renderer.curTransition != null) return;
 		
