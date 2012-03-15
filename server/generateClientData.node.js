@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
-var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8'));
+var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8').replace(/\/\/[^\n\r]*/gm,''));
 var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
 
 
@@ -17,3 +17,14 @@ for(var i in pokemonData){
 };
 
 fs.writeFileSync('../site/data/pokemon.json', JSON.stringify(cPokemonData), 'utf8');
+
+
+var cMovesData = {};
+for(var i in movesData){
+	var d = movesData[i];
+	var c = cMovesData[i] = {
+		type: d.type
+	};
+};
+
+fs.writeFileSync('../site/data/moves.json', JSON.stringify(cMovesData), 'utf8');

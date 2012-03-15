@@ -111,8 +111,6 @@ class Renderer {
 				var arr = renderHooks.copy();
 				for (i in 0...arr.length) arr[i]();
 			}
-			
-			UI.render(ctx);
 		case ST_LOADING:
 			ctx.fillStyle = '#000000';
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -154,15 +152,13 @@ class Renderer {
 			ctx.fillText("Disconnected from the server", 10, 30);
 		case ST_TITLE:
 			TitleScreen.render(ctx);
-			UI.render(ctx);
 		case ST_REGISTER:
 			RegisterScreen.render(ctx);
-			UI.render(ctx);
 		case ST_NEWGAME:
 			NewGameScreen.render(ctx);
-			UI.render(ctx);
 		}
 		
+		UI.render(ctx);
 		if (curTransition != null) curTransition.render(ctx);
 		
 		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);

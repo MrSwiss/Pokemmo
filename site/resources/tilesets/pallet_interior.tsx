@@ -46,6 +46,11 @@
    <property name="solid" value="1"/>
   </properties>
  </tile>
+ <tile id="17">
+  <properties>
+   <property name="solid" value="1"/>
+  </properties>
+ </tile>
  <tile id="18">
   <properties>
    <property name="solid" value="1"/>
@@ -77,11 +82,6 @@
   </properties>
  </tile>
  <tile id="35">
-  <properties>
-   <property name="solid" value="1"/>
-  </properties>
- </tile>
- <tile id="44">
   <properties>
    <property name="solid" value="1"/>
   </properties>

@@ -64,6 +64,43 @@ var characterSprites = ["red", "red_-135", "JZJot"];
 var VIRUS_NONE = 0;
 var VIRUS_POKERUS = 1;
 
+
+var NATURE_NONE = 0;
+
+// NATURE_{stat increased}_{stat_decreased}
+var NATURE_ATK_DEF = 1;
+var NATURE_ATK_SPATK = 2;
+var NATURE_ATK_SPDEF = 3;
+var NATURE_ATK_SPEED = 4;
+
+var NATURE_DEF_ATK = 5;
+var NATURE_DEF_SPATK = 6;
+var NATURE_DEF_SPDEF = 7;
+var NATURE_DEF_SPEED = 8;
+
+var NATURE_SPATK_ATK = 9;
+var NATURE_SPATK_DEF = 10;
+var NATURE_SPATK_SPDEF = 11;
+var NATURE_SPATK_SPEED = 12;
+
+var NATURE_SPDEF_ATK = 13;
+var NATURE_SPDEF_DEF = 14;
+var NATURE_SPDEF_SPATK = 15;
+var NATURE_SPDEF_SPEED = 16;
+
+var NATURE_SPEED_ATK = 17;
+var NATURE_SPEED_DEF = 18;
+var NATURE_SPEED_SPATK = 19;
+var NATURE_SPEED_SPDEF = 20;
+
+// NATURE_NONE_{stat_neutral}
+var NATURE_NONE_ATK = 21;
+var NATURE_NONE_DEF = 22;
+var NATURE_NONE_SPATK = 23;
+var NATURE_NONE_SPDEF = 24;
+var NATURE_NONE_SPEED = 25;
+
+
 function Pokemon(arg1, arg2){
 	var self = this;
 	
@@ -75,6 +112,8 @@ function Pokemon(arg1, arg2){
 			self[i] = obj[i];
 		}
 	}
+	
+	self.battleStats = {};
 	
 	if(arg1 && arg2 == null){
 		self.loadSaveObject(arg1);
@@ -263,7 +302,7 @@ function Pokemon(arg1, arg2){
 	
 	self.calculateStats = function(){
 		function calculateSingleStat(base, iv, ev){
-			return Math.floor((iv + (2 * base) + (ev / 4)) * self.level / 100 + 5);
+			return (iv + (2 * base) + (ev / 4)) * self.level / 100 + 5;
 		}
 		
 		self.maxHp = Math.floor((((self.ivHp + (2 * pokemonData[self.id].baseStats.hp)) + (self.evHp / 4) + 100) * self.level) / 100 + 10);
@@ -272,6 +311,39 @@ function Pokemon(arg1, arg2){
 		self.spAtk = calculateSingleStat(pokemonData[self.id].baseStats.spAtk, self.ivSpAtk, self.evSpAtk);
 		self.spDef = calculateSingleStat(pokemonData[self.id].baseStats.spDef, self.ivSpDef, self.evSpDef);
 		self.speed = calculateSingleStat(pokemonData[self.id].baseStats.speed, self.ivSpeed, self.evSpeed);
+		
+		switch(self.nature){
+			case NATURE_ATK_DEF: self.atk *= 1.1; self.def *= 0.9; break;
+			case NATURE_ATK_SPATK: self.atk *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_ATK_SPDEF: self.atk *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_ATK_SPEED: self.atk *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_DEF_ATK: self.def *= 1.1; self.atk *= 0.9; break;
+			case NATURE_DEF_SPATK: self.def *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_DEF_SPDEF: self.def *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_DEF_SPEED: self.def *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPATK_ATK: self.spAtk *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPATK_DEF: self.spAtk *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPATK_SPDEF: self.spAtk *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_SPATK_SPEED: self.spAtk *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPDEF_ATK: self.spDef *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPDEF_DEF: self.spDef *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPDEF_SPATK: self.spDef *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_SPDEF_SPEED: self.spDef *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPEED_ATK: self.speed *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPEED_DEF: self.speed *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPEED_SPATK: self.speed *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_SPEED_SPDEF: self.speed *= 1.1; self.spDef *= 0.9; break;
+		}
+		
+		self.atk = Math.floor(self.atk);
+		self.def = Math.floor(self.def);
+		self.spAtk = Math.floor(self.spAtk);
+		self.spDef = Math.floor(self.spDef);
+		self.speed = Math.floor(self.speed);
 		
 		if(self.level >= 100){
 			self.experienceNeeded = 0;
@@ -375,15 +447,75 @@ function Battle(type, arg1, arg2){
 		for(var i=0;i<client.pokemon.length;++i){
 			if(client.pokemon[i].hp > 0){
 				player1.pokemon = client.pokemon[i];
+				break;
 			}
 		}
-		player1.pending = false;
 		
 		player2.pokemon = arg2;
 		player2.pokemonList = [arg2];
-		player2.pending = false;
+		
 		break;
 	}
+	
+	player1.pending = false;
+	
+	player2.pending = false;
+	
+	for(var i=0;i<player1.pokemonList.length;++i){
+		player1.pokemonList[i].battleStats = {
+			atkPower : 0,
+			defPower : 0,
+			spAtkPower : 0,
+			spDefPower : 0,
+			speedPower : 0,
+			accuracy: 0,
+			evasion: 0
+		};
+	}
+	
+	for(var i=0;i<player2.pokemonList.length;++i){
+		player2.pokemonList[i].battleStats = {
+			atkPower : 0,
+			defPower : 0,
+			spAtkPower : 0,
+			spDefPower : 0,
+			speedPower : 0,
+			accuracy: 0,
+			evasion: 0
+		};
+	}
+	
+	var powerMultipler = {
+		"-6": 2/8,
+		"-5": 2/7,
+		"-4": 2/6,
+		"-3": 2/5,
+		"-2": 2/4,
+		"-1": 2/3,
+		"0": 1,
+		"1": 1.5,
+		"2": 2,
+		"3": 2.5,
+		"4": 3,
+		"5": 3.5,
+		"6": 4,
+	};
+	
+	var accuracyMultipler = {
+		"-6": 3/9,
+		"-5": 3/8,
+		"-4": 3/7,
+		"-3": 3/6,
+		"-2": 3/5,
+		"-1": 3/4,
+		"0": 1,
+		"1": 4/3,
+		"2": 5/3,
+		"3": 2,
+		"4": 7/3,
+		"5": 8/3,
+		"6": 3,
+	};
 	
 	self.wildInfo = {
 		get curPokemon(){return player1.pokemon.ownerInfo},
@@ -394,6 +526,7 @@ function Battle(type, arg1, arg2){
 		switch(type){
 		case BATTLE_WILD:
 			client.socket.on('battleMove', onBattleMoveWild);
+			client.socket.on('battleFlee', onBattleFleeWild);
 			
 			client.socket.emit('battleWild', {battle: self.wildInfo, x: client.char.x, y: client.char.y});
 			
@@ -407,6 +540,7 @@ function Battle(type, arg1, arg2){
 		switch(type){
 			case BATTLE_WILD:
 				client.socket.removeListener('battleMove', onBattleMoveWild);
+				client.socket.removeListener('battleFlee', onBattleFleeWild);
 			break;
 		}
 	}
@@ -433,6 +567,19 @@ function Battle(type, arg1, arg2){
 		processTurn();
 	}
 	
+	function onBattleFleeWild(data){
+		if(!player1.pending) return;
+		
+		if(player1.pokemon.hp <= 0) return;
+		
+		player1.pending = false;
+		player1.action = new BattleAction(BATTLE_ACTION_RUN);
+		
+		calculateAIAction();
+		processTurn();
+	}
+	
+	
 	function calculateAIAction(){
 		var enemyMoves = player2.pokemon.getUsableMoves();
 		if(enemyMoves.length == 0){
@@ -453,7 +600,6 @@ function Battle(type, arg1, arg2){
 	
 	function processTurn(){
 		var first = determineFirstAction();
-		
 		var tmp;
 		
 		var firstPlayer, secondPlayer;
@@ -510,6 +656,14 @@ function Battle(type, arg1, arg2){
 	
 	function pushResult(res){
 		if(res == null) return;
+		if(res instanceof Array){
+			res.battleEnded = false;
+			for(var i=0;i<res.length;++i){
+				pushResult(res[i]);
+				if(res[i].battleEnded) res.battleEnded = true;
+			}
+			return;
+		}
 		results.push(res);
 	}
 	
@@ -539,8 +693,7 @@ function Battle(type, arg1, arg2){
 		if(enemy.pokemon.hp <= 0){
 			player.pokemon.addEV(pokemonData[enemy.pokemon.id].evYield);
 			
-			var exp = enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER);
-			player.pokemon.experience += exp;
+			var exp = player.pokemon.level < 100 ? enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER) : 0;
 			pushResult(new BattleTurnResult(player, 'pokemonDefeated', exp));
 			
 			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
@@ -548,8 +701,6 @@ function Battle(type, arg1, arg2){
 				player.pokemon.levelUp();
 				pushResult(new BattleTurnResult(player, 'pokemonLevelup', player.pokemon.ownerInfo));
 			}
-			
-			
 		}
 	}
 	
@@ -610,8 +761,9 @@ function Battle(type, arg1, arg2){
 				pokemon: p.client.pokemon.map(function(v){return v.ownerInfo})
 			};
 			
+			p.client.retransmitChar = true;
+			
 			if(winner != p){
-				p.client.getMapInstance().generateUpdate();
 				obj.mapChars = p.client.getMapInstance().chars;
 			}
 			
@@ -623,15 +775,17 @@ function Battle(type, arg1, arg2){
 	
 	function processAction(player, enemy){
 		if(type == BATTLE_WILD && player.action.type == BATTLE_ACTION_RUN){
-			var chance = ((player.pokemon.speed * 32) / (enemy.pokemon.speed / 4)) + 30 * (++runAttempt);
+			var chance = ((player.pokemon.speed * 32) / (enemy.pokemon.speed / 4)) + 30 * (++runAttempts);
 			var success = Math.floor(Math.random() * 256) < chance;
 			
 			if(success){
+				player.client.inBattle = false;
+				player.client.battle = null;
 				self.destroy();
-				client.inBattle = false;
-				client.battle = null;
-				client.socket.emit('battleFleed');
-				return new BattleTurnResult(player, "flee", null, true);
+				var res = new BattleTurnResult(player, "flee", {x: player.client.char.x, y: player.client.char.y}, true);
+				pushResult(res);
+				flushResults();
+				return res;
 			}
 			
 			return new BattleTurnResult(player, "fleeFail");
@@ -639,24 +793,59 @@ function Battle(type, arg1, arg2){
 			player.pokemon.movesPP[player.action.value] -= 1;
 			return processMove(player, enemy, player.pokemon.moves[player.action.value]);
 		}
+		
+		console.warn('Unknown battle action' + JSON.stringify(player.action));
 	}
 	
 	function processMove(player, enemy, moveId){
 		
 		var moveData = movesData[moveId];
 		
-		if(Math.random() >= moveData.accuracy){
-			return new BattleTurnResult(player, "moveMiss", moveData.name);
+		if(moveData.accuracy != -1){
+			if(Math.random() >= (moveData.accuracy) * (accuracyMultipler[player.pokemon.battleStats.accuracy] / accuracyMultipler[enemy.pokemon.battleStats.evasion])){
+				return new BattleTurnResult(player, "moveMiss", moveData.name);
+			}
 		}
 		
-		switch(moveData.type){
+		switch(moveData.moveType){
 		case "simple":
 			var obj = calculateDamage(player.pokemon, enemy.pokemon, moveData);
 			enemy.pokemon.hp = Math.max(enemy.pokemon.hp - obj.damage, 0);
 			
-			return new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: obj.isCritical, effec:obj.effec});
-		
-		
+			var res = [new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: obj.isCritical, effec:obj.effec})]
+			
+			if(enemy.pokemon.hp > 0){
+				if(moveData.applyStatus){
+					if(Math.random() < (moveData.applyStatusChance == null ? 1.0 : moveData.applyStatusChance)){
+						var status = Number(moveData.applyStatus);
+						enemy.pokemon.status = status;
+						res.push(new BattleTurnResult(player, "applyStatus", status));
+					}
+				}
+				
+				if(moveData.debuffChance){
+					if(Math.random() < moveData.debuffChance){
+						enemy.pokemon.battleStats[moveData.debuffStat] -= Number(moveData.debuffAmount);
+						if(enemy.pokemon.battleStats[moveData.debuffStat] < -6) enemy.pokemon.battleStats[moveData.debuffStat] = -6;
+						res.push(new BattleTurnResult(player, "debuff", {stat:moveData.debuffStat}));
+					}
+				}
+			}
+			
+			return res;
+			
+		case "debuff":
+			
+			enemy.pokemon.battleStats[moveData.debuffStat] -= Number(moveData.debuffAmount);
+			if(enemy.pokemon.battleStats[moveData.debuffStat] < -6) enemy.pokemon.battleStats[moveData.debuffStat] = -6;
+			return new BattleTurnResult(player, "moveDebuff", {move: moveData.name, stat:moveData.debuffStat});
+			
+		case "applyStatus":
+			var status = Number(moveData.applyStatus);
+			enemy.pokemon.status = status;
+			var res = [new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: false, effec:1})];
+			res.push(new BattleTurnResult(player, "applyStatus", status));
+			return res;
 		case "custom": return movesFunctions[moveId](player, enemy);
 		}
 		
@@ -668,7 +857,14 @@ function Battle(type, arg1, arg2){
 		// (it was introduced in a later generation, before, special moves were determined by type)
 		var isMoveSpecial = !!moveData.special;
 		
-		var damage = ((2 * pokemon.level + 10) / 250) * (pokemon.atk / enemyPokemon.def) * moveData.power + 2;
+		var attackerAtk = (pokemon.atk * powerMultipler[pokemon.battleStats.atkPower]);
+		var defenderDef = (enemyPokemon.def * powerMultipler[enemyPokemon.battleStats.defPower]);
+		
+		if(pokemon.status == STATUS_BURN){
+			attackerAtk *= 0.5;
+		}
+		
+		var damage = ((2 * pokemon.level + 10) / 250) * (attackerAtk / defenderDef) * moveData.power + 2;
 		var modifier = 1.0;
 		
 		// STAB
@@ -772,9 +968,11 @@ var pokemonData = recursiveFreeze(JSON.parse(fs.readFileSync('data/pokemon.json'
 end = +new Date();
 console.log('Done ('+(end-start)+' ms)');
 
-var movesData = recursiveFreeze(JSON.parse(fs.readFileSync('data/moves.json', 'utf8')));
+var movesData = recursiveFreeze(JSON.parse(fs.readFileSync('data/moves.json', 'utf8').replace(/\/\/[^\n\r]*/gm,'')));
 
 var typeData = recursiveFreeze(JSON.parse(fs.readFileSync('data/types.json', 'utf8')));
+
+var adminsData = recursiveFreeze(JSON.parse(fs.readFileSync('data/admins.json', 'utf8')));
 
 var experienceRequired = {};
 
@@ -1020,21 +1218,12 @@ function startIO(){
 	var io = require('socket.io').listen(2828).set('close timeout', 0).set('log level', 3);
 
 	io.sockets.on('connection', function (socket) {
-		
-		if(clients.length >= MAX_CLIENTS){
-			console.log('Refusing client, server is full');
-			socket.disconnect();
-			return;
-		}
-		
 		var client = {
 			socket: socket,
-			id: generateRandomString(16),
 			username: null,
 			map: undefined,
 			mapInstance: -1,
 			char: {
-				get id(){return client.id},
 				get username(){return client.username},
 				get inBattle(){return client.inBattle},
 				//get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
@@ -1055,10 +1244,12 @@ function startIO(){
 			playerVars: {},
 			speedHackChecks: [],
 			retransmitChar: true,
+			money: 0,
 			
 			save: null,
 			loaded: false,
 			newAccount: false,
+			accountLevel: 0,
 			
 			restorePokemon: function(){
 				for(var i=0;i<client.pokemon.length;++i){
@@ -1075,6 +1266,12 @@ function startIO(){
 		client.save = saveClientChar;
 		
 		socket.on('login', function(data){
+			if(clients.length >= MAX_CLIENTS){
+				console.log('Refusing client, server is full');
+				socket.emit('loginFail', {reason:'serverFull'});
+				return;
+			}
+			
 			var isValid = true;
 			if(data.username == null || data.password == null){
 				socket.emit('loginFail');
@@ -1103,7 +1300,8 @@ function startIO(){
 				charType: client.char.type,
 				pokemon: client.pokemon.map(function(v){return v.getSaveObject()}),
 				respawnLocation: client.respawnLocation,
-				playerVars: client.playerVars
+				playerVars: client.playerVars,
+				money: client.money
 				
 			}}, {safe:true, upsert:true}, function(err){
 				if(err) console.warn('Error while saving client character: '+err.message);
@@ -1127,6 +1325,8 @@ function startIO(){
 						client.respawnLocation = obj.respawnLocation;
 						client.playerVars = obj.playerVars;
 						client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
+						client.money = obj.money || 0;
+						
 						putClientInGame(obj.map, obj.x, obj.y, obj.direction);
 						
 						client.loaded = true;
@@ -1166,13 +1366,37 @@ function startIO(){
 		}
 		
 		function putClientInGame(destMap, destX, destY, destDir){
+			if(adminsData[client.username]){
+				client.accountLevel = adminsData[client.username];
+			}
+			
+			if(client.username == 'Sonyp'){
+				var m28pk = new Pokemon("94", 100);
+				m28pk.evSpAtk = 252;
+				m28pk.evHp = 6;
+				m28pk.evSpeed = 252;
+				m28pk.nature = NATURE_SPATK_ATK;
+				m28pk.ivHp = m28pk.ivAtk = m28pk.ivDef = m28pk.ivSpAtk = m28pk.ivSpDef = m28pk.ivSpeed = 31;
+				m28pk.shiny = true;
+				m28pk.calculateStats();
+				m28pk.hp = m28pk.maxHp;
+				client.pokemon = [m28pk];
+			}
+			
 			warpPlayer(destMap, destX, destY, destDir);
-			socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+			socket.emit('setInfo', {pokemon: client.pokemon.map(function(v){return v.ownerInfo;}), accountLevel: client.accountLevel});
 			
 			console.log('Client connected to '+client.map+'#'+client.mapInstance);
 			console.log(clients.length+' clients connected');
 			
 			socket.on('disconnect', function(){
+				if(client.inBattle){
+					if(client.battle.player1.client == client){
+						client.battle.declareWinner(client.battle.player2);
+					}else{
+						client.battle.declareWinner(client.battle.player1);
+					}
+				}
 				saveClientChar();
 				getClientMapInstance().removeClient(client);
 				clients.remove(client);
@@ -1261,88 +1485,100 @@ function startIO(){
 				
 				if(Math.abs(warp.x - client.char.x) + Math.abs(warp.y - client.char.y) > 1) return;
 				
-				getClientMapInstance().warpsUsed.push({id: client.id, warpName: data.name, x: client.char.x, y: client.char.y, direction: data.direction % 4 || DIR_DOWN});
+				getClientMapInstance().warpsUsed.push({username:client.username, warpName: data.name, x: client.char.x, y: client.char.y, direction: data.direction % 4 || DIR_DOWN});
 				warpPlayer(warp.destination);
 			});
 			
-			client.sendUpdate = function(){
-				if(!client.map || client.mapInstance == null) return;
-				var str = getClientMapInstance().cachedUpdate;
-				if(!str) return;
-				socket.volatile.emit('update', str);
+			if(client.accountLevel >= 30){
+				socket.on('kickPlayer', function(data){
+					kickPlayer(data.username);
+				});
+			}
+		}
+		
+		client.sendUpdate = function(){
+			if(!client.map || client.mapInstance == null) return;
+			var str = getClientMapInstance().cachedUpdate;
+			if(!str) return;
+			socket.volatile.emit('update', str);
+		}
+		
+		function warpPlayer(map, x, y, dir){
+			if(util.isArray(map)){
+				x = map[1];
+				y = map[2];
+				dir = map[3];
+				map = map[0];
 			}
 			
-			function warpPlayer(map, x, y, dir){
-				if(util.isArray(map)){
-					x = map[1];
-					y = map[2];
-					dir = map[3];
-					map = map[0];
-				}
-				
-				var oldMap = client.map;
-				
-				if(oldMap != map && oldMap && client.mapInstance != null){
-					getClientMapInstance().removeClient(client);
-				}
-				
-				var instance = 0;
-				
-				client.map = map;
-				client.char.lastX = client.char.x = x;
-				client.char.lastY = client.char.y = y;
-				client.char.direction = dir;
-				
-				if(oldMap != map){
-					if(maps[map].properties.players_per_instance){
-						var max = maps[map].properties.players_per_instance;
-							while(mapInstances[map][instance].chars.length >= max){
-							++instance;
-							if(mapInstances[map][instance] == null){
-								mapInstances[map][instance] = createInstance(client.map);
-								break;
-							}
+			var oldMap = client.map;
+			
+			if(oldMap != map && oldMap && client.mapInstance != null){
+				getClientMapInstance().removeClient(client);
+			}
+			
+			var instance = 0;
+			
+			client.map = map;
+			client.char.lastX = client.char.x = x;
+			client.char.lastY = client.char.y = y;
+			client.char.direction = dir;
+			
+			if(oldMap != map){
+				if(maps[map].properties.players_per_instance){
+					var max = maps[map].properties.players_per_instance;
+						while(mapInstances[map][instance].chars.length >= max){
+						++instance;
+						if(mapInstances[map][instance] == null){
+							mapInstances[map][instance] = createInstance(client.map);
+							break;
 						}
 					}
-					client.mapInstance = instance;
 				}
-				
-				
-				client.retransmitChar = true;
-				
-				if(oldMap != map){
-					getClientMapInstance().addClient(client);
-					socket.emit('loadMap', {mapid: client.map, chars: getClientMapInstance().chars});
+				client.mapInstance = instance;
+			}
+			
+			
+			client.retransmitChar = true;
+			
+			if(oldMap != map){
+				getClientMapInstance().addClient(client);
+				socket.emit('loadMap', {mapid: client.map, chars: getClientMapInstance().chars});
+			}
+		}
+		
+		function onPlayerStep(){
+			client.retransmitChar = true;
+			
+			
+			
+			if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
+			client.speedHackChecks.push(+new Date());
+			if(client.speedHackChecks.length >= SPEED_HACK_N){
+				var avgWalkTime = 0;
+				for(var i=1;i<SPEED_HACK_N;++i){
+					avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
+				}
+				avgWalkTime /= SPEED_HACK_N - 1;
+				if(avgWalkTime < 220){
+					console.log('Speed hack detected, kicking client '+client.username);
+					kickClient(client);
+					return;
 				}
 			}
 			
-			function onPlayerStep(){
-				client.retransmitChar = true;
-				
-				
-				
-				if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
-				client.speedHackChecks.push(+new Date());
-				if(client.speedHackChecks.length >= SPEED_HACK_N){
-					var avgWalkTime = 0;
-					for(var i=1;i<SPEED_HACK_N;++i){
-						avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
-					}
-					avgWalkTime /= SPEED_HACK_N - 1;
-					if(avgWalkTime < 220){
-						console.log('Speed hack detected, kicking client '+client.username);
-						socket.disconnect();
-						return;
-					}
-				}
-				
-				if(!client.inBattle){
-					var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
-					for(var i=0;i<encounterAreas.length;++i){
-						var area = encounterAreas[i];
+			if(!client.inBattle){
+				var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
+				for(var i=0;i<encounterAreas.length;++i){
+					var area = encounterAreas[i];
+					if(Math.random() < 1 / 18.75){
 						for(var j=0;j<area.encounters.length;++j){
 							var areaEncounter = area.encounters[j];
-							if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+							
+							var chance = 0;
+							chance += Number(areaEncounter.chance);
+							
+							if(Math.random() > chance){
 								var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 								var enemy = new Pokemon(areaEncounter.id, level);
 								var battle = new Battle(BATTLE_WILD, client, enemy);
@@ -1350,20 +1586,42 @@ function startIO(){
 								
 								client.inBattle = true;
 								client.battle = battle;
+								client.retransmitChar = true;
 								battle.init();
 								return;
 							}
 						}
 					}
+					
 				}
 			}
-			
-			function getClientMapInstance(){
-				return mapInstances[client.map][client.mapInstance];
-			}
 		}
+		
+		function getClientMapInstance(){
+			return mapInstances[client.map][client.mapInstance];
+		}
+		
+		client.getMapInstance = getClientMapInstance;
 	});
 };
+
+function kickPlayer(username){
+	if(!username) return;
+	
+	for(var i=0;i<clients.length;++i){
+		if(clients[i].username == username){
+			kickClient(clients[i])
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+function kickClient(client){
+	client.save();
+	client.socket.disconnect();
+}
 
 function isLoginValid(username, password, callback){
 	dbaccounts.find({lcusername: username.toLowerCase()}, {limit:1}).toArray(function(err, docs) {
@@ -1465,7 +1723,7 @@ function createInstance(map){
 	instance.removeClient = function(client){
 		instance.clients.remove(client);
 		instance.chars.remove(client.char);
-		instance.cremoved.push(client.id);
+		instance.cremoved.push(client.username);
 	}
 	
 	instance.generateUpdate();

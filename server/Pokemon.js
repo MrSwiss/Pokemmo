@@ -1,6 +1,43 @@
 var VIRUS_NONE = 0;
 var VIRUS_POKERUS = 1;
 
+
+var NATURE_NONE = 0;
+
+// NATURE_{stat increased}_{stat_decreased}
+var NATURE_ATK_DEF = 1;
+var NATURE_ATK_SPATK = 2;
+var NATURE_ATK_SPDEF = 3;
+var NATURE_ATK_SPEED = 4;
+
+var NATURE_DEF_ATK = 5;
+var NATURE_DEF_SPATK = 6;
+var NATURE_DEF_SPDEF = 7;
+var NATURE_DEF_SPEED = 8;
+
+var NATURE_SPATK_ATK = 9;
+var NATURE_SPATK_DEF = 10;
+var NATURE_SPATK_SPDEF = 11;
+var NATURE_SPATK_SPEED = 12;
+
+var NATURE_SPDEF_ATK = 13;
+var NATURE_SPDEF_DEF = 14;
+var NATURE_SPDEF_SPATK = 15;
+var NATURE_SPDEF_SPEED = 16;
+
+var NATURE_SPEED_ATK = 17;
+var NATURE_SPEED_DEF = 18;
+var NATURE_SPEED_SPATK = 19;
+var NATURE_SPEED_SPDEF = 20;
+
+// NATURE_NONE_{stat_neutral}
+var NATURE_NONE_ATK = 21;
+var NATURE_NONE_DEF = 22;
+var NATURE_NONE_SPATK = 23;
+var NATURE_NONE_SPDEF = 24;
+var NATURE_NONE_SPEED = 25;
+
+
 function Pokemon(arg1, arg2){
 	var self = this;
 	
@@ -12,6 +49,8 @@ function Pokemon(arg1, arg2){
 			self[i] = obj[i];
 		}
 	}
+	
+	self.battleStats = {};
 	
 	if(arg1 && arg2 == null){
 		self.loadSaveObject(arg1);
@@ -200,7 +239,7 @@ function Pokemon(arg1, arg2){
 	
 	self.calculateStats = function(){
 		function calculateSingleStat(base, iv, ev){
-			return Math.floor((iv + (2 * base) + (ev / 4)) * self.level / 100 + 5);
+			return (iv + (2 * base) + (ev / 4)) * self.level / 100 + 5;
 		}
 		
 		self.maxHp = Math.floor((((self.ivHp + (2 * pokemonData[self.id].baseStats.hp)) + (self.evHp / 4) + 100) * self.level) / 100 + 10);
@@ -209,6 +248,39 @@ function Pokemon(arg1, arg2){
 		self.spAtk = calculateSingleStat(pokemonData[self.id].baseStats.spAtk, self.ivSpAtk, self.evSpAtk);
 		self.spDef = calculateSingleStat(pokemonData[self.id].baseStats.spDef, self.ivSpDef, self.evSpDef);
 		self.speed = calculateSingleStat(pokemonData[self.id].baseStats.speed, self.ivSpeed, self.evSpeed);
+		
+		switch(self.nature){
+			case NATURE_ATK_DEF: self.atk *= 1.1; self.def *= 0.9; break;
+			case NATURE_ATK_SPATK: self.atk *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_ATK_SPDEF: self.atk *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_ATK_SPEED: self.atk *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_DEF_ATK: self.def *= 1.1; self.atk *= 0.9; break;
+			case NATURE_DEF_SPATK: self.def *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_DEF_SPDEF: self.def *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_DEF_SPEED: self.def *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPATK_ATK: self.spAtk *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPATK_DEF: self.spAtk *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPATK_SPDEF: self.spAtk *= 1.1; self.spDef *= 0.9; break;
+			case NATURE_SPATK_SPEED: self.spAtk *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPDEF_ATK: self.spDef *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPDEF_DEF: self.spDef *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPDEF_SPATK: self.spDef *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_SPDEF_SPEED: self.spDef *= 1.1; self.speed *= 0.9; break;
+
+			case NATURE_SPEED_ATK: self.speed *= 1.1; self.atk *= 0.9; break;
+			case NATURE_SPEED_DEF: self.speed *= 1.1; self.def *= 0.9; break;
+			case NATURE_SPEED_SPATK: self.speed *= 1.1; self.spAtk *= 0.9; break;
+			case NATURE_SPEED_SPDEF: self.speed *= 1.1; self.spDef *= 0.9; break;
+		}
+		
+		self.atk = Math.floor(self.atk);
+		self.def = Math.floor(self.def);
+		self.spAtk = Math.floor(self.spAtk);
+		self.spDef = Math.floor(self.spDef);
+		self.speed = Math.floor(self.speed);
 		
 		if(self.level >= 100){
 			self.experienceNeeded = 0;

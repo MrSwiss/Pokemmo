@@ -37,12 +37,13 @@ class Connection {
 		socket.on('disconnect', function(data:Dynamic){
 			Game.state = ST_DISCONNECTED;
 			Game.curGame = null;
+			UI.removeAllInputs();
+			socket.disconnect();
 		});
 		
 		socket.on('setInfo', function(data:Dynamic){
-			Main.log('setInfo: '+data.id);
-			Game.myId = data.id;
 			Game.setPokemonParty(data.pokemon);
+			Game.accountLevel = data.accountLevel;
 		});
 		
 		socket.on('loadMap', function(data:Dynamic){
@@ -72,7 +73,7 @@ class Connection {
 				var messages:Array<ChatLogEntry>;
 				var cremoved:Array<String>;
 				var warpsUsed:Array<{
-					var id:String;
+					var username:String;
 					var warpName:String;
 					var x:Int;
 					var y:Int;
@@ -97,11 +98,11 @@ class Connection {
 			
 			for(i in 0...data.warpsUsed.length){
 				var warp = data.warpsUsed[i];
-				cremoved.remove(warp.id);
-				if(warp.id == Game.myId) continue;
+				cremoved.remove(warp.username);
+				if(warp.username == Game.username) continue;
 				
 				(function(warp){
-					var chr = Game.curGame.getCharById(warp.id);
+					var chr = Game.curGame.getCharByUsername(warp.username);
 					
 					
 					var tmpWarp = CWarp.getWarpByName(data.warpsUsed[i].warpName);
@@ -133,13 +134,13 @@ class Connection {
 			for (i in 0...chars.length) {
 				var charData = chars[i];
 				
-				var chr = Game.curGame.getCharById(charData.id);
+				var chr = Game.curGame.getCharByUsername(charData.username);
 				
 				if(chr != null){
 					chr.follower = charData.follower;
 				}
 				
-				if(charData.id == Game.myId){
+				if(charData.username == Game.username){
 					var src = 'resources/chars_sprites/'+charData.type+'.png';
 					if (Game.getRes('playerBacksprite') == null || Game.getRes('playerBacksprite').obj.src != src) {
 						Game.setRes('playerBacksprite', new ImageResource('resources/chars_sprites/'+charData.type+'.png'));
@@ -182,7 +183,7 @@ class Connection {
 			}
 			
 			for (i in 0...cremoved.length) {
-				var chr = Game.curGame.getCharById(cremoved[i]);
+				var chr = Game.curGame.getCharByUsername(cremoved[i]);
 				if (chr != null) chr.destroy();
 			}
 			

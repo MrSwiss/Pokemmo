@@ -12,6 +12,8 @@ import UserAgentContext;
  */
 
 class TitleScreen {
+	static private var TWITTER_API_URL:String = "http://search.twitter.com/search.json?q=%23ANN+from:Sonyp_&callback=twitterAPIResult";
+	
 	static private var usernameTxt:TextInput;
 	static private var passwordTxt:TextInput;
 	static private var loginButton:UIButton;
@@ -26,11 +28,22 @@ class TitleScreen {
 	static private var sentLogin:Bool;
 	static private var loginInitTime:Float;
 	
+	static private var tweets:Array<Tweet>;
+	
 	static public function setup():Void {
 		titleScreen = Game.loadImageResource('titleScreen', 'resources/ui/title.png');
 		titleLogo = Game.loadImageResource('titleLogo', 'resources/ui/title_logo.png');
 		titleButtons = Game.loadImageResource('titleButtons', 'resources/ui/title_buttons.png');
 		loadingImg = Game.loadImageResource('loading', 'resources/ui/loading.png');
+		
+		untyped {
+			var b = document.createElement("script");
+			b.type = "text/javascript";
+			b.src = TWITTER_API_URL;
+			document.body.appendChild(b);
+			
+			window.twitterAPIResult = onTwitterResult;
+		}
 	}
 	
 	static public function init():Void {
@@ -92,6 +105,7 @@ class TitleScreen {
 		}
 		UI.pushInput(donateButton);
 		
+		usernameTxt.select();
 		
 		UI.hookEnterButton(onEnterButton);
 	}
@@ -104,8 +118,13 @@ class TitleScreen {
 		UI.removeInput(donateButton);
 	}
 	
+	static private function onTwitterResult(data:Dynamic) {
+		tweets = data.results;
+	}
+	
 	static private function onLoginSubmit():Void {
 		if (sentLogin) return;
+		if (usernameTxt.value.length < 4 || passwordTxt.value.length < 8) return;
 		sentLogin = true;
 		loginInitTime = Date.now().getTime();
 		Connection.socket.emit('login', {username: usernameTxt.value, password: passwordTxt.value});
@@ -128,6 +147,7 @@ class TitleScreen {
 	static public function loginFailed():Void {
 		sentLogin = false;
 		loginInitTime = Date.now().getTime();
+		passwordTxt.value = '';
 	}
 	
 	static private function onEnterButton():Void {
@@ -160,7 +180,7 @@ class TitleScreen {
 			Util.drawRoundedRect(350, 321, 135, 18, 5, '#FFFFFF', 0.5);
 			Util.drawRoundedRect(350, 346, 135, 18, 5, '#FFFFFF', 0.5);
 			
-			ctx.drawImage(loadingImg.obj, 0, 32 * (Math.floor((now - loginInitTime) / 100) % 12), 32, 32, 384, 430, 32, 32);
+			ctx.drawImage(loadingImg.obj, 0, 32 * (Math.floor((now - loginInitTime) / 100) % 12), 32, 32, 384, 425, 32, 32);
 		}else {
 			usernameTxt.disabled = false;
 			passwordTxt.disabled = false;
@@ -184,11 +204,64 @@ class TitleScreen {
 		ctx.fillText('ID:', 310, 335);
 		ctx.fillText('PW:', 310, 360);
 		
-		if (!sentLogin && now - loginInitTime < 2000) {
-			ctx.fillStyle = 'rgba(200,0,0,' + Util.clamp(1 - (now - loginInitTime) / 2000, 0, 1) + ')';
+		if (!sentLogin && now - loginInitTime < 4000) {
+			ctx.fillStyle = 'rgba(200,0,0,' + Util.clamp(4 - (now - loginInitTime) / 1000, 0, 1) + ')';
 			ctx.textAlign = 'center';
 			ctx.fillText('Invalid username or password', 400, 430);
 		}
 		ctx.restore();
+		
+		
+		
+		if (tweets != null) {
+			ctx.save();
+			var MAX_TWEET_WIDTH = 185;
+			var tweetsHeight:Int = 0;
+			for (t in tweets) {
+				ctx.font = 'italic 12px Courier';
+				var w = ctx.measureText(t.text).width;
+				if(w < MAX_TWEET_WIDTH){
+					tweetsHeight += 15;
+				}else {
+					tweetsHeight += 15 * Util.reduceTextSize(t.text, MAX_TWEET_WIDTH, ctx).length;
+				}
+				tweetsHeight += 10;
+			}
+			Util.drawRoundedRect(20, 275, 260, tweetsHeight, 15, '#FFFFFF', 0.7);
+			
+			ctx.translate(30, 300);
+			
+			for (t in tweets) {
+				ctx.fillStyle = '#000000';
+				
+				ctx.font = 'bold 12px Courier';
+				var uw = ctx.measureText(t.from_user_name + ': ').width;
+				ctx.fillText(t.from_user_name + ': ', 0, 0);
+				
+				ctx.font = 'italic 12px Courier';
+				var str = t.text.substr("#ANN ".length);
+				var w = ctx.measureText(t.text).width;
+				
+				if(w < MAX_TWEET_WIDTH){
+					ctx.fillText(str, uw + 2, 0);
+					ctx.translate(0, 15);
+				}else {
+					var lines = Util.reduceTextSize(str, MAX_TWEET_WIDTH, ctx);
+					for (l in lines) {
+						ctx.fillText(l, uw + 2, 0);
+						ctx.translate(0, 15);
+					}
+				}
+				ctx.translate(0, 10);
+			}
+			ctx.restore();
+			
+			ctx.drawImage(ctx.canvas, 0, 0);
+		}
 	}
+}
+
+private typedef Tweet = {
+	var text:String;
+	var from_user_name:String;
 }

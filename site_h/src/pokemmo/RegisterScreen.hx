@@ -29,8 +29,11 @@ class RegisterScreen {
 	static public var requestError:String;
 	static public var captchaChallenge:String;
 	
+	static public var ignoreDisconnect:Bool;
+	
 	static public function init():Void {
 		regsocket = (untyped io.connect)(Connection.REGSERVER_HOST);
+		ignoreDisconnect = false;
 		
 		confirmBtn = new UIButton(410, 490, 130, 30);
 		confirmBtn.drawIdle = function(ctx:CanvasRenderingContext2D):Void {
@@ -46,7 +49,6 @@ class RegisterScreen {
 			ctx.drawImage(TitleScreen.titleButtons.obj, 200, 150, 150, 50, confirmBtn.x - 15, confirmBtn.y - 15, 150, 50);
 		};
 		confirmBtn.onSubmit = onConfirm;
-		UI.pushInput(confirmBtn);
 		
 		cancelBtn = new UIButton(270, 490, 130, 30);
 		cancelBtn.drawIdle = function(ctx:CanvasRenderingContext2D):Void {
@@ -62,7 +64,6 @@ class RegisterScreen {
 			ctx.drawImage(TitleScreen.titleButtons.obj, 350, 150, 150, 50, cancelBtn.x - 15, cancelBtn.y - 15, 150, 50);
 		};
 		cancelBtn.onSubmit = onCancel;
-		UI.pushInput(cancelBtn);
 		
 		usernameTxt = UI.createTextInput(245, 321, 130);
 		usernameTxt.maxLength = 10;
@@ -81,9 +82,13 @@ class RegisterScreen {
 		captchaTxt = UI.createTextInput(423, 360, 220);
 		captchaTxt.maxLength = 100;
 		
+		UI.pushInput(confirmBtn);
+		UI.pushInput(cancelBtn);
+		
 		regsocket.on('registration', function(data:{var result:String;}){
 			requestError = data.result;
 			if (requestError == 'success') {
+				ignoreDisconnect = true;
 				destroy();
 				Connection.socket.emit('login', {username: usernameTxt.value, password: passwordTxt.value});
 			}else {
@@ -96,6 +101,22 @@ class RegisterScreen {
 				}
 			}
 		});
+		
+		regsocket.on('disconnect', function(data:Dynamic):Void {
+			if (ignoreDisconnect) return;
+			ignoreDisconnect = true;
+			
+			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+				destroy();
+				Game.state = ST_TITLE;
+				TitleScreen.init();
+				
+				Renderer.startTransition(new BlackScreen(10)).onComplete = function():Void {
+					Renderer.startTransition(new FadeIn(10));
+				}
+			};
+		});
+		
 		
 		sentRequest = false;
 		loadCaptcha();
@@ -114,6 +135,8 @@ class RegisterScreen {
 	}
 	
 	static private function onConfirm():Void {
+		if (sentRequest) return;
+		
 		requestError = null;
 		requestInitTime = Date.now().getTime();
 		
@@ -127,6 +150,8 @@ class RegisterScreen {
 			requestError = 'long_password';
 		}else if (passwordTxt.value != password2Txt.value) {
 			requestError = 'mismatch_password';
+			passwordTxt.value = '';
+			password2Txt.value = '';
 		}
 		
 		if (requestError != null) {
@@ -191,7 +216,7 @@ class RegisterScreen {
 			Util.drawRoundedRect(245, 321, 135, 18, 5, '#FFFFFF', 1.0);
 		}
 		
-		if ((requestError == 'short_password' || requestError == 'long_password' || requestError == 'invalid_password') && (now - requestInitTime < 2000)) {
+		if ((requestError == 'short_password' || requestError == 'long_password' || requestError == 'invalid_password' || requestError == 'mismatch_password') && (now - requestInitTime < 2000)) {
 			Util.drawRoundedRect(245, 346, 135, 18, 5, cstr, 1.0);
 		}else {
 			Util.drawRoundedRect(245, 346, 135, 18, 5, '#FFFFFF', 1.0);
@@ -250,13 +275,14 @@ class RegisterScreen {
 			ctx.drawImage(TitleScreen.loadingImg.obj, 0, 32 * (Math.floor((now - requestInitTime) / 100) % 12), 32, 32, 384, 440, 32, 32);
 		}
 		
-		if (now - requestInitTime < 2000) {
+		if (now - requestInitTime < 4000) {
 			var errorMsg = null;
 			switch(requestError) {
 				case 'short_username': errorMsg = 'Username is too short (min. 4 characters)';
 				case 'long_username': errorMsg = 'Username is too long (max. 10 characters)';
 				case 'invalid_username': errorMsg = 'Invalid username (alphanumeric and underscore only)';
 				case 'username_already_exists': errorMsg = 'Username already exists';
+				case 'email_already_registered': errorMsg = 'Email is already registered';
 				case 'short_password': errorMsg = 'Password is too short (min. 8 characters)';
 				case 'long_password': errorMsg = 'Password is too long (max. 32 characters)';
 				case 'invalid_password': errorMsg = 'Invalid password characters (alphanumeric and _!@#$%&*()[]{}.,:;- only)';
@@ -264,11 +290,13 @@ class RegisterScreen {
 				case 'internal_error': errorMsg = 'Internal Server Error';
 				case 'registration_disabled': errorMsg = 'Registration disabled';
 				case 'invalid_captcha': errorMsg = 'Invalid captcha';
+				case 'mismatch_password': errorMsg = 'Passwords mismatch';
+				case 'registered_recently': errorMsg = 'You already registered an account recently';
 			}
 			
 			if (errorMsg != null) {
 				ctx.save();
-				ctx.fillStyle = 'rgba(200,0,0,' + Util.clamp(1 - (now - requestInitTime) / 2000, 0, 1) + ')';
+				ctx.fillStyle = 'rgba(200,0,0,' + Util.clamp(4 - (now - requestInitTime) / 1000, 0, 1) + ')';
 				ctx.textAlign = 'center';
 				ctx.fillText(errorMsg, 400, 465);
 				ctx.restore();

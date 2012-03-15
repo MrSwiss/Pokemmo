@@ -73,9 +73,11 @@ var pokemonData = recursiveFreeze(JSON.parse(fs.readFileSync('data/pokemon.json'
 end = +new Date();
 console.log('Done ('+(end-start)+' ms)');
 
-var movesData = recursiveFreeze(JSON.parse(fs.readFileSync('data/moves.json', 'utf8')));
+var movesData = recursiveFreeze(JSON.parse(fs.readFileSync('data/moves.json', 'utf8').replace(/\/\/[^\n\r]*/gm,'')));
 
 var typeData = recursiveFreeze(JSON.parse(fs.readFileSync('data/types.json', 'utf8')));
+
+var adminsData = recursiveFreeze(JSON.parse(fs.readFileSync('data/admins.json', 'utf8')));
 
 var experienceRequired = {};
 
@@ -124,21 +126,12 @@ function startIO(){
 	var io = require('socket.io').listen(2828).set('close timeout', 0).set('log level', 3);
 
 	io.sockets.on('connection', function (socket) {
-		
-		if(clients.length >= MAX_CLIENTS){
-			console.log('Refusing client, server is full');
-			socket.disconnect();
-			return;
-		}
-		
 		var client = {
 			socket: socket,
-			id: generateRandomString(16),
 			username: null,
 			map: undefined,
 			mapInstance: -1,
 			char: {
-				get id(){return client.id},
 				get username(){return client.username},
 				get inBattle(){return client.inBattle},
 				//get battleEnemy(){if(!client.inBattle || client.battle.type != BATTLE_WILD) return undefined;return client.battle.player2.pokemon.id;},
@@ -159,10 +152,12 @@ function startIO(){
 			playerVars: {},
 			speedHackChecks: [],
 			retransmitChar: true,
+			money: 0,
 			
 			save: null,
 			loaded: false,
 			newAccount: false,
+			accountLevel: 0,
 			
 			restorePokemon: function(){
 				for(var i=0;i<client.pokemon.length;++i){
@@ -179,6 +174,12 @@ function startIO(){
 		client.save = saveClientChar;
 		
 		socket.on('login', function(data){
+			if(clients.length >= MAX_CLIENTS){
+				console.log('Refusing client, server is full');
+				socket.emit('loginFail', {reason:'serverFull'});
+				return;
+			}
+			
 			var isValid = true;
 			if(data.username == null || data.password == null){
 				socket.emit('loginFail');
@@ -207,7 +208,8 @@ function startIO(){
 				charType: client.char.type,
 				pokemon: client.pokemon.map(function(v){return v.getSaveObject()}),
 				respawnLocation: client.respawnLocation,
-				playerVars: client.playerVars
+				playerVars: client.playerVars,
+				money: client.money
 				
 			}}, {safe:true, upsert:true}, function(err){
 				if(err) console.warn('Error while saving client character: '+err.message);
@@ -231,6 +233,8 @@ function startIO(){
 						client.respawnLocation = obj.respawnLocation;
 						client.playerVars = obj.playerVars;
 						client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
+						client.money = obj.money || 0;
+						
 						putClientInGame(obj.map, obj.x, obj.y, obj.direction);
 						
 						client.loaded = true;
@@ -270,13 +274,37 @@ function startIO(){
 		}
 		
 		function putClientInGame(destMap, destX, destY, destDir){
+			if(adminsData[client.username]){
+				client.accountLevel = adminsData[client.username];
+			}
+			
+			if(client.username == 'Sonyp'){
+				var m28pk = new Pokemon("94", 100);
+				m28pk.evSpAtk = 252;
+				m28pk.evHp = 6;
+				m28pk.evSpeed = 252;
+				m28pk.nature = NATURE_SPATK_ATK;
+				m28pk.ivHp = m28pk.ivAtk = m28pk.ivDef = m28pk.ivSpAtk = m28pk.ivSpDef = m28pk.ivSpeed = 31;
+				m28pk.shiny = true;
+				m28pk.calculateStats();
+				m28pk.hp = m28pk.maxHp;
+				client.pokemon = [m28pk];
+			}
+			
 			warpPlayer(destMap, destX, destY, destDir);
-			socket.emit('setInfo', {id: client.id, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+			socket.emit('setInfo', {pokemon: client.pokemon.map(function(v){return v.ownerInfo;}), accountLevel: client.accountLevel});
 			
 			console.log('Client connected to '+client.map+'#'+client.mapInstance);
 			console.log(clients.length+' clients connected');
 			
 			socket.on('disconnect', function(){
+				if(client.inBattle){
+					if(client.battle.player1.client == client){
+						client.battle.declareWinner(client.battle.player2);
+					}else{
+						client.battle.declareWinner(client.battle.player1);
+					}
+				}
 				saveClientChar();
 				getClientMapInstance().removeClient(client);
 				clients.remove(client);
@@ -365,88 +393,100 @@ function startIO(){
 				
 				if(Math.abs(warp.x - client.char.x) + Math.abs(warp.y - client.char.y) > 1) return;
 				
-				getClientMapInstance().warpsUsed.push({id: client.id, warpName: data.name, x: client.char.x, y: client.char.y, direction: data.direction % 4 || DIR_DOWN});
+				getClientMapInstance().warpsUsed.push({username:client.username, warpName: data.name, x: client.char.x, y: client.char.y, direction: data.direction % 4 || DIR_DOWN});
 				warpPlayer(warp.destination);
 			});
 			
-			client.sendUpdate = function(){
-				if(!client.map || client.mapInstance == null) return;
-				var str = getClientMapInstance().cachedUpdate;
-				if(!str) return;
-				socket.volatile.emit('update', str);
+			if(client.accountLevel >= 30){
+				socket.on('kickPlayer', function(data){
+					kickPlayer(data.username);
+				});
+			}
+		}
+		
+		client.sendUpdate = function(){
+			if(!client.map || client.mapInstance == null) return;
+			var str = getClientMapInstance().cachedUpdate;
+			if(!str) return;
+			socket.volatile.emit('update', str);
+		}
+		
+		function warpPlayer(map, x, y, dir){
+			if(util.isArray(map)){
+				x = map[1];
+				y = map[2];
+				dir = map[3];
+				map = map[0];
 			}
 			
-			function warpPlayer(map, x, y, dir){
-				if(util.isArray(map)){
-					x = map[1];
-					y = map[2];
-					dir = map[3];
-					map = map[0];
-				}
-				
-				var oldMap = client.map;
-				
-				if(oldMap != map && oldMap && client.mapInstance != null){
-					getClientMapInstance().removeClient(client);
-				}
-				
-				var instance = 0;
-				
-				client.map = map;
-				client.char.lastX = client.char.x = x;
-				client.char.lastY = client.char.y = y;
-				client.char.direction = dir;
-				
-				if(oldMap != map){
-					if(maps[map].properties.players_per_instance){
-						var max = maps[map].properties.players_per_instance;
-							while(mapInstances[map][instance].chars.length >= max){
-							++instance;
-							if(mapInstances[map][instance] == null){
-								mapInstances[map][instance] = createInstance(client.map);
-								break;
-							}
+			var oldMap = client.map;
+			
+			if(oldMap != map && oldMap && client.mapInstance != null){
+				getClientMapInstance().removeClient(client);
+			}
+			
+			var instance = 0;
+			
+			client.map = map;
+			client.char.lastX = client.char.x = x;
+			client.char.lastY = client.char.y = y;
+			client.char.direction = dir;
+			
+			if(oldMap != map){
+				if(maps[map].properties.players_per_instance){
+					var max = maps[map].properties.players_per_instance;
+						while(mapInstances[map][instance].chars.length >= max){
+						++instance;
+						if(mapInstances[map][instance] == null){
+							mapInstances[map][instance] = createInstance(client.map);
+							break;
 						}
 					}
-					client.mapInstance = instance;
 				}
-				
-				
-				client.retransmitChar = true;
-				
-				if(oldMap != map){
-					getClientMapInstance().addClient(client);
-					socket.emit('loadMap', {mapid: client.map, chars: getClientMapInstance().chars});
+				client.mapInstance = instance;
+			}
+			
+			
+			client.retransmitChar = true;
+			
+			if(oldMap != map){
+				getClientMapInstance().addClient(client);
+				socket.emit('loadMap', {mapid: client.map, chars: getClientMapInstance().chars});
+			}
+		}
+		
+		function onPlayerStep(){
+			client.retransmitChar = true;
+			
+			
+			
+			if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
+			client.speedHackChecks.push(+new Date());
+			if(client.speedHackChecks.length >= SPEED_HACK_N){
+				var avgWalkTime = 0;
+				for(var i=1;i<SPEED_HACK_N;++i){
+					avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
+				}
+				avgWalkTime /= SPEED_HACK_N - 1;
+				if(avgWalkTime < 220){
+					console.log('Speed hack detected, kicking client '+client.username);
+					kickClient(client);
+					return;
 				}
 			}
 			
-			function onPlayerStep(){
-				client.retransmitChar = true;
-				
-				
-				
-				if(client.speedHackChecks.length >= SPEED_HACK_N) client.speedHackChecks.shift();
-				client.speedHackChecks.push(+new Date());
-				if(client.speedHackChecks.length >= SPEED_HACK_N){
-					var avgWalkTime = 0;
-					for(var i=1;i<SPEED_HACK_N;++i){
-						avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
-					}
-					avgWalkTime /= SPEED_HACK_N - 1;
-					if(avgWalkTime < 220){
-						console.log('Speed hack detected, kicking client '+client.username);
-						socket.disconnect();
-						return;
-					}
-				}
-				
-				if(!client.inBattle){
-					var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
-					for(var i=0;i<encounterAreas.length;++i){
-						var area = encounterAreas[i];
+			if(!client.inBattle){
+				var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
+				for(var i=0;i<encounterAreas.length;++i){
+					var area = encounterAreas[i];
+					if(Math.random() < 1 / 18.75){
 						for(var j=0;j<area.encounters.length;++j){
 							var areaEncounter = area.encounters[j];
-							if(Math.random() < 1 / (187.5 / areaEncounter.rate)){
+							
+							var chance = 0;
+							chance += Number(areaEncounter.chance);
+							
+							if(Math.random() > chance){
 								var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 								var enemy = new Pokemon(areaEncounter.id, level);
 								var battle = new Battle(BATTLE_WILD, client, enemy);
@@ -454,20 +494,42 @@ function startIO(){
 								
 								client.inBattle = true;
 								client.battle = battle;
+								client.retransmitChar = true;
 								battle.init();
 								return;
 							}
 						}
 					}
+					
 				}
 			}
-			
-			function getClientMapInstance(){
-				return mapInstances[client.map][client.mapInstance];
-			}
 		}
+		
+		function getClientMapInstance(){
+			return mapInstances[client.map][client.mapInstance];
+		}
+		
+		client.getMapInstance = getClientMapInstance;
 	});
 };
+
+function kickPlayer(username){
+	if(!username) return;
+	
+	for(var i=0;i<clients.length;++i){
+		if(clients[i].username == username){
+			kickClient(clients[i])
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+function kickClient(client){
+	client.save();
+	client.socket.disconnect();
+}
 
 function isLoginValid(username, password, callback){
 	dbaccounts.find({lcusername: username.toLowerCase()}, {limit:1}).toArray(function(err, docs) {
@@ -569,7 +631,7 @@ function createInstance(map){
 	instance.removeClient = function(client){
 		instance.clients.remove(client);
 		instance.chars.remove(client.char);
-		instance.cremoved.push(client.id);
+		instance.cremoved.push(client.username);
 	}
 	
 	instance.generateUpdate();

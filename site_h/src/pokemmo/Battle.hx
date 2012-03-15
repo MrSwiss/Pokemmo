@@ -129,7 +129,7 @@ class Battle {
 		
 		if (step == BATTLE_STEP_POKEMON_APPEARED_TMP) {
 			step = BATTLE_STEP_POKEMON_APPEARED;
-			setBattleText('Wild ' + Util.getPokemonDisplayName(enemyPokemon) +' appeared!', -1, function():Void{
+			setBattleText(Util.getPokemonDisplayName(enemyPokemon) +' appeared!', -1, function():Void{
 				var pk = curPokemon;
 				setBattleText("Go! " + Util.getPokemonDisplayName(curPokemon) + "!");
 				step = BATTLE_STEP_GO_POKEMON;
@@ -230,22 +230,39 @@ class Battle {
 	private function drawFightMenu(ctx:CanvasRenderingContext2D):Void {
 		ctx.drawImage(Game.getRes('battleMoveMenu').obj, 2, 228);
 		
+		
 		var x1 = 40;
 		var y1 = 268;
 		
-		var n = curPokemon.moves[0].toUpperCase();
-		ctx.font = '24px Font2';
-		ctx.fillStyle = 'rgb(208,208,208)';
-		ctx.fillText(n, x1, y1 + 2);
-		ctx.fillText(n, x1 + 2, y1);
+		var x2 = 180;
+		var y2 = 300;
 		
-		ctx.fillStyle = 'rgb(72,72,72)';
-		ctx.fillText(n, x1, y1);
+		for (i in 0...4) {
+			var x = x1;
+			var y = y1;
+			
+			switch(i) {
+				case 0: x = x1; y = y1;
+				case 1: x = x2; y = y1;
+				case 2: x = x1; y = y2;
+				case 3: x = x2; y = y2;
+			}
+			
+			var n = curPokemon.moves[i] == null ? '--' : curPokemon.moves[i].toUpperCase();
+			ctx.font = '24px Font2';
+			ctx.fillStyle = 'rgb(208,208,208)';
+			ctx.fillText(n, x, y + 2);
+			ctx.fillText(n, x + 2, y);
+			
+			ctx.fillStyle = 'rgb(72,72,72)';
+			ctx.fillText(n, x, y);
+			
+			if(selectedMove == i){
+				ctx.drawImage(Game.getRes('battleMisc').obj, 96, 0, 32, 32, x - 28 + Math.floor((now % 1000) / 500) * 2, y - 22, 32, 32);
+			}
+		}
 		
-		ctx.drawImage(Game.getRes('battleMisc').obj, 96, 0, 32, 32, x1 - 28 + Math.floor((now % 1000) / 500) * 2, y1 - 22, 32, 32);
-		
-		
-		ctx.drawImage(Game.getRes('types').obj, 0, 24 * PokemonConst.TYPE_NORMAL, 64, 24, 390, 284, 64, 24);
+		ctx.drawImage(Game.getRes('types').obj, 0, 24 * PokemonConst.typeNameToInt(Game.getMoveData(curPokemon.moves[selectedMove]).type), 64, 24, 390, 284, 64, 24);
 	}
 	
 	private function renderEnemy(ctx:CanvasRenderingContext2D):Void {
@@ -396,7 +413,7 @@ class Battle {
 			ctx.drawImage(Game.getRes('battleHealthBar').obj, 0, 18, 1, 6, 104, 66, Math.ceil(48 * hpPerc) * 2, 6);
 		}
 		
-		var pokemonName = Util.getPokemonDisplayName(enemyPokemon);
+		var pokemonName = Util.getPokemonStatusBarName(enemyPokemon);
 		var pokemonLevel = 'Lv' + enemyPokemon.level;
 		var lvlX = 168 - (enemyPokemon.level < 10 ? 0 : (enemyPokemon.level < 100) ? 8 : 16);
 		
@@ -441,7 +458,7 @@ class Battle {
 		ctx.fillRect(316, 214, Math.floor(curPokemon.experience / curPokemon.experienceNeeded * 64) * 2, 4);
 		
 		
-		var pokemonName = Util.getPokemonDisplayName(curPokemon);
+		var pokemonName = Util.getPokemonStatusBarName(curPokemon);
 		var pokemonLevel = 'Lv'+curPokemon.level;
 		var lvlX = 412 - (curPokemon.level < 10 ? 0 : (curPokemon.level < 100) ? 8 : 16);
 		var maxHpX = 422 - (curPokemon.maxHp >= 100 ? 8 : 0);
@@ -470,14 +487,16 @@ class Battle {
 		
 		UI.hookAButton(function(){
 			
-			// Ignore actions other than attack for now
-			if(selectedAction != 0){
-				openActionMenu();
-				return;
-			}
-			
 			switch(selectedAction){
-			case 0: openFightMenu();
+			case 0:
+				openFightMenu();
+				
+			case 3:
+				setBattleText(null);
+				step = BATTLE_STEP_TURN;
+				Connection.socket.emit('battleFlee', {});
+				
+			default: openActionMenu();
 			}
 		});
 	}
@@ -528,6 +547,7 @@ class Battle {
 		
 		
 		var actionPlayerPokemon:Pokemon = action.player == PLAYER_SELF ? curPokemon : enemyPokemon;
+		var actionEnemyPokemon:Pokemon = action.player == PLAYER_SELF ? enemyPokemon : curPokemon;
 		
 		switch(action.type){
 		case "moveAttack":
@@ -542,6 +562,18 @@ class Battle {
 				setBattleText('But it missed!');
 				Main.setTimeout(function() { runQueue(true); }, 1000);
 			}, 1000);
+		case "moveDebuff":
+			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.move.toUpperCase()+"!");
+			Main.setTimeout(function():Void{
+				moveStartTime = Date.now().getTime();
+				moveFinished();
+			}, 1000);
+			
+		case "applyStatus":
+			actionEnemyPokemon.status = action.value;
+			setBattleText(PokemonConst.getStatusApplyPhrase(action.value, Util.getPokemonStatusBarName(actionEnemyPokemon)), -1, function():Void {
+				Main.setTimeout(function() { runQueue(true); }, 1000);
+			});
 		case "pokemonDefeated":
 			var attacker:Pokemon;
 			var defeated:Pokemon;
@@ -559,8 +591,8 @@ class Battle {
 			
 			
 			
-			setBattleText((type == BATTLE_WILD && action.player == 0 ? 'Wild ':'')+Util.getPokemonDisplayName(defeated)+' fainted!', -1, function(){
-				if(action.player == 0){
+			setBattleText(Util.getPokemonDisplayName(defeated) + ' fainted!', -1, function() {
+				if(action.player == 0 && action.value > 0){
 					setBattleText(Util.getPokemonDisplayName(attacker) + ' gained '+action.value+' EXP. Points!', -1, function(){
 						animateExp();
 					});
@@ -585,6 +617,19 @@ class Battle {
 			
 			finish();
 			
+		case "flee":
+			finishX = action.value.x;
+			finishY = action.value.y;
+			finishMap = Game.curGame.map.id;
+			setBattleText("Got away safely!", -1, function():Void {
+				finish();
+			});
+			
+		case "fleeFail":
+			setBattleText("Your attempt to run failed!", -1, function():Void {
+				runQueue(true);
+			});
+			
 		case "switchFainted":
 			if(action.player != 0){
 				setBattleText('The opponent is selecting another pokemon');
@@ -593,9 +638,9 @@ class Battle {
 			}
 			
 			//TODO
-		case "fleeFail":
-			null;
 		case "pokemonLevelup": runQueue(true);
+		
+		default: Main.log('Unknown battle action: '+action.type);
 		}
 	}
 	
@@ -731,6 +776,33 @@ class Battle {
 					selectedAction = 1;
 				}else if(dir == Game.DIR_LEFT){
 					selectedAction = 2;
+				}
+			}
+		}else if (step == BATTLE_STEP_FIGHT_MENU) {
+			switch(selectedMove){
+			case 0:
+				if(dir == Game.DIR_RIGHT && curPokemon.moves[1] != null){
+					selectedMove = 1;
+				}else if(dir == Game.DIR_DOWN && curPokemon.moves[2] != null){
+					selectedMove = 2;
+				}
+			case 1:
+				if(dir == Game.DIR_LEFT && curPokemon.moves[0] != null){
+					selectedMove = 0;
+				}else if(dir == Game.DIR_DOWN && curPokemon.moves[3] != null){
+					selectedMove = 3;
+				}
+			case 2:
+				if(dir == Game.DIR_UP && curPokemon.moves[0] != null){
+					selectedMove = 0;
+				}else if(dir == Game.DIR_RIGHT && curPokemon.moves[3] != null){
+					selectedMove = 3;
+				}
+			case 3:
+				if(dir == Game.DIR_UP && curPokemon.moves[1] != null){
+					selectedMove = 1;
+				}else if(dir == Game.DIR_LEFT && curPokemon.moves[2] != null){
+					selectedMove = 2;
 				}
 			}
 		}

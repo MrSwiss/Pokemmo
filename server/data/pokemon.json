@@ -4330,6 +4330,7 @@
 
 
 		"learnset": [
+			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "hypnosis"},
 			{"level": 1, "move": "lick"},
 			{"level": 8, "move": "spite"},
@@ -4381,6 +4382,7 @@
 
 
 		"learnset": [
+			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "hypnosis"},
 			{"level": 1, "move": "lick"},
 			{"level": 1, "move": "spite"},
@@ -4429,6 +4431,7 @@
 
 
 		"learnset": [
+			{"level": 1, "move": "tackle"},
 			{"level": 1, "move": "hypnosis"},
 			{"level": 1, "move": "lick"},
 			{"level": 1, "move": "spite"},

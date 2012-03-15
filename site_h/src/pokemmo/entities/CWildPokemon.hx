@@ -41,7 +41,7 @@ class CWildPokemon extends CPokemon {
 	}
 	
 	override public function render(ctx:CanvasRenderingContext2D):Void {
-		if(chr.id == Game.myId && !Game.curGame.drawPlayerChar) return;
+		if(chr.username == Game.username && !Game.curGame.drawPlayerChar) return;
 		ctx.save();
 		canDrawGrass = Renderer.numRTicks - createdTick < 5;
 		if(Renderer.numRTicks - createdTick < 10){

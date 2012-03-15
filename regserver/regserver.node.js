@@ -11,15 +11,28 @@ var accounts;
 
 var MAX_ACCOUNTS = 200;
 
+var lastRegisteredIPs = [];
+
+Array.prototype.remove = function(e){
+	var i = 0;
+	var arr = this;
+	
+	while((i = arr.indexOf(e, i)) != -1){
+		arr.splice(i, 1);
+		return true;
+	}
+	
+	return false;
+};
+
 new mongodb.Db('pokemmo', server, {}).open(function (error, client) {
 	if(error) throw error;
 	dbclient = client;
 	
-	//dbclient.dropCollection('accounts');
 	dbclient.createCollection('accounts', function(){
 		accounts = new mongodb.Collection(dbclient, 'accounts');
 		accounts.ensureIndex({username: 1}, {unique:true}, function(){});
-		//createAccount('Sonyp', '280196aa', 'matheusavs3@gmail.com');
+		accounts.ensureIndex({lcusername: 1}, {unique:true}, function(){});
 		startIO();
 	});
 	
@@ -73,18 +86,31 @@ function createAccount(username, password, email, callback){
 			return;
 		}
 		
-		accounts.insert({username: username, lcusername: username.toLowerCase(), password: passhash, email: email, salt: passsalt}, {safe: true}, function(err, objects) {
+		accounts.find({email: email}, {limit: 1}).count(function(err, count){
 			if(err){
-				if(err.code == 11000){
-					callback('username_already_exists');
-					return;
-				}
 				console.warn(err.message);
 				callback('internal_error');
 				return;
 			}
 			
-			callback('success');
+			if(count > 0){
+				callback('email_already_registered');
+				return;
+			}
+			
+			accounts.insert({username: username, lcusername: username.toLowerCase(), password: passhash, email: email, salt: passsalt}, {safe: true}, function(err, objects) {
+				if(err){
+					if(err.code == 11000){
+						callback('username_already_exists');
+						return;
+					}
+					console.warn(err.message);
+					callback('internal_error');
+					return;
+				}
+				
+				callback('success');
+			});
 		});
 	});
 }
@@ -130,17 +156,24 @@ function startIO(){
 	io.sockets.on('connection', function (socket) {
 		var ip = socket.handshake.address.address;
 		socket.on('register', function(data){
-			
 			if(data.username == null || data.password == null || data.challenge == null || data.response == null || data.email == null) return;
 			
+			if(lastRegisteredIPs.indexOf(ip) !== -1){
+				socket.emit('registration', {result: 'registered_recently'});
+				return;
+			}
+			
 			verifyCaptcha(ip, data.challenge, data.response, function(success, result){
-				console.log(success, result);
 				if(!success){
 					socket.emit('registration', {result: 'invalid_captcha'});
 					return;
 				}
 				
 				createAccount(data.username, data.password, data.email, function(result){
+					if(result == 'success'){
+						lastRegisteredIPs.push(ip);
+						setTimeout(function(){lastRegisteredIPs.remove(ip);}, 60 * 60 * 1000);
+					}
 					socket.emit('registration', {result: result});
 				});
 			});

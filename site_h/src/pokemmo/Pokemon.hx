@@ -35,6 +35,54 @@ class PokemonConst {
 	inline static public var TYPE_GHOST:Int = 15;
 	inline static public var TYPE_DRAGON:Int = 16;
 	inline static public var TYPE_UNKNOWN:Int = 17;
+	
+	static public function typeNameToInt(name:String):Int {
+		switch(name.toLowerCase()) {
+			case 'normal': return TYPE_NORMAL;
+			case 'fire': return TYPE_FIRE;
+			case 'water': return TYPE_WATER;
+			case 'ice': return TYPE_ICE;
+			case 'electric': return TYPE_ELECTRIC;
+			case 'grass': return TYPE_GRASS;
+			case 'ground': return TYPE_GROUND;
+			case 'rock': return TYPE_ROCK;
+			case 'fight': return TYPE_FIGHT;
+			case 'steel': return TYPE_STEEL;
+			case 'dark': return TYPE_DARK;
+			case 'psychic': return TYPE_PSYCHIC;
+			case 'flying': return TYPE_FLYING;
+			case 'bug': return TYPE_BUG;
+			case 'poison': return TYPE_POISON;
+			case 'ghost': return TYPE_GHOST;
+			case 'dragon': return TYPE_DRAGON;
+			case 'unknown': return TYPE_UNKNOWN;
+		}
+		
+		throw "Unknown move type: "+name;
+	}
+	
+	static public function getStatusName(id:Int):String {
+		switch(id) {
+			case STATUS_NONE: return "None";
+			case STATUS_SLEEP: return "Sleep";
+			case STATUS_FREEZE: return "Freeze";
+			case STATUS_PARALYZE: return "Paralyze";
+			case STATUS_POISON: return "Poison";
+			case STATUS_BURN: return "Burn";
+		}
+		throw "Unknown status type: "+id;
+	}
+	
+	static public function getStatusApplyPhrase(id:Int, name:String):String {
+		switch(id) {
+			case STATUS_SLEEP: return name+" feel asleep!";
+			case STATUS_FREEZE: return name+" is frozen solid!";
+			case STATUS_PARALYZE: return name+" is paralyzed";
+			case STATUS_POISON: return name+" is poisoned!";
+			case STATUS_BURN: return name+" is burned!";
+		}
+		throw "Unknown status type: "+id;
+	}
 }
 
 typedef Pokemon = {

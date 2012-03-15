@@ -70,25 +70,19 @@ class Chat {
 		
 		
 		var width = Math.round(ctx.measureText(msg.str).width + BUBBLE_BORDER_SIZE * 2);
-		var height = 16;
-		msg.bubbleLines.push(msg.str);
+		//msg.bubbleLines.push(msg.str);
 		
-		if (width > BUBBLE_MAX_WIDTH) {
-			width = BUBBLE_MAX_WIDTH;
-			do{
-				var curLineArr = msg.bubbleLines[msg.bubbleLines.length - 1].split(' ');
-				var nextLineArr = [];
-				
-				while (ctx.measureText(curLineArr.join(' ')).width > BUBBLE_MAX_WIDTH) {
-					nextLineArr.unshift(curLineArr.pop());
-				}
-				
-				msg.bubbleLines[msg.bubbleLines.length - 1] = curLineArr.join(' ');
-				msg.bubbleLines.push(nextLineArr.join(' '));
-				height += 14;
-			} while(ctx.measureText(msg.bubbleLines[msg.bubbleLines.length - 1]).width > BUBBLE_MAX_WIDTH);
+		msg.bubbleLines = Util.reduceTextSize(msg.str, BUBBLE_MAX_WIDTH - 10, ctx);
+		if (msg.bubbleLines.length > 1) {
+			width = 0;
+			for (line in msg.bubbleLines) {
+				width = Math.ceil(Math.max(width, ctx.measureText(line).width));
+			}
+			
+			width += BUBBLE_BORDER_SIZE * 2;
 		}
 		
+		var height = msg.bubbleLines.length * 14 + 2;
 		msg.bubbleWidth = width;
 		msg.bubbleHeight = height;
 		

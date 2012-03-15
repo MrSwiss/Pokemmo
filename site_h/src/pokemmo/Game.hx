@@ -23,7 +23,7 @@ class Game {
 	
 	static public var state:GameState;
 	static public var username:String;
-	static public var myId:String;
+	static public var accountLevel:Int;
 	
 	static public var curGame:Game;
 	
@@ -34,6 +34,7 @@ class Game {
 	
 	static private var res:Dynamic;
 	static private var pokemonData:Dynamic;
+	static private var movesData:Dynamic;
 	
 	
 	static private var loadedBasicUI:Bool;
@@ -43,6 +44,8 @@ class Game {
 		loadedBasicUI = false;
 		state = ST_UNKNOWN;
 		res = untyped __js__("({})");
+		
+		accountLevel = 0;
 	}
 	
 	static public function setPokemonParty(arr:Array<PokemonOwned>):Void {
@@ -88,6 +91,10 @@ class Game {
 			loadJSON('data/pokemon.json', function(data:Dynamic):Void {
 				pokemonData = data;
 			});
+			
+			loadJSON('data/moves.json', function(data:Dynamic):Void {
+				movesData = data;
+			});
 		}
 		
 		loadJSON('resources/maps/'+id+'.json', function(data:Dynamic){
@@ -130,7 +137,7 @@ class Game {
 			var arr = chars;
 			for(i in 0...arr.length){
 				var chr = new CCharacter(arr[i]);
-				if (chr.id == myId) chr.freezeTicks = 10;
+				if (chr.username == username) chr.freezeTicks = 10;
 			}
 		});
 	}
@@ -173,6 +180,12 @@ class Game {
 	
 	inline static public function getPokemonData(id:String):PokemonData {
 		return pokemonData[untyped id];
+	}
+	
+	inline static public function getMoveData(id:String): {
+		var type:String;
+	}{
+		return movesData[untyped id.toLowerCase()];
 	}
 	
 	///////////////////////////////////////////////////
@@ -241,11 +254,11 @@ class Game {
 		var A_FIRST = -1;
 		var B_FIRST = 1;
 		arr.sort(function(a:GameObject, b:GameObject):Int {
-			if(Std.is(a, CCharacter) && untyped a.id == myId){
+			if(Std.is(a, CCharacter) && untyped a.username == username){
 				if(Std.is(b, CGrassAnimation)) return A_FIRST;
 				return B_FIRST;
 			}
-			if(Std.is(b, CCharacter) && untyped b.id == myId){
+			if(Std.is(b, CCharacter) && untyped b.username == username){
 				if(Std.is(a, CGrassAnimation)) return B_FIRST;
 				return A_FIRST;
 			}
@@ -293,14 +306,7 @@ class Game {
 	}
 	
 	public function getPlayerChar():CCharacter {
-		return getCharById(myId);
-	}
-	
-	public function getCharById(id:String):CCharacter {
-		for (i in 0...characters.length) {
-			if (characters[i].id == id) return characters[i];
-		}
-		return null;
+		return getCharByUsername(username);
 	}
 	
 	public function getCharByUsername(username:String):CCharacter {

@@ -31,7 +31,7 @@ class CFollower extends CPokemon {
 			image = null;
 		}
 		
-		if(chr.id == Game.myId && !Game.curGame.drawPlayerFollower) return;
+		if(chr.username == Game.username && !Game.curGame.drawPlayerFollower) return;
 		if(x == chr.x && y == chr.y && !walking && !chr.walking) return;
 		
 		

@@ -18,6 +18,8 @@ class UI {
 	static public var uiAButtonDown:Bool = false;
 	static public var uiBButtonDown:Bool = false;
 	static public var mouseDown:Bool = false;
+	static public var mouseWasDown:Bool = false;
+	static private var mouseDownFuture:Bool = false;
 	
 	static public var fireAHooks:Bool = false;
 	static public var fireBHooks:Bool = false;
@@ -56,14 +58,15 @@ class UI {
 		
 		Main.jq(w).keydown(function(e:KeyboardEvent) {
 			if (e.keyCode == 13) { // ENTER
-				if(Game.state == ST_MAP){
-					if(!Chat.inChat && !Chat.justSentMessage){
+				if (Game.state == ST_MAP) {
+					if (!Chat.inChat && !Chat.justSentMessage) {
 						Chat.inChat = true;
 						Main.jq(Chat.chatBox).focus();
 					}
 				}else {
 					fireEnterHooks = true;
 				}
+				e.preventDefault();
 			}else if (e.keyCode == 9) { // TAB
 				selectNextInput();
 				e.preventDefault();
@@ -93,10 +96,20 @@ class UI {
 			UI.keysDown[e.keyCode] = false;
 			if(e.keyCode == 13){
 				Chat.justSentMessage = false;
+				
 			}else if(e.keyCode == 90){
 				UI.uiAButtonDown = false;
 			}else if(e.keyCode == 88){
 				UI.uiBButtonDown = false;
+			}
+			
+			if (e.keyCode == 13 || e.keyCode == 32) {
+				if (selectedInput != null && Std.is(selectedInput, UIButton)) {
+					var b:UIButton = cast selectedInput;
+					if (b.instantSubmit) {
+						b.submit();
+					}
+				}
 			}
 		});
 		
@@ -109,7 +122,7 @@ class UI {
 		});
 		
 		Main.jq(w).mousedown(function(e:MouseEvent):Void {
-			mouseDown = true;
+			mouseDownFuture = true;
 			
 			var selectedAny = false;
 			
@@ -129,7 +142,7 @@ class UI {
 		});
 		
 		Main.jq(w).mouseup(function():Void {
-			mouseDown = false;
+			mouseDownFuture = false;
 			
 			if (selectedInput != null && selectedInput.isUnderMouse() && Std.is(selectedInput, UIButton)) {
 				var b:UIButton = cast selectedInput;
@@ -141,6 +154,8 @@ class UI {
 	}
 	
 	static public function selectNextInput() {
+		if (inputs.length <= 1) return;
+		
 		if (selectedInput != null) {
 			inputs[(inputs.indexOf(selectedInput) + 1) % inputs.length].select();
 		}else if(lastSelectedInput != null){
@@ -149,7 +164,7 @@ class UI {
 			inputs[0].select();
 		}
 		
-		if (selectedInput.disabled) {
+		if (selectedInput != null && selectedInput.disabled) {
 			var i = inputs.indexOf(selectedInput);
 			for (j in i...inputs.length) {
 				if (!inputs[j].disabled) {
@@ -169,8 +184,13 @@ class UI {
 	static public function tick():Void {
 		setCursor('auto');
 		
-		hiddenInput.selectionStart = hiddenInput.value.length;
-		hiddenInput.selectionEnd =  hiddenInput.value.length;
+		mouseWasDown = mouseDown;
+		mouseDown = mouseDownFuture;
+		
+		if(hiddenInput.selected){
+			hiddenInput.selectionStart = hiddenInput.value.length;
+			hiddenInput.selectionEnd =  hiddenInput.value.length;
+		}
 		
 		if (Renderer.curTransition != null) return;
 		
@@ -370,7 +390,14 @@ class UI {
 	}
 	
 	static inline public function removeInput(i:UIInput):Void {
+		if (selectedInput == i) i.blur();
 		inputs.remove(i);
+	}
+	
+	static inline public function removeAllInputs():Void {
+		while(inputs.length > 0) {
+			removeInput(inputs[0]);
+		}
 	}
 	
 	inline static public function setCursor(str:String):Void {

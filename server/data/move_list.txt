@@ -1,127 +1,94 @@
+<-- Move List -->
 absorb
-acid
 acid armor
-aerial ace
+aerial ace TM
 agility
-air cutter
 amnesia
 ancientpower
 aromatherapy
-astonish
-aurora beam
+attract
 barrage
 barrier
 baton pass
 belly drum
 bind
-bite
-blizzard
 block
-body slam
-bone club
 bone rush
 bonemerang
 bounce
-brick break
-bubble
-bubblebeam
-calm mind
+brick break TM
+bullet seed TM
+bulk up TM
+calm mind TM
 camouflage
 charge
 clamp
 comet punch
 confuse ray
 confusion
-constrict
 conversion
 conversion 2
 cosmic power
 counter
 covet
-crabhammer
-cross chop
-crunch
 curse
 defense curl
 destiny bond
 detect
-dig
+dig TM
 disable
 dizzy punch
 double kick
-double team
+double team TM
 doubleslap
 dragon dance
 dragon rage
-dragonbreath
 dream eater
-drill peck
 dynamicpunch
-earthquake
-egg bomb
-ember
+earthquake TM
 encore
 endeavor
 endure
 explosion
 extremespeed
+facade
 faint attack
 fake out
-fake tears
 false swipe
-featherdance
-fire blast
-fire punch
 fire spin
 fissure
 flail
-flame wheel
-flamethrower
 flatter
 focus energy
+focus punch TM
 follow me
 foresight
 fury attack
 fury cutter
 fury swipes
 future sight
-giga drain
-glare
-growl
+frustration TM
+giga drain TM
 growth
 grudge
 guillotine
 gust
+hail TM
 harden
 haze
-headbutt
-heat wave
 helping hand
 hi jump kick
-horn attack
+hidden power TM
 horn drill
-hydro pump
-hyper beam
-hyper fang
-hyper voice
-hypnosis
-ice beam
-ice punch
+hyper beam TM
 icicle spear
-icy wind
 imprison
 ingrain
-iron tail
 jump kick
-karate chop
-kinesis
 knock off
 leech life
 leech seed
-leer
-lick
-light screen
-lovely kiss
+light screen TM
 low kick
 mach punch
 magical leaf
@@ -129,12 +96,8 @@ magnitude
 mean look
 meditate
 mega drain
-mega kick
-mega punch
-megahorn
 memento
 metal claw
-metal sound
 meteor mash
 metronome
 mimic
@@ -144,125 +107,92 @@ mirror coat
 mirror move
 mist
 moonlight
-mud shot
 mud sport
 night shade
 nightmare
 odor sleuth
 outrage
+overheat
 pay day
-peck
 perish song
 petal dance
 pin missile
-poison fang
-poison gas
-poison sting
-poisonpowder
-pound
-powder snow
-protect
+protect TM
 psybeam
 psych up
-psychic
 pursuit
 quick attack
 rage
-rain dance
+rain dance TM
 rapid spin
-razor leaf
 recover
 recycle
-reflect
+reflect TM
 refresh
-rest
+rest TM
+return TM
 revenge
 reversal
-roar
+roar TM
 rock blast
-rock throw
 role play
-rolling kick
 rollout
-safeguard
+safeguard TM
 sand tomb
-sandstorm
-scary face
-scratch
-screech
+sandstorm TM
+secret power TM
 seismic toss
 selfdestruct
-shadow ball
 shadow punch
 sharpen
 sheer cold
+shock wave TM
+skill swap
 signal beam
 silver wind
-sing
 skull bash
 sky attack
-sky uppercut
-slam
-slash
-sleep powder
 sleep talk
-sludge
-sludge bomb
-smog
-smokescreen
-snore
+snatch
 softboiled
-solarbeam
+solarbeam TM
 sonicboom
-spark
 spike cannon
 spikes
 spit up
 spite
 splash
-spore
+steel wing TM
 stockpile
-stomp
-string shot
-stun spore
 submission
 substitute
-sunny day
+sunny day TM
 super fang
 superpower
 supersonic
 swagger
 swallow
-sweet scent
 swift
 swords dance
 synthesis
-tackle
-tail whip
 take down
+taunt TM
 teleport
 thrash
-thunder
-thunder wave
-thunderbolt
-thunderpunch
-thundershock
+thief
 tickle
+toxic TM
+torment
 transform
 tri attack
 trick
 twineedle
 twister
 uproar
-vicegrip
-vine whip
 vital throw
-water gun
 water sport
-waterfall
+water pulse TM
 whirlwind
-wing attack
 withdraw
 wrap
 yawn
-zap cannon

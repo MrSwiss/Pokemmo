@@ -20,7 +20,6 @@ class CCharacter extends GameObject {
 	inline static public var CHAR_HEIGHT:Int = 64;
 	inline static public var CHAR_MOVE_WAIT:Float = 0.3;
 	
-	public var id:String;
 	public var username:String;
 	public var inBattle:Bool;
 	public var type:String;
@@ -63,7 +62,6 @@ class CCharacter extends GameObject {
 	public function new(data:CCharacterData) {
 		super(data.x, data.y, data.direction);
 		
-		id = data.id;
 		username = data.username;
 		targetX = x;
 		targetY = y;
@@ -110,7 +108,7 @@ class CCharacter extends GameObject {
 	}
 	
 	public function isControllable():Bool {
-		return id == Game.myId && !Game.curGame.inBattle && Game.curGame.playerCanMove && !Chat.inChat && freezeTicks == 0;
+		return username == Game.username && !Game.curGame.inBattle && Game.curGame.playerCanMove && !Chat.inChat && freezeTicks == 0;
 	}
 	
 	public function getRenderPos():Point {
@@ -145,7 +143,7 @@ class CCharacter extends GameObject {
 		
 		tickWalking();
 		
-		if(id == Game.myId){
+		if(username == Game.username){
 			tickWildBattle();
 		}else{
 			if(x == targetX && y == targetY && !walking){
@@ -167,7 +165,7 @@ class CCharacter extends GameObject {
 			walkingPerc = 0.0;
 			
 			
-			if (id == Game.myId) {
+			if (username == Game.username) {
 				if (isControllable()) {
 					if (UI.isKeyDown(37)) { // Left
 						walking = true;
@@ -233,7 +231,7 @@ class CCharacter extends GameObject {
 			animationStep += 0.20;
 			if(animationStep > 4.0) animationStep -= 4.0;
 			if(walkingPerc >= (1.0-CHAR_MOVE_WAIT)/2 && !walkingHasMoved){
-				if(id == Game.myId && !noclip){
+				if(username == Game.username && !noclip){
 					var tmpPos = getFrontPosition();
 					var tmpWarp = CWarp.getWarpAt(tmpPos.x, tmpPos.y);
 					if(tmpWarp != null){
@@ -255,7 +253,7 @@ class CCharacter extends GameObject {
 					
 				}
 				
-				if(!Game.curGame.inBattle || id != Game.myId){
+				if(!Game.curGame.inBattle || username != Game.username){
 					lastX = x;
 					lastY = y;
 				}
@@ -274,13 +272,13 @@ class CCharacter extends GameObject {
 					new CGrassAnimation(x, y);
 				}
 				
-				if(id == Game.myId && transmitWalk){
+				if(username == Game.username && transmitWalk){
 					Connection.socket.emit('walk', {ack: Connection.lastAckMove, x: x, y: y, dir:direction});
 				}
 			}
 			
 			if(walkingPerc >= 1.0){
-				if(id == Game.myId){
+				if(username == Game.username){
 					if(!Game.curGame.inBattle && !willMoveIntoAWall() && ((direction == Game.DIR_LEFT && UI.isKeyDown(37))
 					|| (direction == Game.DIR_DOWN && UI.isKeyDown(40))
 					|| (direction == Game.DIR_RIGHT && UI.isKeyDown(39))
@@ -424,7 +422,7 @@ class CCharacter extends GameObject {
 		door.open();
 		walking = false;
 		
-		if(id == Game.myId){
+		if(username == Game.username){
 			Game.curGame.playerCanMove = false;
 			Game.curGame.queueLoadMap = true;
 		}
@@ -446,7 +444,7 @@ class CCharacter extends GameObject {
 			lastX = tmpX;
 			lastY = tmpY;
 			
-			if(id == Game.myId){
+			if(username == Game.username){
 				if(tmpCount == 23){
 					Game.curGame.drawPlayerChar = false;
 				}
@@ -469,7 +467,7 @@ class CCharacter extends GameObject {
 			}
 		};
 		
-		if(id == Game.myId) Connection.socket.emit('useWarp', {name:door.name, direction: direction});
+		if(username == Game.username) Connection.socket.emit('useWarp', {name:door.name, direction: direction});
 		
 		Renderer.hookRender(doorRenderTransition);
 	}
@@ -483,7 +481,7 @@ class CCharacter extends GameObject {
 		warp.disable = true;
 		walking = false;
 		
-		if (id == Game.myId) {
+		if (username == Game.username) {
 			Game.curGame.playerCanMove = false;
 			Game.curGame.queueLoadMap = true;
 		}
@@ -493,7 +491,7 @@ class CCharacter extends GameObject {
 		warpRenderTransition = function():Void {
 			++tmpCount;
 			
-			if(id == Game.myId){
+			if(username == Game.username){
 				var perc = Util.clamp(tmpCount / 10, 0, 1);
 				ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -510,7 +508,7 @@ class CCharacter extends GameObject {
 			}
 		};
 		
-		if(id == Game.myId) Connection.socket.emit('useWarp', {name:warp.name, direction: direction});
+		if(username == Game.username) Connection.socket.emit('useWarp', {name:warp.name, direction: direction});
 		
 		Renderer.hookRender(warpRenderTransition);
 	}
@@ -526,7 +524,7 @@ class CCharacter extends GameObject {
 		
 		walking = true;
 		
-		if(id == Game.myId){
+		if(username == Game.username){
 			Game.curGame.playerCanMove = false;
 			Game.curGame.queueLoadMap = true;
 		}
@@ -552,7 +550,7 @@ class CCharacter extends GameObject {
 				throw "Assertion error";
 			}
 			
-			if(id == Game.myId){
+			if(username == Game.username){
 				var perc = Util.clamp((tmpCount) / 10, 0, 1);
 				ctx.fillStyle = 'rgba(0,0,0,'+perc+')';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -575,7 +573,7 @@ class CCharacter extends GameObject {
 			}
 		};
 		
-		if(id == Game.myId) Connection.socket.emit('useWarp', {name:warp.name, direction: direction});
+		if(username == Game.username) Connection.socket.emit('useWarp', {name:warp.name, direction: direction});
 		
 		Renderer.hookRender(warpRenderTransition);
 	}
@@ -619,7 +617,7 @@ class CCharacter extends GameObject {
 	override public function render(ctx:CanvasRenderingContext2D){
 		if(!loaded) return;
 		
-		if (id == Game.myId && !Game.curGame.drawPlayerChar) return;
+		if (username == Game.username && !Game.curGame.drawPlayerChar) return;
 		
 		var tmpCtx = Main.tmpCtx;
 		
@@ -640,7 +638,7 @@ class CCharacter extends GameObject {
 		if (lockDirection != -1) dirId = lockDirection * CHAR_WIDTH;
 		
 		
-		if(id != Game.myId && UI.isMouseInRect(renderPos.x + offsetX - 5, renderPos.y + offsetY - 5, renderPos.x + CHAR_WIDTH + offsetX + 10, renderPos.y + CHAR_HEIGHT + offsetY + 10)){
+		if(username != Game.username && UI.isMouseInRect(renderPos.x + offsetX - 5, renderPos.y + offsetY - 5, renderPos.x + CHAR_WIDTH + offsetX + 10, renderPos.y + CHAR_HEIGHT + offsetY + 10)){
 			Renderer.drawOverlay(ctx, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT, function(ctx):Void {
 				ctx.drawImage(image.obj, dirId, Math.floor(animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, 0, 0, CHAR_WIDTH, CHAR_HEIGHT);
 			});
@@ -654,6 +652,13 @@ class CCharacter extends GameObject {
 			ctx.fillStyle = '#FFFFFF';
 			ctx.fillText(username, renderPos.x + offsetX + CHAR_WIDTH/2, renderPos.y + offsetY + 16);
 			ctx.restore();
+			
+			if (Game.accountLevel >= 30) {
+				UI.setCursor('pointer');
+				if(UI.mouseDown && !UI.mouseWasDown){
+					Connection.socket.emit('kickPlayer', { username: username } );
+				}
+			}
 		}
 		
 		ctx.drawImage(image.obj, dirId, Math.floor(animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
@@ -664,7 +669,7 @@ class CCharacter extends GameObject {
 			ctx.drawImage(Game.getRes('miscSprites').obj, 0, 0, 32, 32, x * map.tilewidth + offsetX, y * map.tileheight + offsetY, 32, 32);
 		}
 		
-		if(inBattle && id != Game.myId){
+		if(inBattle && username != Game.username){
 			ctx.save();
 			var ly = 0.0;
 			
@@ -686,7 +691,6 @@ class CCharacter extends GameObject {
 }
 
 typedef CCharacterData = {
-	var id:String;
 	var username:String;
 	var inBattle:Bool;
 	var type:String;
