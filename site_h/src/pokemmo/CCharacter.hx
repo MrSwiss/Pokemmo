@@ -3,6 +3,7 @@ package pokemmo;
 import pokemmo.entities.CDoor;
 import pokemmo.entities.CFollower;
 import pokemmo.entities.CGrassAnimation;
+import pokemmo.entities.CLedgeSmoke;
 import pokemmo.entities.CStairs;
 import pokemmo.entities.CWarp;
 import pokemmo.entities.CWarpArrow;
@@ -40,6 +41,7 @@ class CCharacter extends GameObject {
 	public var battleEnemy:String;
 	public var image:ImageResource;
 	public var freezeTicks:Int;
+	public var jumping:Bool;
 	
 	private var followerObj:CFollower;
 	private var transmitWalk:Bool;
@@ -87,6 +89,7 @@ class CCharacter extends GameObject {
 		renderOffsetX = renderOffsetY = 0;
 		renderAlpha = 1.0;
 		freezeTicks = 0;
+		jumping = false;
 		
 		image = Game.curGame.getImage('resources/chars/'+data.type+'.png', function(){
 			loaded = true;
@@ -231,7 +234,7 @@ class CCharacter extends GameObject {
 			animationStep += 0.20;
 			if(animationStep > 4.0) animationStep -= 4.0;
 			if(walkingPerc >= (1.0-CHAR_MOVE_WAIT)/2 && !walkingHasMoved){
-				if(username == Game.username && !noclip){
+				if(isControllable() && !noclip){
 					var tmpPos = getFrontPosition();
 					var tmpWarp = CWarp.getWarpAt(tmpPos.x, tmpPos.y);
 					if(tmpWarp != null){
@@ -243,14 +246,22 @@ class CCharacter extends GameObject {
 							enterStairs(cast tmpWarp);
 						}
 						return;
-					}else if(willMoveIntoAWall()){
-						Connection.socket.emit('turn', {dir:direction});
-						walking = false;
-						//TODO: Play block sound
-						return;
+					}else {
+						var frontPosition = getFrontPosition();
+						if (Map.cur.isTileLedge(frontPosition.x, frontPosition.y) && Map.cur.getLedgeDir(frontPosition.x, frontPosition.y) == direction) {
+							useLedge();
+						}else if(willMoveIntoAWall()){
+							Connection.socket.emit('turn', {dir:direction});
+							walking = false;
+							//TODO: Play block sound
+							return;
+						}
 					}
-					
-					
+				}else {
+					var frontPosition = getFrontPosition();
+					if (Map.cur.isTileLedge(frontPosition.x, frontPosition.y) && Map.cur.getLedgeDir(frontPosition.x, frontPosition.y) == direction) {
+						useLedge();
+					}
 				}
 				
 				if(!Game.curGame.inBattle || username != Game.username){
@@ -279,7 +290,8 @@ class CCharacter extends GameObject {
 			
 			if(walkingPerc >= 1.0){
 				if(username == Game.username){
-					if(!Game.curGame.inBattle && !willMoveIntoAWall() && ((direction == Game.DIR_LEFT && UI.isKeyDown(37))
+					if (isControllable() && !willMoveIntoAWall() && (
+					(direction == Game.DIR_LEFT && UI.isKeyDown(37))
 					|| (direction == Game.DIR_DOWN && UI.isKeyDown(40))
 					|| (direction == Game.DIR_RIGHT && UI.isKeyDown(39))
 					|| (direction == Game.DIR_UP && UI.isKeyDown(38)))){
@@ -578,18 +590,69 @@ class CCharacter extends GameObject {
 		Renderer.hookRender(warpRenderTransition);
 	}
 	
+	public function useLedge():Void {
+		var front = getFrontPosition();
+		var dest = getFrontPosition(2);
+		
+		walking = true;
+		noclip = true;
+		transmitWalk = false;
+		jumping = true;
+		
+		if(username == Game.username){
+			Game.curGame.playerCanMove = false;
+		}
+		
+		var tmpCount = 0;
+		var renderFunc:Void->Void = null;
+		renderFunc = function() {
+			++tmpCount;
+			
+			if(x != dest.x || y != dest.y) walking = true;
+			
+			
+			renderOffsetY = Math.min(Math.round((8/15 * (tmpCount * tmpCount)) + (-8 * tmpCount)), 0);
+			
+			if (tmpCount == 18) {
+				new CLedgeSmoke(x, y);
+			}
+			
+			if (tmpCount >= 20) {
+				renderOffsetY = 0;
+				walking = false;
+				if(username == Game.username){
+					Game.curGame.playerCanMove = true;
+				}
+				noclip = false;
+				jumping = false;
+				transmitWalk = true;
+				freezeTicks = 2;
+				x = dest.x;
+				y = dest.y;
+				lastX = x;
+				lastY = y;
+				
+				Renderer.unHookRender(renderFunc);
+			}
+		};
+		
+		if (username == Game.username) Connection.socket.emit('useLedge', { ack:Connection.lastAckMove, x: front.x, y: front.y } );
+		
+		Renderer.hookRender(renderFunc);
+	}
+	
 	public function willMoveIntoAWall():Bool{
 		var pos = getFrontPosition();
 		var map = Game.curGame.map;
 		return map.isTileSolid(pos.x, pos.y) || map.isTileWater(pos.x, pos.y);
 	}
 	
-	private function getFrontPosition():Point{
+	private function getFrontPosition(n:Int = 1):Point{
 		switch(direction){
-			case Game.DIR_LEFT: return {x: x - 1, y: y};
-			case Game.DIR_RIGHT: return {x: x + 1, y: y};
-			case Game.DIR_UP: return {x: x, y: y - 1};
-			case Game.DIR_DOWN: return {x: x, y: y + 1};
+			case Game.DIR_LEFT: return {x: x - n, y: y};
+			case Game.DIR_RIGHT: return {x: x + n, y: y};
+			case Game.DIR_UP: return {x: x, y: y - n};
+			case Game.DIR_DOWN: return {x: x, y: y + n};
 		}
 		return null;
 	}
@@ -630,6 +693,7 @@ class CCharacter extends GameObject {
 		
 		var offsetX = Renderer.getOffsetX();
 		var offsetY = Renderer.getOffsetY();
+		var map = Map.cur;
 		
 		
 		var renderPos = getRenderPos();
@@ -661,9 +725,14 @@ class CCharacter extends GameObject {
 			}
 		}
 		
+		if (jumping) {
+			ctx.drawImage(Game.getRes('miscSprites').obj, 0, 64, 32, 32, renderPos.x + offsetX, renderPos.y + offsetY - renderOffsetY + 30, 32, 32);
+		}
+		
 		ctx.drawImage(image.obj, dirId, Math.floor(animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
 		
-		var map = Game.curGame.map;
+		
+		
 		
 		if (map.isTileGrass(x, y) && !walking) {
 			ctx.drawImage(Game.getRes('miscSprites').obj, 0, 0, 32, 32, x * map.tilewidth + offsetX, y * map.tileheight + offsetY, 32, 32);

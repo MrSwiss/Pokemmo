@@ -59,9 +59,28 @@ for(var mi=0;mi<mapsNames.length;++mi){
 					
 					var curTilesetTileid = tileid - tileset.firstgid;
 					
-					if(tileset.tileproperties[curTilesetTileid] && tileset.tileproperties[curTilesetTileid].solid == '1'){
-						solidData[x][y] = SD_SOLID;
+					if(tileset.tileproperties[curTilesetTileid]){
+						if(tileset.tileproperties[curTilesetTileid].solid == '1'){
+							solidData[x][y] = SD_SOLID;
+						}
+						
+						if(tileset.tileproperties[curTilesetTileid].water == '1'){
+							solidData[x][y] = SD_WATER;
+						}
+						
+						if(tileset.tileproperties[curTilesetTileid].ledge == '1'){
+							solidData[x][y] = SD_LEDGE_DOWN;
+							if(tileset.tileproperties[curTilesetTileid].ledge_dir == '1'){
+								solidData[x][y] = SD_LEDGE_LEFT;
+							}else if(tileset.tileproperties[curTilesetTileid].ledge_dir == '2'){
+								solidData[x][y] = SD_LEDGE_UP;
+							}else if(tileset.tileproperties[curTilesetTileid].ledge_dir == '3'){
+								solidData[x][y] = SD_LEDGE_RIGHT;
+							}
+						}
 					}
+					
+					
 				}
 			}
 		}else if(layer.type == 'objectgroup'){

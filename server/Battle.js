@@ -324,6 +324,7 @@ function Battle(type, arg1, arg2){
 		
 		if(player1.client){
 			player1.client.inBattle = false;
+			player1.client.retrasmitChar = true;
 			
 			if(winner != player1){
 				player1.client.moveToSpawn();
@@ -333,6 +334,7 @@ function Battle(type, arg1, arg2){
 		
 		if(player2.client){
 			player2.client.inBattle = false;
+			player2.client.retrasmitChar = true;
 			
 			if(winner != player2){
 				player2.client.moveToSpawn();

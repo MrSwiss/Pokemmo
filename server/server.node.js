@@ -24,6 +24,10 @@ var start, end;
 var SD_NONE = 0;
 var SD_SOLID = 1;
 var SD_WATER = 2;
+var SD_LEDGE_DOWN = 3;
+var SD_LEDGE_LEFT = 4;
+var SD_LEDGE_UP = 5;
+var SD_LEDGE_RIGHT = 6;
 
 var DIR_DOWN = 0;
 var DIR_LEFT = 1;
@@ -318,12 +322,17 @@ function startIO(){
 				var chr = client.char;
 				var invalidMove = false;
 				
+				data.x = Math.floor(Number(data.x));
+				data.y = Math.floor(Number(data.y));
+				
+				if(data.x != data.x || data.y != data.y) return;
+				
 				if(data.x < 0 || data.x >= maps[client.map].width) return;
 				if(data.y < 0 || data.y >= maps[client.map].height) return;
 				
 				var destSolid = maps[client.map].solidData[data.x][data.y];
 				
-				if(destSolid == SD_SOLID || destSolid == SD_WATER){
+				if(destSolid > 0){
 					invalidMove = true;
 				}else if(chr.x - 1 == data.x && chr.y == data.y){
 					chr.lastX = chr.x;
@@ -364,9 +373,74 @@ function startIO(){
 					// Maybe one of his 'walk' messages is delayed
 					
 				}else{
-					client.lastAckMove = +new Date();
-					socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
+					sendInvalidMove();
 				}
+			});
+			
+			socket.on('useLedge', function(data){
+				if(client.inBattle) return;
+				if(data.ack != client.lastAckMove) return;
+				
+				var chr = client.char;
+				
+				data.x = Math.floor(Number(data.x));
+				data.y = Math.floor(Number(data.y));
+				
+				if(data.x != data.x || data.y != data.y) return;
+				
+				if(data.x < 0 || data.x >= maps[client.map].width) return;
+				if(data.y < 0 || data.y >= maps[client.map].height) return;
+				
+				var destSolid = maps[client.map].solidData[data.x][data.y];
+				
+				switch(destSolid){
+				case SD_LEDGE_DOWN:
+					if(client.char.x != data.x || client.char.y + 1 != data.y){
+						sendInvalidMove();
+						return;
+					}
+					client.char.direction = DIR_DOWN;
+					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
+					client.char.y += 2;
+					client.char.lastY = client.char.y;
+					client.retransmitChar = true;
+					break;
+				case SD_LEDGE_LEFT:
+					if(client.char.x - 1 != data.x || client.char.y != data.y){
+						sendInvalidMove();
+						return;
+					}
+					client.char.direction = DIR_LEFT;
+					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
+					client.char.x -= 2;
+					client.char.lastX = client.char.x;
+					client.retransmitChar = true;
+					break;
+				case SD_LEDGE_UP:
+					if(client.char.x != data.x || client.char.y - 1 != data.y){
+						sendInvalidMove();
+						return;
+					}
+					client.char.direction = DIR_UP;
+					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
+					client.char.y -= 2;
+					client.char.lastY = client.char.y;
+					client.retransmitChar = true;
+					break;
+				case SD_LEDGE_RIGHT:
+					if(client.char.x + 1 != data.x || client.char.y != data.y){
+						sendInvalidMove();
+						return;
+					}
+					client.char.direction = DIR_RIGHT;
+					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
+					client.char.x += 2;
+					client.char.lastX = client.char.x;
+					client.retransmitChar = true;
+					break;
+				default: return;
+				}
+				
 			});
 			
 			socket.on('turn', function(data){
@@ -505,6 +579,11 @@ function startIO(){
 			}
 		}
 		
+		function sendInvalidMove(){
+			client.lastAckMove = +new Date();
+			socket.emit('invalidMove', {ack:client.lastAckMove, x: client.char.x, y: client.char.y});
+		}
+		
 		function getClientMapInstance(){
 			return mapInstances[client.map][client.mapInstance];
 		}
@@ -596,6 +675,7 @@ function createInstance(map){
 	instance.messages = [];
 	instance.warpsUsed = [];
 	instance.cremoved = [];
+	instance.ledgesUsed = [];
 	
 	instance.cachedUpdate = null;
 	instance.generateUpdate = function(){
@@ -616,11 +696,13 @@ function createInstance(map){
 		if(instance.messages.length > 0) obj.messages = instance.messages;
 		if(instance.warpsUsed.length > 0) obj.warpsUsed = instance.warpsUsed;
 		if(instance.cremoved.length > 0) obj.cremoved = instance.cremoved;
+		if(instance.ledgesUsed.length > 0) obj.ledgesUsed = instance.ledgesUsed;
 		
 		instance.cachedUpdate = JSON.stringify(obj);
 		instance.messages.length = 0;
 		instance.warpsUsed.length = 0;
 		instance.cremoved.length = 0;
+		instance.ledgesUsed.length = 0;
 	}
 	
 	instance.addClient = function(client){

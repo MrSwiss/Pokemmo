@@ -1,5 +1,65 @@
 $estr = function() { return js.Boot.__string_rec(this,''); }
 if(typeof pokemmo=='undefined') pokemmo = {}
+pokemmo.GameObject = function(x_,y_,direction_) {
+	if( x_ === $_ ) return;
+	$s.push("pokemmo.GameObject::new");
+	var $spos = $s.length;
+	if(direction_ == null) direction_ = 0;
+	this.x = x_;
+	this.y = y_;
+	this.direction = direction_;
+	this.renderPriority = 0;
+	this.randInt = Math.floor(Math.random() * 100000);
+	pokemmo.Game.curGame.gameObjects.push(this);
+	$s.pop();
+}
+pokemmo.GameObject.__name__ = ["pokemmo","GameObject"];
+pokemmo.GameObject.prototype.x = null;
+pokemmo.GameObject.prototype.y = null;
+pokemmo.GameObject.prototype.direction = null;
+pokemmo.GameObject.prototype.randInt = null;
+pokemmo.GameObject.prototype.renderPriority = null;
+pokemmo.GameObject.prototype.destroy = function() {
+	$s.push("pokemmo.GameObject::destroy");
+	var $spos = $s.length;
+	pokemmo.Game.curGame.gameObjects.remove(this);
+	$s.pop();
+}
+pokemmo.GameObject.prototype.tick = function() {
+	$s.push("pokemmo.GameObject::tick");
+	var $spos = $s.length;
+	$s.pop();
+}
+pokemmo.GameObject.prototype.render = function(ctx) {
+	$s.push("pokemmo.GameObject::render");
+	var $spos = $s.length;
+	$s.pop();
+}
+pokemmo.GameObject.prototype.__class__ = pokemmo.GameObject;
+if(!pokemmo.entities) pokemmo.entities = {}
+pokemmo.entities.CLedgeSmoke = function(x,y) {
+	if( x === $_ ) return;
+	$s.push("pokemmo.entities.CLedgeSmoke::new");
+	var $spos = $s.length;
+	pokemmo.GameObject.call(this,x,y);
+	this.step = 0;
+	this.renderPriority = -100;
+	$s.pop();
+}
+pokemmo.entities.CLedgeSmoke.__name__ = ["pokemmo","entities","CLedgeSmoke"];
+pokemmo.entities.CLedgeSmoke.__super__ = pokemmo.GameObject;
+for(var k in pokemmo.GameObject.prototype ) pokemmo.entities.CLedgeSmoke.prototype[k] = pokemmo.GameObject.prototype[k];
+pokemmo.entities.CLedgeSmoke.prototype.step = null;
+pokemmo.entities.CLedgeSmoke.prototype.render = function(ctx) {
+	$s.push("pokemmo.entities.CLedgeSmoke::render");
+	var $spos = $s.length;
+	var map = pokemmo.Map.getCurMap();
+	ctx.drawImage(pokemmo.Game.res["miscSprites"].obj,96,Math.floor(this.step / 3) * 32,32,32,this.x * map.tilewidth + pokemmo.Renderer.getOffsetX(),this.y * map.tileheight + pokemmo.Renderer.getOffsetY(),32,32);
+	++this.step;
+	if(this.step >= 9) this.destroy();
+	$s.pop();
+}
+pokemmo.entities.CLedgeSmoke.prototype.__class__ = pokemmo.entities.CLedgeSmoke;
 pokemmo.Chat = function() { }
 pokemmo.Chat.__name__ = ["pokemmo","Chat"];
 pokemmo.Chat.chatBox = null;
@@ -462,43 +522,6 @@ pokemmo.transitions.FadeIn.prototype.render = function(ctx) {
 	$s.pop();
 }
 pokemmo.transitions.FadeIn.prototype.__class__ = pokemmo.transitions.FadeIn;
-pokemmo.GameObject = function(x_,y_,direction_) {
-	if( x_ === $_ ) return;
-	$s.push("pokemmo.GameObject::new");
-	var $spos = $s.length;
-	if(direction_ == null) direction_ = 0;
-	this.x = x_;
-	this.y = y_;
-	this.direction = direction_;
-	this.renderPriority = 0;
-	this.randInt = Math.floor(Math.random() * 100000);
-	pokemmo.Game.curGame.gameObjects.push(this);
-	$s.pop();
-}
-pokemmo.GameObject.__name__ = ["pokemmo","GameObject"];
-pokemmo.GameObject.prototype.x = null;
-pokemmo.GameObject.prototype.y = null;
-pokemmo.GameObject.prototype.direction = null;
-pokemmo.GameObject.prototype.randInt = null;
-pokemmo.GameObject.prototype.renderPriority = null;
-pokemmo.GameObject.prototype.destroy = function() {
-	$s.push("pokemmo.GameObject::destroy");
-	var $spos = $s.length;
-	pokemmo.Game.curGame.gameObjects.remove(this);
-	$s.pop();
-}
-pokemmo.GameObject.prototype.tick = function() {
-	$s.push("pokemmo.GameObject::tick");
-	var $spos = $s.length;
-	$s.pop();
-}
-pokemmo.GameObject.prototype.render = function(ctx) {
-	$s.push("pokemmo.GameObject::render");
-	var $spos = $s.length;
-	$s.pop();
-}
-pokemmo.GameObject.prototype.__class__ = pokemmo.GameObject;
-if(!pokemmo.entities) pokemmo.entities = {}
 pokemmo.entities.CPokemon = function(id,x,y,dir) {
 	if( id === $_ ) return;
 	$s.push("pokemmo.entities.CPokemon::new");
@@ -510,6 +533,9 @@ pokemmo.entities.CPokemon = function(id,x,y,dir) {
 	this.walking = false;
 	this.walkingPerc = 0.0;
 	this.walkingHasMoved = false;
+	this.jumping = false;
+	this.renderOffsetX = 0;
+	this.renderOffsetY = 0;
 	this.targetX = x;
 	this.targetY = y;
 	$s.pop();
@@ -522,8 +548,11 @@ pokemmo.entities.CPokemon.prototype.canDrawGrass = null;
 pokemmo.entities.CPokemon.prototype.walking = null;
 pokemmo.entities.CPokemon.prototype.walkingPerc = null;
 pokemmo.entities.CPokemon.prototype.walkingHasMoved = null;
+pokemmo.entities.CPokemon.prototype.jumping = null;
 pokemmo.entities.CPokemon.prototype.targetX = null;
 pokemmo.entities.CPokemon.prototype.targetY = null;
+pokemmo.entities.CPokemon.prototype.renderOffsetX = null;
+pokemmo.entities.CPokemon.prototype.renderOffsetY = null;
 pokemmo.entities.CPokemon.prototype.render = function(ctx) {
 	$s.push("pokemmo.entities.CPokemon::render");
 	var $spos = $s.length;
@@ -549,6 +578,8 @@ pokemmo.entities.CPokemon.prototype.tick = function() {
 	} else {
 		this.walkingPerc += 0.1;
 		if(this.walkingPerc >= (1 - 0.3) / 2 && !this.walkingHasMoved) {
+			var frontPosition = this.getFrontPosition();
+			if(pokemmo.Map.getCurMap().isTileLedge(frontPosition.x,frontPosition.y) && pokemmo.Map.getCurMap().getLedgeDir(frontPosition.x,frontPosition.y) == this.direction) this.useLedge();
 			switch(this.direction) {
 			case 1:
 				this.x -= 1;
@@ -580,7 +611,7 @@ pokemmo.entities.CPokemon.prototype.getRenderPos = function() {
 	var $spos = $s.length;
 	var curMap = pokemmo.Map.getCurMap();
 	if(!this.walking) {
-		var $tmp = { x : Math.floor(this.x * curMap.tilewidth - 64 / 4), y : Math.floor(this.y * curMap.tileheight - 64 / 2)};
+		var $tmp = { x : Math.floor(this.x * curMap.tilewidth - 64 / 4 + this.renderOffsetX), y : Math.floor(this.y * curMap.tileheight - 64 / 2 + this.renderOffsetY)};
 		$s.pop();
 		return $tmp;
 	}
@@ -616,14 +647,78 @@ pokemmo.entities.CPokemon.prototype.getRenderPos = function() {
 			break;
 		}
 	}
-	var $tmp = { x : Math.floor(destX), y : Math.floor(destY)};
+	var $tmp = { x : Math.floor(destX + this.renderOffsetX), y : Math.floor(destY + this.renderOffsetY)};
 	$s.pop();
 	return $tmp;
+	$s.pop();
+}
+pokemmo.entities.CPokemon.prototype.useLedge = function() {
+	$s.push("pokemmo.entities.CPokemon::useLedge");
+	var $spos = $s.length;
+	var me = this;
+	var front = this.getFrontPosition();
+	var dest = this.getFrontPosition(2);
+	var dir = this.direction;
+	this.walking = true;
+	this.jumping = true;
+	var tmpCount = 0;
+	var renderFunc = null;
+	renderFunc = function() {
+		$s.push("pokemmo.entities.CPokemon::useLedge@148");
+		var $spos = $s.length;
+		++tmpCount;
+		if(me.x != dest.x || me.y != dest.y) me.walking = true;
+		me.direction = dir;
+		me.renderOffsetY = Math.min(Math.round(8 / 15 * (tmpCount * tmpCount) + -8 * tmpCount),0);
+		if(tmpCount == 18) new pokemmo.entities.CLedgeSmoke(me.x,me.y);
+		if(tmpCount >= 20) {
+			me.renderOffsetY = 0;
+			me.walking = false;
+			me.walkingPerc = 0.0;
+			me.walkingHasMoved = false;
+			me.jumping = false;
+			me.x = dest.x;
+			me.y = dest.y;
+			pokemmo.Renderer.unHookRender(renderFunc);
+		}
+		$s.pop();
+	};
+	pokemmo.Renderer.hookRender(renderFunc);
+	$s.pop();
+}
+pokemmo.entities.CPokemon.prototype.getFrontPosition = function(n) {
+	$s.push("pokemmo.entities.CPokemon::getFrontPosition");
+	var $spos = $s.length;
+	if(n == null) n = 1;
+	switch(this.direction) {
+	case 1:
+		var $tmp = { x : this.x - n, y : this.y};
+		$s.pop();
+		return $tmp;
+	case 3:
+		var $tmp = { x : this.x + n, y : this.y};
+		$s.pop();
+		return $tmp;
+	case 2:
+		var $tmp = { x : this.x, y : this.y - n};
+		$s.pop();
+		return $tmp;
+	case 0:
+		var $tmp = { x : this.x, y : this.y + n};
+		$s.pop();
+		return $tmp;
+	}
+	$s.pop();
+	return null;
 	$s.pop();
 }
 pokemmo.entities.CPokemon.prototype.tickBot = function() {
 	$s.push("pokemmo.entities.CPokemon::tickBot");
 	var $spos = $s.length;
+	if(this.jumping) {
+		$s.pop();
+		return;
+	}
 	if(this.walking) {
 		$s.pop();
 		return;
@@ -3929,8 +4024,9 @@ pokemmo.CCharacter = function(data) {
 	this.renderOffsetX = this.renderOffsetY = 0;
 	this.renderAlpha = 1.0;
 	this.freezeTicks = 0;
+	this.jumping = false;
 	this.image = pokemmo.Game.curGame.getImage("resources/chars/" + data.type + ".png",function() {
-		$s.push("pokemmo.CCharacter::new@91");
+		$s.push("pokemmo.CCharacter::new@94");
 		var $spos = $s.length;
 		me.loaded = true;
 		$s.pop();
@@ -3962,6 +4058,7 @@ pokemmo.CCharacter.prototype.onTarget = null;
 pokemmo.CCharacter.prototype.battleEnemy = null;
 pokemmo.CCharacter.prototype.image = null;
 pokemmo.CCharacter.prototype.freezeTicks = null;
+pokemmo.CCharacter.prototype.jumping = null;
 pokemmo.CCharacter.prototype.followerObj = null;
 pokemmo.CCharacter.prototype.transmitWalk = null;
 pokemmo.CCharacter.prototype.createdTick = null;
@@ -4131,19 +4228,25 @@ pokemmo.CCharacter.prototype.tickWalking = function() {
 		this.animationStep += 0.20;
 		if(this.animationStep > 4.0) this.animationStep -= 4.0;
 		if(this.walkingPerc >= 0.7 / 2 && !this.walkingHasMoved) {
-			if(this.username == pokemmo.Game.username && !this.noclip) {
+			if(this.isControllable() && !this.noclip) {
 				var tmpPos = this.getFrontPosition();
 				var tmpWarp = pokemmo.entities.CWarp.getWarpAt(tmpPos.x,tmpPos.y);
 				if(tmpWarp != null) {
 					if(Std["is"](tmpWarp,pokemmo.entities.CDoor)) this.enterDoor(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CWarpArrow)) this.enterWarpArrow(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CStairs)) this.enterStairs(tmpWarp);
 					$s.pop();
 					return;
-				} else if(this.willMoveIntoAWall()) {
-					pokemmo.Connection.socket.emit("turn",{ dir : this.direction});
-					this.walking = false;
-					$s.pop();
-					return;
+				} else {
+					var frontPosition = this.getFrontPosition();
+					if(pokemmo.Map.getCurMap().isTileLedge(frontPosition.x,frontPosition.y) && pokemmo.Map.getCurMap().getLedgeDir(frontPosition.x,frontPosition.y) == this.direction) this.useLedge(); else if(this.willMoveIntoAWall()) {
+						pokemmo.Connection.socket.emit("turn",{ dir : this.direction});
+						this.walking = false;
+						$s.pop();
+						return;
+					}
 				}
+			} else {
+				var frontPosition = this.getFrontPosition();
+				if(pokemmo.Map.getCurMap().isTileLedge(frontPosition.x,frontPosition.y) && pokemmo.Map.getCurMap().getLedgeDir(frontPosition.x,frontPosition.y) == this.direction) this.useLedge();
 			}
 			if(!pokemmo.Game.curGame.inBattle || this.username != pokemmo.Game.username) {
 				this.lastX = this.x;
@@ -4170,7 +4273,7 @@ pokemmo.CCharacter.prototype.tickWalking = function() {
 		}
 		if(this.walkingPerc >= 1.0) {
 			if(this.username == pokemmo.Game.username) {
-				if(!pokemmo.Game.curGame.inBattle && !this.willMoveIntoAWall() && (this.direction == 1 && !!pokemmo.UI.keysDown[37] || this.direction == 0 && !!pokemmo.UI.keysDown[40] || this.direction == 3 && !!pokemmo.UI.keysDown[39] || this.direction == 2 && !!pokemmo.UI.keysDown[38])) {
+				if(this.isControllable() && !this.willMoveIntoAWall() && (this.direction == 1 && !!pokemmo.UI.keysDown[37] || this.direction == 0 && !!pokemmo.UI.keysDown[40] || this.direction == 3 && !!pokemmo.UI.keysDown[39] || this.direction == 2 && !!pokemmo.UI.keysDown[38])) {
 					this.walkingHasMoved = false;
 					this.walkingPerc = 0.4;
 				} else {
@@ -4336,7 +4439,7 @@ pokemmo.CCharacter.prototype.enterDoor = function(door) {
 	var tmpCount = 0;
 	var doorRenderTransition = null;
 	doorRenderTransition = function() {
-		$s.push("pokemmo.CCharacter::enterDoor@434");
+		$s.push("pokemmo.CCharacter::enterDoor@446");
 		var $spos = $s.length;
 		++tmpCount;
 		if(tmpCount < 15) {
@@ -4388,7 +4491,7 @@ pokemmo.CCharacter.prototype.enterWarpArrow = function(warp) {
 	var tmpCount = 0;
 	var warpRenderTransition = null;
 	warpRenderTransition = function() {
-		$s.push("pokemmo.CCharacter::enterWarpArrow@491");
+		$s.push("pokemmo.CCharacter::enterWarpArrow@503");
 		var $spos = $s.length;
 		++tmpCount;
 		if(me.username == pokemmo.Game.username) {
@@ -4429,7 +4532,7 @@ pokemmo.CCharacter.prototype.enterStairs = function(warp) {
 	var tmpCount = 0;
 	var warpRenderTransition = null;
 	warpRenderTransition = function() {
-		$s.push("pokemmo.CCharacter::enterStairs@534");
+		$s.push("pokemmo.CCharacter::enterStairs@546");
 		var $spos = $s.length;
 		++tmpCount;
 		me.walking = true;
@@ -4463,6 +4566,46 @@ pokemmo.CCharacter.prototype.enterStairs = function(warp) {
 	pokemmo.Renderer.hookRender(warpRenderTransition);
 	$s.pop();
 }
+pokemmo.CCharacter.prototype.useLedge = function() {
+	$s.push("pokemmo.CCharacter::useLedge");
+	var $spos = $s.length;
+	var me = this;
+	var front = this.getFrontPosition();
+	var dest = this.getFrontPosition(2);
+	this.walking = true;
+	this.noclip = true;
+	this.transmitWalk = false;
+	this.jumping = true;
+	if(this.username == pokemmo.Game.username) pokemmo.Game.curGame.playerCanMove = false;
+	var tmpCount = 0;
+	var renderFunc = null;
+	renderFunc = function() {
+		$s.push("pokemmo.CCharacter::useLedge@608");
+		var $spos = $s.length;
+		++tmpCount;
+		if(me.x != dest.x || me.y != dest.y) me.walking = true;
+		me.renderOffsetY = Math.min(Math.round(8 / 15 * (tmpCount * tmpCount) + -8 * tmpCount),0);
+		if(tmpCount == 18) new pokemmo.entities.CLedgeSmoke(me.x,me.y);
+		if(tmpCount >= 20) {
+			me.renderOffsetY = 0;
+			me.walking = false;
+			if(me.username == pokemmo.Game.username) pokemmo.Game.curGame.playerCanMove = true;
+			me.noclip = false;
+			me.jumping = false;
+			me.transmitWalk = true;
+			me.freezeTicks = 2;
+			me.x = dest.x;
+			me.y = dest.y;
+			me.lastX = me.x;
+			me.lastY = me.y;
+			pokemmo.Renderer.unHookRender(renderFunc);
+		}
+		$s.pop();
+	};
+	if(this.username == pokemmo.Game.username) pokemmo.Connection.socket.emit("useLedge",{ ack : pokemmo.Connection.lastAckMove, x : front.x, y : front.y});
+	pokemmo.Renderer.hookRender(renderFunc);
+	$s.pop();
+}
 pokemmo.CCharacter.prototype.willMoveIntoAWall = function() {
 	$s.push("pokemmo.CCharacter::willMoveIntoAWall");
 	var $spos = $s.length;
@@ -4473,24 +4616,25 @@ pokemmo.CCharacter.prototype.willMoveIntoAWall = function() {
 	return $tmp;
 	$s.pop();
 }
-pokemmo.CCharacter.prototype.getFrontPosition = function() {
+pokemmo.CCharacter.prototype.getFrontPosition = function(n) {
 	$s.push("pokemmo.CCharacter::getFrontPosition");
 	var $spos = $s.length;
+	if(n == null) n = 1;
 	switch(this.direction) {
 	case 1:
-		var $tmp = { x : this.x - 1, y : this.y};
+		var $tmp = { x : this.x - n, y : this.y};
 		$s.pop();
 		return $tmp;
 	case 3:
-		var $tmp = { x : this.x + 1, y : this.y};
+		var $tmp = { x : this.x + n, y : this.y};
 		$s.pop();
 		return $tmp;
 	case 2:
-		var $tmp = { x : this.x, y : this.y - 1};
+		var $tmp = { x : this.x, y : this.y - n};
 		$s.pop();
 		return $tmp;
 	case 0:
-		var $tmp = { x : this.x, y : this.y + 1};
+		var $tmp = { x : this.x, y : this.y + n};
 		$s.pop();
 		return $tmp;
 	}
@@ -4533,12 +4677,13 @@ pokemmo.CCharacter.prototype.render = function(ctx) {
 	if(pokemmo.Renderer.numRTicks - this.createdTick < 10) ctx.globalAlpha *= (pokemmo.Renderer.numRTicks - this.createdTick) / 10;
 	var offsetX = pokemmo.Renderer.getOffsetX();
 	var offsetY = pokemmo.Renderer.getOffsetY();
+	var map = pokemmo.Map.getCurMap();
 	var renderPos = this.getRenderPos();
 	var dirId = this.direction * 32;
 	if(this.lockDirection != -1) dirId = this.lockDirection * 32;
 	if(this.username != pokemmo.Game.username && (pokemmo.UI.mouseX >= renderPos.x + offsetX - 5 && pokemmo.UI.mouseY >= renderPos.y + offsetY - 5 && pokemmo.UI.mouseX < renderPos.x + 32 + offsetX + 10 && pokemmo.UI.mouseY < renderPos.y + 64 + offsetY + 10)) {
 		pokemmo.Renderer.drawOverlay(ctx,renderPos.x + offsetX,renderPos.y + offsetY,32,64,function(ctx1) {
-			$s.push("pokemmo.CCharacter::render@642");
+			$s.push("pokemmo.CCharacter::render@706");
 			var $spos = $s.length;
 			ctx1.drawImage(me.image.obj,dirId,Math.floor(me.animationStep) * 64,32,64,0,0,32,64);
 			$s.pop();
@@ -4556,8 +4701,8 @@ pokemmo.CCharacter.prototype.render = function(ctx) {
 			if(pokemmo.UI.mouseDown && !pokemmo.UI.mouseWasDown) pokemmo.Connection.socket.emit("kickPlayer",{ username : this.username});
 		}
 	}
+	if(this.jumping) ctx.drawImage(pokemmo.Game.res["miscSprites"].obj,0,64,32,32,renderPos.x + offsetX,renderPos.y + offsetY - this.renderOffsetY + 30,32,32);
 	ctx.drawImage(this.image.obj,dirId,Math.floor(this.animationStep) * 64,32,64,renderPos.x + offsetX,renderPos.y + offsetY,32,64);
-	var map = pokemmo.Game.curGame.map;
 	if(map.isTileGrass(this.x,this.y) && !this.walking) ctx.drawImage(pokemmo.Game.res["miscSprites"].obj,0,0,32,32,this.x * map.tilewidth + offsetX,this.y * map.tileheight + offsetY,32,32);
 	if(this.inBattle && this.username != pokemmo.Game.username) {
 		ctx.save();
@@ -4699,6 +4844,30 @@ pokemmo.Map.prototype.isTileLedge = function(x,y) {
 	var $tmp = this.hasTileProp(x,y,"ledge");
 	$s.pop();
 	return $tmp;
+	$s.pop();
+}
+pokemmo.Map.prototype.getLedgeDir = function(x,y) {
+	$s.push("pokemmo.Map::getLedgeDir");
+	var $spos = $s.length;
+	var _g1 = 0, _g = this.layers.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var layer = this.layers[i];
+		if(layer.type != "tilelayer") continue;
+		if(layer.properties.solid == "0") continue;
+		var j = y * layer.width + x;
+		var tileid = layer.data[j];
+		if(tileid == null || tileid == 0) continue;
+		var tileset = pokemmo.Tileset.getTilesetOfTile(this,tileid);
+		if(tileset == null) throw "Tileset is null";
+		if(tileset.tileproperties[tileid - tileset.firstgid].ledge == "1") {
+			var $tmp = Number(tileset.tileproperties[tileid - tileset.firstgid].ledge_dir) || 0;
+			$s.pop();
+			return $tmp;
+		}
+	}
+	$s.pop();
+	return -1;
 	$s.pop();
 }
 pokemmo.Map.prototype.hasTileProp = function(x,y,prop) {
