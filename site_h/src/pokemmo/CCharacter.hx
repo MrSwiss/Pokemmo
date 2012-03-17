@@ -372,7 +372,7 @@ class CCharacter extends GameObject {
 						case Game.DIR_UP: tmpY -= 2;
 						case Game.DIR_DOWN: tmpY += 2;
 					}
-					if(curMap.isTileSolid(tmpX, tmpY) || curMap.isTileWater(tmpX, tmpY)){
+					if (curMap.isTileSolid(tmpX, tmpY) || curMap.isTileWater(tmpX, tmpY) || curMap.isTileLedge(tmpX, tmpY)) {
 						tmpX = battleX;
 						tmpY = battleY;
 						switch(direction){
@@ -644,7 +644,7 @@ class CCharacter extends GameObject {
 	public function willMoveIntoAWall():Bool{
 		var pos = getFrontPosition();
 		var map = Game.curGame.map;
-		return map.isTileSolid(pos.x, pos.y) || map.isTileWater(pos.x, pos.y);
+		return map.isTileSolid(pos.x, pos.y) || map.isTileWater(pos.x, pos.y) || map.isTileLedge(pos.x, pos.y);
 	}
 	
 	private function getFrontPosition(n:Int = 1):Point{

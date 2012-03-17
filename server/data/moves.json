@@ -387,7 +387,7 @@
 // Hits both opponents in a double battle. In a triple battle, String Shot will only hit opposing adjacent Pokémon
 // Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch	
 	"string shot": {
-		"name": "Sring Shot",
+		"name": "String Shot",
 		"type": "bug",
 		"pp": 40,
 		"pp_max": 64,
@@ -1367,5 +1367,620 @@
 		"contact": true,
 		"moveType": "simple",
 		"flinchChance": 0.3
+	},
+	
+	// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move King's Rock
+	"acid armor": { 
+		"name": "Acid Armor",
+		"type": "poison",
+		"pp": 40,
+		"pp_max": 64,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "2"
+	},
+
+// targeting May affect anyone but the user
+// unaffected by modifications to the Accuracy stat and Evasion stat 
+// It will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig, Fly and Dive
+// TM40
+// Affected by Protect, Mirror Move, King's Rock, Not affected by Magic Coat, Snatch	
+	"aerial ace": { 
+		"name": "Aerial Ace",
+		"type": "flying",
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": true,
+		"moveType": "simple"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move King's Rock	
+	"agility": { 
+		"name": "Agility",
+		"type": "psychic",
+		"pp": 30,
+		"pp_max": 48,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "speed",
+		"buffPlayerAmount": "2"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock		
+	"amensia": { 
+		"name": "Amnesia",
+		"type": "psychic",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "spDef",
+		"buffPlayerAmount": "2"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Mirror Move, Not affected by Magic Coat, Snatch, King's Rock	
+	"ancientpower": { 
+		"name": "AncientPower",
+		"type": "rock",
+		"special": true,
+		"pp": 5,
+		"pp_max": 8,
+		"power": 60,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"buffPlayerChance": 0.1,
+		"buffPlayerStat": "atk,def,spAtk,spDef,speed",
+		"buffPlayerAmount": "1"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock		
+	"barrier": { 
+		"name": "Barrier",
+		"type": "psychic",
+		"pp": 30,
+		"pp_max": 48,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "2"
+	},
+
+// TM08
+// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock	
+	"bulk up": { 
+		"name": "Bulk Up",
+		"type": "fighting",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "atk,def",
+		"buffPlayerAmount": "1"
+	},
+
+// TM04
+// Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock		
+	"calm mind": { 
+		"name": "Calm Mind",
+		"type": "psychic",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "spAtk,spDef",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Will fail if the target has a Substitute, is already confused, or has the ability Own Tempo
+// Affected by Protect, Magic Coat, Magic Bounce, Not affected by King's Rock, Snatch			
+	"confuse ray": { 
+		"name": "Confuse Ray",
+		"type": "ghost",
+		"pp": 10,
+		"pp_max": 16,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"confusionChance": 1.0
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock		
+	"confusion": { 
+		"name": "Confusion",
+		"type": "psychic",
+		"special": true,
+		"pp": 25,
+		"pp_max": 40,
+		"power": 50,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"confusionChance": 0.1
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock	
+	"cosmic power": { 
+		"name": "Cosmic Power",
+		"type": "psychic",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def,spDef",
+		"buffPlayerAmount": "1"
+	},
+
+// Power of the move Rollout, Ice Ball will be doubled for the user as long as it remains in battle. Effect cannot be Baton Passed.	
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"defense curl": { 
+		"name": "Defense Curl",
+		"type": "normal",
+		"pp": 40,
+		"pp_max": 64,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock		
+	"dizzy punch": { 
+		"name": "Dizzy Punch",
+		"type": "normal",
+		"pp": 10,
+		"pp_max": 16,
+		"power": 70,
+		"accuracy": 1.0,
+		"contact": true,
+		"moveType": "simple",
+		"confusionChance": 0.2
+	},
+
+// TM32	
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"double team": { 
+		"name": "Double Team",
+		"type": "normal",
+		"pp": 15,
+		"pp_max": 24,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "evasion",
+		"buffPlayerAmount": "1"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"dragon dance": { 
+		"name": "Dragon Dance",
+		"type": "dragon",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "atk,speed",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock		
+	"dynamicpunch": { 
+		"name": "DynamicPunch",
+		"type": "fighting",
+		"pp": 5,
+		"pp_max": 8,
+		"power": 100,
+		"accuracy": 0.5,
+		"contact": true,
+		"moveType": "simple",
+		"confusionChance": 1.0
+	},
+
+
+// TM26
+// inflicts double damage if the target is in the underground (first turn) stage of Dig
+// in double battles, it strikes all opponents as well as the user's teammates, but with reduced power
+// Affected by Protect, Mirror Move, King's Rock Not affected by Magic Coat, Snatch		
+	"earthquake": { 
+		"name": "Earthquake",
+		"type": "ground",
+		"pp": 10,
+		"pp_max": 16,
+		"power": 100,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Unaffected by modifications to the Accuracy stat or Evasion stat
+// will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig, Fly and Dive
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"Faint Attack": { 
+		"name": "Faint Attack",
+		"type": "dark",
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": true,
+		"moveType": "simple"
+	},
+	
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"growth": { 
+		"name": "Growth",
+		"type": "normal",
+		"pp": 40,
+		"pp_max": 64,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "spAtk",
+		"buffPlayerAmount": "1"
+	},	
+
+// targeting May affect anyone but the user	
+// Will double the damage on an opponent that is in the first stage of Fly or Bounce
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"gust": { 
+		"name": "Gust",
+		"type": "flying",
+		"special": true,
+		"pp": 35,
+		"pp_max": 56,
+		"power": 40,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock	
+	"harden": { 
+		"name": "Harden",
+		"type": "normal",
+		"pp": 30,
+		"pp_max": 48,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "1"
+	},	
+
+// targeting May affect anyone adjacent to the user
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"low kick": {
+		"name": "Low Kick",
+		"type": "fighting",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 50,
+		"accuracy": 1.0,
+		"contact": true,
+		"moveType": "simple",
+		"flinchChance": 0.3
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Unaffected by modifications to the Accuracy stat or Evasion stat
+// will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig, Fly and Dive
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"magical leaf": { 
+		"name": "Magical Leaf",
+		"type": "grass",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "simple"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"meditate": { 
+		"name": "Meditate",
+		"type": "normal",
+		"pp": 40,
+		"pp_max": 64,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "atk",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock		
+	"metal claw": { 
+		"name": "Metal Claw",
+		"type": "steel",
+		"pp": 35,
+		"pp_max": 56,
+		"power": 50,
+		"accuracy": 0.95,
+		"contact": true,
+		"moveType": "simple",
+		"buffPlayerChance": 0.1,
+		"buffPlayerStat": "atk",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch			
+	"meteor mash": { 
+		"name": "Meteor Mash",
+		"type": "steel",
+		"pp": 10,
+		"pp_max": 16,
+		"power": 100,
+		"accuracy": 0.85,
+		"contact": true,
+		"moveType": "simple",
+		"buffPlayerChance": 0.2,
+		"buffPlayerStat": "atk",
+		"buffPlayerAmount": "1"
+	},
+
+// Sprite change?	
+// Will receive double damage from Stomp	
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
+	"minimize": { 
+		"name": "Minimize",
+		"type": "normal",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "evasion",
+		"buffPlayerAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"overheat": {
+		"name": "Overheat",
+		"type": "fire",
+		"special": true,
+		"pp": 5,
+		"pp_max": 8,
+		"power": 140,
+		"accuracy": 0.9,
+		"contact": false,
+		"moveType": "simple",
+		"debuffPlayerStat": "spAtk",
+		"debuffPlayerAmount": 2
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock	
+	"psybeam": { 
+		"name": "Psybeam",
+		"type": "psychic",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 65,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"confusionChance": 0.1
+	},	
+	
+// targeting May affect anyone adjacent to the user		
+// Unaffected by modifications to the Accuracy stat or Evasion stat
+// will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig, Fly and Dive
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"shadow punch": { 
+		"name": "Shadow Punch",
+		"type": "ghost",
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": true,
+		"moveType": "simple"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock	
+	"sharpen": { 
+		"name": "Sharpen",
+		"type": "normal",
+		"pp": 30,
+		"pp_max": 48,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "atk",
+		"buffPlayerAmount": "1"
+	},
+
+// TM34
+// targeting May affect anyone adjacent to the user		
+// Unaffected by modifications to the Accuracy stat or Evasion stat
+// will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig, Fly and Dive
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"shock wave": { 
+		"name": "Shock Wave",
+		"type": "electric",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "simple"
+	},	
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"signal beam": { 
+		"name": "Signal Beam",
+		"type": "bug",
+		"special": true,
+		"pp": 15,
+		"pp_max": 24,
+		"power": 75,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"confusionChance": 0.1
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"silver wind": { 
+		"name": "Silver Wind",
+		"type": "bug",
+		"pp": 5,
+		"pp_max": 8,
+		"power": 60,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"buffPlayerChance": 0.1,
+		"buffPlayerStat": "atk,def,spAtk,spDef,speed",
+		"buffPlayerAmount": "1"
+	},
+
+// TM47	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"steel wing": { 
+		"name": "Steel Wing",
+		"type": "steel",
+		"pp": 25,
+		"pp_max": 40,
+		"power": 70,
+		"accuracy": 0.1,
+		"contact": true,
+		"moveType": "simple",
+		"buffPlayerChance": 0.1,
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "1"
+	},	
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock	
+	"superpower": {
+		"name": "Superpower",
+		"type": "fighting",
+		"pp": 5,
+		"pp_max": 8,
+		"power": 120,
+		"accuracy": 1.0,
+		"contact": true,
+		"moveType": "simple",
+		"debuffPlayerStat": "atk,def",
+		"debuffPlayerAmount": 1
+	},
+
+// targeting Affects all adjacent foes, but not allies
+// Hits both opposing Pokémon in a double battle
+// Unaffected by modifications to the Accuracy stat or Evasion stat
+// will not hit a Pokémon during the semi-invulnerable turn of moves such as Dig and fly
+// moves such as Protect also allow the opponent to avoid taking damage
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"swift": { 
+		"name": "Swift",
+		"type": "normal",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "simple"
+	},
+
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock	
+	"swords dance": { 
+		"name": "Swords Dance",
+		"type": "normal",
+		"pp": 30,
+		"pp_max": 48,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "atk",
+		"buffPlayerAmount": "2"
+	},	
+
+// Affected by Protect, Magic Coat, Magic Bounce, Not affected by King's Rock, Snatch	
+	"tickle": {
+		"name": "Tickle",
+		"type": "normal",
+		"pp": 20,
+		"pp_max": 32,
+		"accuracy": 1.0,
+		"contact": false,
+		"type": "debuff",
+		"debuffStat": "atk,def",
+		"debuffAmount": "1"
+	},	
+
+// hits both opponents in a double battle. In a triple battle, Twister will only hit opposing adjacent Pokémon.
+// If used against a target in the semi-invulnerable turns of Fly or Bounce, Twister will deal double damage
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"twister": {
+		"name": "Twister",
+		"type": "dragon",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 40,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"flinchChance": 0.2
+	},
+
+// TM03	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"water pulse": { 
+		"name": "Water Pulse",
+		"type": "water",
+		"special": true,
+		"pp": 20,
+		"pp_max": 32,
+		"power": 60,
+		"accuracy": 1.0,
+		"contact": false,
+		"moveType": "simple",
+		"confusionChance": 0.2
+	},
+	
+// Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock	
+	"withdraw": { 
+		"name": "Withdraw",
+		"type": "water",
+		"pp": 40,
+		"pp_max": 65,
+		"accuracy": -1,
+		"contact": false,
+		"moveType": "buff",
+		"buffPlayerStat": "def",
+		"buffPlayerAmount": "1"
 	}
 }

@@ -20,6 +20,8 @@ class Map {
 	public var tilesets:Array<Tileset>;
 	public var layers:Array<Layer>;
 	
+	public var dataLayer:Layer;
+	
 	public var width:Int;
 	public var height:Int;
 	public var tilewidth:Int;
@@ -48,7 +50,12 @@ class Map {
 		}
 		
 		for (i in 0...data.layers.length) {
-			layers.push(new Layer(data.layers[i]));
+			var layer = new Layer(data.layers[i]);
+			if (layer.properties.data_layer == '1') {
+				dataLayer = layer;
+			}else{
+				layers.push(layer);
+			}
 		}
 	}
 	
@@ -106,47 +113,36 @@ class Map {
 	}
 	
 	public function getLedgeDir(x:Int, y:Int):Int {
-		for (i in 0...layers.length) {
-			var layer = layers[i];
-			
-			if (layer.type != 'tilelayer') continue;
-			if (layer.properties.solid == '0') continue;
-			
-			var j = y * layer.width + x;
-			
-			var tileid = layer.data[j];
-			if (tileid == null || tileid == 0) continue;
-			
-			var tileset = Tileset.getTilesetOfTile(this, tileid);
-			
-			if (tileset == null) throw "Tileset is null";
-			
-			if (tileset.tileproperties[tileid - tileset.firstgid].ledge == '1') {
-				return untyped Number(tileset.tileproperties[tileid - tileset.firstgid].ledge_dir) || 0;
-			}
-		}
+		var layer = dataLayer;
 		
+		var j = y * layer.width + x;
+		
+		var tileid = layer.data[j];
+		if (tileid == null || tileid == 0) return -1;
+		
+		var tileset = Tileset.getTilesetOfTile(this, tileid);
+		
+		if (tileset == null) throw "Tileset is null";
+		
+		if (tileset.tileproperties[tileid - tileset.firstgid].ledge == '1') {
+			return untyped Number(tileset.tileproperties[tileid - tileset.firstgid].ledge_dir) || Game.DIR_DOWN;
+		}
 		return -1;
 	}
 	
 	public function hasTileProp(x:Int, y:Int, prop:String):Bool {
-		for (i in 0...layers.length) {
-			var layer = layers[i];
-			
-			if (layer.type != 'tilelayer') continue;
-			if (layer.properties.solid == '0') continue;
-			
-			var j = y * layer.width + x;
-			
-			var tileid = layer.data[j];
-			if (tileid == null || tileid == 0) continue;
-			
-			var tileset = Tileset.getTilesetOfTile(this, tileid);
-			
-			if (tileset == null) throw "Tileset is null";
-			
-			if(tileset.tileproperties[tileid - tileset.firstgid][untyped prop] == '1') return true;
-		}
+		var layer = dataLayer;
+		
+		var j = y * layer.width + x;
+		
+		var tileid = layer.data[j];
+		if (tileid == null || tileid == 0) return false;
+		
+		var tileset = Tileset.getTilesetOfTile(this, tileid);
+		
+		if (tileset == null) throw "Tileset is null";
+		
+		if(tileset.tileproperties[tileid - tileset.firstgid][untyped prop] == '1') return true;
 		
 		return false;
 	}

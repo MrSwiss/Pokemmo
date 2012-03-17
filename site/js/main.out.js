@@ -255,7 +255,7 @@ pokemmo.Layer = function(data) {
 	this.type = data.type;
 	this.properties = data.properties;
 	this.objects = data.objects;
-	if(this.properties == null) this.properties = { solid : "1", overchars : "0", animated : "0"};
+	if(this.properties == null) this.properties = { solid : "1", overchars : "0", animated : "0", data_layer : "0"};
 	$s.pop();
 }
 pokemmo.Layer.__name__ = ["pokemmo","Layer"];
@@ -561,6 +561,7 @@ pokemmo.entities.CPokemon.prototype.render = function(ctx) {
 	var renderPos = this.getRenderPos();
 	var map = pokemmo.Map.getCurMap();
 	if(this.image != null && this.image.loaded) {
+		if(this.jumping) ctx.drawImage(pokemmo.Game.res["miscSprites"].obj,0,64,32,32,renderPos.x + offsetX + 32 / 2,renderPos.y + offsetY - this.renderOffsetY + 30,32,32);
 		ctx.save();
 		ctx.drawImage(this.image.obj,64 * this.direction,Math.floor((pokemmo.Renderer.numRTicks + this.randInt) % 10 / 5) * 64,64,64,renderPos.x + offsetX,renderPos.y + offsetY,64,64);
 		ctx.restore();
@@ -664,7 +665,7 @@ pokemmo.entities.CPokemon.prototype.useLedge = function() {
 	var tmpCount = 0;
 	var renderFunc = null;
 	renderFunc = function() {
-		$s.push("pokemmo.entities.CPokemon::useLedge@148");
+		$s.push("pokemmo.entities.CPokemon::useLedge@152");
 		var $spos = $s.length;
 		++tmpCount;
 		if(me.x != dest.x || me.y != dest.y) me.walking = true;
@@ -723,7 +724,7 @@ pokemmo.entities.CPokemon.prototype.tickBot = function() {
 		$s.pop();
 		return;
 	}
-	if(Math.abs(this.x - this.targetX) + Math.abs(this.y - this.targetY) > 2) {
+	if(Math.abs(this.x - this.targetX) + Math.abs(this.y - this.targetY) > 3) {
 		this.x = this.targetX;
 		this.y = this.targetY;
 		$s.pop();
@@ -4361,7 +4362,7 @@ pokemmo.CCharacter.prototype.tickWildBattle = function() {
 					tmpY += 2;
 					break;
 				}
-				if(curMap.isTileSolid(tmpX,tmpY) || curMap.isTileWater(tmpX,tmpY)) {
+				if(curMap.isTileSolid(tmpX,tmpY) || curMap.isTileWater(tmpX,tmpY) || curMap.isTileLedge(tmpX,tmpY)) {
 					tmpX = this.battleX;
 					tmpY = this.battleY;
 					switch(this.direction) {
@@ -4611,7 +4612,7 @@ pokemmo.CCharacter.prototype.willMoveIntoAWall = function() {
 	var $spos = $s.length;
 	var pos = this.getFrontPosition();
 	var map = pokemmo.Game.curGame.map;
-	var $tmp = map.isTileSolid(pos.x,pos.y) || map.isTileWater(pos.x,pos.y);
+	var $tmp = map.isTileSolid(pos.x,pos.y) || map.isTileWater(pos.x,pos.y) || map.isTileLedge(pos.x,pos.y);
 	$s.pop();
 	return $tmp;
 	$s.pop();
@@ -4743,7 +4744,8 @@ pokemmo.Map = function(id,data) {
 	var _g1 = 0, _g = data.layers.length;
 	while(_g1 < _g) {
 		var i = _g1++;
-		this.layers.push(new pokemmo.Layer(data.layers[i]));
+		var layer = new pokemmo.Layer(data.layers[i]);
+		if(layer.properties.data_layer == "1") this.dataLayer = layer; else this.layers.push(layer);
 	}
 	$s.pop();
 }
@@ -4762,6 +4764,7 @@ pokemmo.Map.prototype.game = null;
 pokemmo.Map.prototype.properties = null;
 pokemmo.Map.prototype.tilesets = null;
 pokemmo.Map.prototype.layers = null;
+pokemmo.Map.prototype.dataLayer = null;
 pokemmo.Map.prototype.width = null;
 pokemmo.Map.prototype.height = null;
 pokemmo.Map.prototype.tilewidth = null;
@@ -4849,22 +4852,19 @@ pokemmo.Map.prototype.isTileLedge = function(x,y) {
 pokemmo.Map.prototype.getLedgeDir = function(x,y) {
 	$s.push("pokemmo.Map::getLedgeDir");
 	var $spos = $s.length;
-	var _g1 = 0, _g = this.layers.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var layer = this.layers[i];
-		if(layer.type != "tilelayer") continue;
-		if(layer.properties.solid == "0") continue;
-		var j = y * layer.width + x;
-		var tileid = layer.data[j];
-		if(tileid == null || tileid == 0) continue;
-		var tileset = pokemmo.Tileset.getTilesetOfTile(this,tileid);
-		if(tileset == null) throw "Tileset is null";
-		if(tileset.tileproperties[tileid - tileset.firstgid].ledge == "1") {
-			var $tmp = Number(tileset.tileproperties[tileid - tileset.firstgid].ledge_dir) || 0;
-			$s.pop();
-			return $tmp;
-		}
+	var layer = this.dataLayer;
+	var j = y * layer.width + x;
+	var tileid = layer.data[j];
+	if(tileid == null || tileid == 0) {
+		$s.pop();
+		return -1;
+	}
+	var tileset = pokemmo.Tileset.getTilesetOfTile(this,tileid);
+	if(tileset == null) throw "Tileset is null";
+	if(tileset.tileproperties[tileid - tileset.firstgid].ledge == "1") {
+		var $tmp = Number(tileset.tileproperties[tileid - tileset.firstgid].ledge_dir) || 0;
+		$s.pop();
+		return $tmp;
 	}
 	$s.pop();
 	return -1;
@@ -4873,21 +4873,18 @@ pokemmo.Map.prototype.getLedgeDir = function(x,y) {
 pokemmo.Map.prototype.hasTileProp = function(x,y,prop) {
 	$s.push("pokemmo.Map::hasTileProp");
 	var $spos = $s.length;
-	var _g1 = 0, _g = this.layers.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var layer = this.layers[i];
-		if(layer.type != "tilelayer") continue;
-		if(layer.properties.solid == "0") continue;
-		var j = y * layer.width + x;
-		var tileid = layer.data[j];
-		if(tileid == null || tileid == 0) continue;
-		var tileset = pokemmo.Tileset.getTilesetOfTile(this,tileid);
-		if(tileset == null) throw "Tileset is null";
-		if(tileset.tileproperties[tileid - tileset.firstgid][prop] == "1") {
-			$s.pop();
-			return true;
-		}
+	var layer = this.dataLayer;
+	var j = y * layer.width + x;
+	var tileid = layer.data[j];
+	if(tileid == null || tileid == 0) {
+		$s.pop();
+		return false;
+	}
+	var tileset = pokemmo.Tileset.getTilesetOfTile(this,tileid);
+	if(tileset == null) throw "Tileset is null";
+	if(tileset.tileproperties[tileid - tileset.firstgid][prop] == "1") {
+		$s.pop();
+		return true;
 	}
 	$s.pop();
 	return false;
@@ -5741,20 +5738,22 @@ pokemmo.Tileset = function(data) {
 	this.tilewidth = data.tilewidth;
 	this.tileheight = data.tileheight;
 	this.firstgid = data.firstgid;
-	this.image = new Image();
-	this.image.onload = function() {
-		$s.push("pokemmo.Tileset::new@35");
-		var $spos = $s.length;
-		if(me.onload != null) me.onload();
-		$s.pop();
-	};
-	this.image.onerror = function() {
-		$s.push("pokemmo.Tileset::new@39");
-		var $spos = $s.length;
-		if(me.onerror != null) me.onerror();
-		$s.pop();
-	};
-	this.image.src = "resources/" + data.image.slice(3);
+	if(data.image == "../tilesets/data.png") this.loaded = true; else {
+		this.image = new Image();
+		this.image.onload = function() {
+			$s.push("pokemmo.Tileset::new@40");
+			var $spos = $s.length;
+			if(me.onload != null) me.onload();
+			$s.pop();
+		};
+		this.image.onerror = function() {
+			$s.push("pokemmo.Tileset::new@44");
+			var $spos = $s.length;
+			if(me.onerror != null) me.onerror();
+			$s.pop();
+		};
+		this.image.src = "resources/" + data.image.slice(3);
+	}
 	var _g = 0, _g1 = Reflect.fields(data.tileproperties);
 	while(_g < _g1.length) {
 		var i = _g1[_g];
@@ -5847,10 +5846,11 @@ pokemmo.Connection.setup = function() {
 		chr.walking = false;
 		chr.tick();
 		pokemmo.Main.log("Invalid move!");
+		if(chr.freezeTicks < 5) chr.freezeTicks = 5;
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("update",function(data) {
-		$s.push("pokemmo.Connection::setup@70");
+		$s.push("pokemmo.Connection::setup@72");
 		var $spos = $s.length;
 		if(Std["is"](data,String)) data = JSON.parse(data);
 		if(pokemmo.Game == null) {
@@ -5877,19 +5877,19 @@ pokemmo.Connection.setup = function() {
 			cremoved.remove(warp.username);
 			if(warp.username == pokemmo.Game.username) continue;
 			((function(i) {
-				$s.push("pokemmo.Connection::setup@70@104");
+				$s.push("pokemmo.Connection::setup@72@106");
 				var $spos = $s.length;
 				var $tmp = function(warp1) {
-					$s.push("pokemmo.Connection::setup@70@104@104");
+					$s.push("pokemmo.Connection::setup@72@106@106");
 					var $spos = $s.length;
 					var chr = pokemmo.Game.curGame.getCharByUsername(warp1.username);
 					var tmpWarp = pokemmo.entities.CWarp.getWarpByName(data.warpsUsed[i[0]].warpName);
 					chr.canUpdate = false;
 					var animation = (function() {
-						$s.push("pokemmo.Connection::setup@70@104@104@111");
+						$s.push("pokemmo.Connection::setup@72@106@106@113");
 						var $spos = $s.length;
 						var $tmp = function() {
-							$s.push("pokemmo.Connection::setup@70@104@104@111@111");
+							$s.push("pokemmo.Connection::setup@72@106@106@113@113");
 							var $spos = $s.length;
 							chr.direction = warp1.direction;
 							if(Std["is"](tmpWarp,pokemmo.entities.CDoor)) chr.enterDoor(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CWarpArrow)) chr.enterWarpArrow(tmpWarp); else if(Std["is"](tmpWarp,pokemmo.entities.CStairs)) chr.enterStairs(tmpWarp);
@@ -5956,7 +5956,7 @@ pokemmo.Connection.setup = function() {
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("battleWild",function(data) {
-		$s.push("pokemmo.Connection::setup@198");
+		$s.push("pokemmo.Connection::setup@200");
 		var $spos = $s.length;
 		var battle = pokemmo.Game.curGame.initBattle(0);
 		battle.x = data.x;
@@ -5976,24 +5976,24 @@ pokemmo.Connection.setup = function() {
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("battleTurn",function(data) {
-		$s.push("pokemmo.Connection::setup@230");
+		$s.push("pokemmo.Connection::setup@232");
 		var $spos = $s.length;
 		pokemmo.Game.curGame.battle.resultQueue = pokemmo.Game.curGame.battle.resultQueue.concat(data.results);
 		pokemmo.Game.curGame.battle.runQueue();
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("loginFail",function(data) {
-		$s.push("pokemmo.Connection::setup@235");
+		$s.push("pokemmo.Connection::setup@237");
 		var $spos = $s.length;
 		pokemmo.TitleScreen.loginFailed();
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("newGame",function(data) {
-		$s.push("pokemmo.Connection::setup@239");
+		$s.push("pokemmo.Connection::setup@241");
 		var $spos = $s.length;
 		pokemmo.Game.username = data.username;
 		pokemmo.Renderer.startTransition(new pokemmo.transitions.FadeOut(10)).onComplete = function() {
-			$s.push("pokemmo.Connection::setup@239@245");
+			$s.push("pokemmo.Connection::setup@241@247");
 			var $spos = $s.length;
 			pokemmo.TitleScreen.destroy();
 			pokemmo.Game.state = pokemmo.GameState.ST_NEWGAME;
@@ -6003,11 +6003,11 @@ pokemmo.Connection.setup = function() {
 		$s.pop();
 	});
 	pokemmo.Connection.socket.on("startGame",function(data) {
-		$s.push("pokemmo.Connection::setup@252");
+		$s.push("pokemmo.Connection::setup@254");
 		var $spos = $s.length;
 		pokemmo.Game.username = data.username;
 		pokemmo.Renderer.startTransition(new pokemmo.transitions.FadeOut(10)).onComplete = function() {
-			$s.push("pokemmo.Connection::setup@252@257");
+			$s.push("pokemmo.Connection::setup@254@259");
 			var $spos = $s.length;
 			pokemmo.TitleScreen.destroy();
 			pokemmo.Connection.socket.emit("startGame",{ });

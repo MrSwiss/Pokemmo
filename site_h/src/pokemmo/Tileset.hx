@@ -31,17 +31,23 @@ class Tileset {
 		tileheight = data.tileheight;
 		
 		firstgid = data.firstgid;
-		image = untyped __js__("new Image()");
-		image.onload = function():Void {
-			if (onload != null) onload();
+		
+		
+		if (data.image == '../tilesets/data.png') {
+			loaded = true;
+		}else {
+			image = untyped __js__("new Image()");
+			image.onload = function():Void {
+				if (onload != null) onload();
+			}
+			
+			image.onerror = function():Void {
+				if (onerror != null) onerror();
+			}
+			
+			image.src = 'resources/' + data.image.slice(3);
+			
 		}
-		
-		image.onerror = function():Void {
-			if (onerror != null) onerror();
-		}
-		
-		
-		image.src = 'resources/' + data.image.slice(3);
 		
 		for(i in Reflect.fields(data.tileproperties)){
 			if(!data.tileproperties.hasOwnProperty(i)) continue;

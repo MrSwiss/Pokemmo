@@ -18,6 +18,7 @@ class Layer {
 		var solid:String;
 		var overchars:String;
 		var animated:String;
+		var data_layer:String;
 	};
 	
 	public var objects:Array<Dynamic>;
@@ -32,7 +33,7 @@ class Layer {
 		type = data.type;
 		properties = data.properties;
 		objects = data.objects;
-		if (properties == null) properties = {solid: '1', overchars: '0', animated: '0'};
+		if (properties == null) properties = {solid: '1', overchars: '0', animated: '0', data_layer: '0'};
 	}
 	
 	public function render(ctx:CanvasRenderingContext2D, map:Map):Void {

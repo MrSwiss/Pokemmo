@@ -63,7 +63,7 @@ Array.prototype.remove = function(e){
 };
 
 var pokemonStarters = ["1", "4", "7", "10", "13", "16", "25", "29", "32", "43", "60", "66", "69", "74", "92", "133"];
-var characterSprites = ["red", "red_-135", "JZJot"];
+var characterSprites = ["red", "red_-135", "JZJot", "22jM7"];
 
 var VIRUS_NONE = 0;
 var VIRUS_POKERUS = 1;
@@ -111,89 +111,7 @@ function Pokemon(arg1, arg2){
 	var MAX_EV = 510;
 	var MAX_INDIVIDUAL_EV = 255;
 	
-	self.loadSaveObject = function(obj){
-		for(var i in obj){
-			self[i] = obj[i];
-		}
-	}
-	
 	self.battleStats = {};
-	
-	if(arg1 && arg2 == null){
-		self.loadSaveObject(arg1);
-	}else{
-		self.id = String(arg1);
-		self.level = Math.min(Math.max(2, arg2), 100);
-		
-		self.unique = generateRandomString(16);
-		
-		self.nickname = null;
-		self.gender = GENDER_UNKNOWN;
-		
-		if(Number(pokemonData[self.id].genderRatio) != -1){
-			self.gender = (Math.random() < Number(pokemonData[self.id].genderRatio)) ? GENDER_MALE : GENDER_FEMALE;
-		}
-		
-		self.hp = 0;
-		self.maxHp = 0;
-		self.atk = 0;
-		self.def = 0;
-		self.spAtk = 0;
-		self.spDef = 0;
-		self.speed = 0;
-		
-		self.ability = 0;
-		self.nature = 1 + Math.floor(Math.random() * 25)
-		
-		// If it has 2 available abilities, choose one of them randomly
-		if(pokemonData[self.id].ability2){
-			self.ability = Math.floor(Math.random() * 2) + 1;
-		}else if(pokemonData[self.id].ability1){
-			self.ability = 1;
-		}
-		
-		self.experience = 0;
-		self.experienceNeeded = 0;
-		
-		self.evHp = 0;
-		self.evAtk = 0;
-		self.evDef = 0;
-		self.evSpAtk = 0;
-		self.evSpDef = 0;
-		self.evSpeed = 0;
-		
-		self.ivHp = Math.floor(Math.random() * 32);
-		self.ivAtk = Math.floor(Math.random() * 32);
-		self.ivDef = Math.floor(Math.random() * 32);
-		self.ivSpAtk = Math.floor(Math.random() * 32);
-		self.ivSpDef = Math.floor(Math.random() * 32);
-		self.ivSpeed = Math.floor(Math.random() * 32);
-		
-		self.status = STATUS_NONE;
-		
-		self.virus = VIRUS_NONE;
-		
-		self.shiny = (1/8192 > Math.random());
-		self.moves = [null, null, null, null];
-		self.movesPP = [0, 0, 0, 0];
-		self.movesMaxPP = [0, 0, 0, 0];
-		// Make it learn the 4 highest level moves for his level
-		var j = 0;
-		var learnset = pokemonData[self.id].learnset;
-		for(var i=0;i<learnset.length;++i){
-			if(movesData[learnset[i].move] == null){
-				console.warn('Move "'+learnset[i].move+'" doesn\'t exist for '+pokemonData[self.id].name);
-				continue;
-			}
-			if(learnset[i].level > self.level) continue;
-			self.moves[j] = learnset[i].move;
-			self.movesMaxPP[j] = self.movesPP[j] = Number(movesData[learnset[i].move].pp);
-			
-			j = (j+1) % 4;
-		}
-		
-	}
-	
 	
 	// Data to be sent to clients battling this pokemon
 	self.publicInfo = {
@@ -270,6 +188,13 @@ function Pokemon(arg1, arg2){
 		};
 	}
 	
+	
+	self.loadSaveObject = function(obj){
+		for(var i in obj){
+			self[i] = obj[i];
+		}
+		self.calculateStats();
+	}
 	
 	self.calculateExpGain = function(isTrainer){
 		return Math.ceil(((isTrainer ? 1.5 : 1) * pokemonData[self.id].baseExp * self.level) / 7);
@@ -359,6 +284,23 @@ function Pokemon(arg1, arg2){
 	self.levelUp = function(){
 		self.level += 1;
 		self.calculateStats();
+		
+		if(self.battleStats){
+			for(var i=0;i<learnset.length;++i){
+				if(movesData[learnset[i].move] == null){
+					console.warn('Move "'+learnset[i].move+'" doesn\'t exist for '+pokemonData[self.id].name);
+					continue;
+				}
+				
+				if(movesData[learnset[i].move].level != self.level) continue;
+				self.battleStats.learnableMoves.push(learnset[i].move);
+			}
+		}
+	}
+	
+	self.learnMove = function(slot, move){
+		self.moves[slot] = move;
+		self.movesMaxPP[slot] = self.movesPP[slot] = Number(movesData[move].pp);
 	}
 	
 	self.getAbility = function(){
@@ -409,9 +351,79 @@ function Pokemon(arg1, arg2){
 		return list;
 	}
 	
-	self.calculateStats();
-	
-	if(!arg1 | arg2 != null){
+	if(arg1 && arg2 == null){
+		self.loadSaveObject(arg1);
+	}else{
+		self.id = String(arg1);
+		self.level = Math.min(Math.max(2, arg2), 100);
+		
+		self.unique = generateRandomString(16);
+		
+		self.nickname = null;
+		self.gender = GENDER_UNKNOWN;
+		
+		if(Number(pokemonData[self.id].genderRatio) != -1){
+			self.gender = (Math.random() < Number(pokemonData[self.id].genderRatio)) ? GENDER_MALE : GENDER_FEMALE;
+		}
+		
+		self.hp = 0;
+		self.maxHp = 0;
+		self.atk = 0;
+		self.def = 0;
+		self.spAtk = 0;
+		self.spDef = 0;
+		self.speed = 0;
+		
+		self.ability = 0;
+		self.nature = 1 + Math.floor(Math.random() * 25)
+		
+		// If it has 2 available abilities, choose one of them randomly
+		if(pokemonData[self.id].ability2){
+			self.ability = Math.floor(Math.random() * 2) + 1;
+		}else if(pokemonData[self.id].ability1){
+			self.ability = 1;
+		}
+		
+		self.experience = 0;
+		self.experienceNeeded = 0;
+		
+		self.evHp = 0;
+		self.evAtk = 0;
+		self.evDef = 0;
+		self.evSpAtk = 0;
+		self.evSpDef = 0;
+		self.evSpeed = 0;
+		
+		self.ivHp = Math.floor(Math.random() * 32);
+		self.ivAtk = Math.floor(Math.random() * 32);
+		self.ivDef = Math.floor(Math.random() * 32);
+		self.ivSpAtk = Math.floor(Math.random() * 32);
+		self.ivSpDef = Math.floor(Math.random() * 32);
+		self.ivSpeed = Math.floor(Math.random() * 32);
+		
+		self.status = STATUS_NONE;
+		
+		self.virus = VIRUS_NONE;
+		
+		self.shiny = (1/8192 > Math.random());
+		self.moves = [null, null, null, null];
+		self.movesPP = [0, 0, 0, 0];
+		self.movesMaxPP = [0, 0, 0, 0];
+		// Make it learn the 4 highest level moves for his level
+		var j = 0;
+		var learnset = pokemonData[self.id].learnset;
+		for(var i=0;i<learnset.length;++i){
+			if(movesData[learnset[i].move] == null){
+				console.warn('Move "'+learnset[i].move+'" doesn\'t exist for '+pokemonData[self.id].name);
+				continue;
+			}
+			if(learnset[i].level > self.level) continue;
+			self.learnMove(j, learnset[i].move);
+			
+			j = (j+1) % 4;
+		}
+		
+		self.calculateStats();
 		self.hp = self.maxHp;
 	}
 }
@@ -473,7 +485,8 @@ function Battle(type, arg1, arg2){
 			spDefPower : 0,
 			speedPower : 0,
 			accuracy: 0,
-			evasion: 0
+			evasion: 0,
+			learnableMoves: []
 		};
 	}
 	
@@ -485,7 +498,8 @@ function Battle(type, arg1, arg2){
 			spDefPower : 0,
 			speedPower : 0,
 			accuracy: 0,
-			evasion: 0
+			evasion: 0,
+			learnableMoves: []
 		};
 	}
 	
@@ -527,6 +541,10 @@ function Battle(type, arg1, arg2){
 	};
 	
 	self.init = function(){
+		if(client){
+			client.socket.on('battleLearnMove', onBattleLearnMove);
+		}
+		
 		switch(type){
 		case BATTLE_WILD:
 			client.socket.on('battleMove', onBattleMoveWild);
@@ -541,12 +559,25 @@ function Battle(type, arg1, arg2){
 	}
 	
 	self.destroy = function(){
+		if(client){
+			client.socket.removeListener('battleLearnMove', onBattleLearnMove);
+		}
+		
 		switch(type){
 			case BATTLE_WILD:
 				client.socket.removeListener('battleMove', onBattleMoveWild);
 				client.socket.removeListener('battleFlee', onBattleFleeWild);
 			break;
 		}
+	}
+	
+	function onBattleLearnMove(data){
+		if(player1.pokemon.battleStats.learnableMoves.indexOf(data.move) == -1) return;
+		var slot = Number(data.slot);
+		if(slot < 0 || slot >= 4 || slot != slot) return;
+		
+		player1.pokemon.battleStats.learnableMoves.remove(data.move);
+		player1.pokemon.learnMove(data.slot, data.move);
 	}
 	
 	function onBattleMoveWild(data){
@@ -698,12 +729,18 @@ function Battle(type, arg1, arg2){
 			player.pokemon.addEV(pokemonData[enemy.pokemon.id].evYield);
 			
 			var exp = player.pokemon.level < 100 ? enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER) : 0;
+			player.pokemon.experience += exp;
+			
 			pushResult(new BattleTurnResult(player, 'pokemonDefeated', exp));
 			
 			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
 				player.pokemon.experience -= player.pokemon.experienceNeeded;
 				player.pokemon.levelUp();
 				pushResult(new BattleTurnResult(player, 'pokemonLevelup', player.pokemon.ownerInfo));
+			}
+			
+			if(player.pokemon.battleStats.learnableMoves.length > 0){
+				pushResult(new BattleTurnResult(player, 'pokemonLearnMoves', player.pokemon.battleStats.learnableMoves));
 			}
 		}
 	}
@@ -741,6 +778,7 @@ function Battle(type, arg1, arg2){
 		
 		if(player1.client){
 			player1.client.inBattle = false;
+			player1.client.retrasmitChar = true;
 			
 			if(winner != player1){
 				player1.client.moveToSpawn();
@@ -750,6 +788,7 @@ function Battle(type, arg1, arg2){
 		
 		if(player2.client){
 			player2.client.inBattle = false;
+			player2.client.retrasmitChar = true;
 			
 			if(winner != player2){
 				player2.client.moveToSpawn();
@@ -1019,7 +1058,7 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	map.height = map.data.height;
 	map.properties = map.data.properties;
 	
-	var solidData = new Array(map.data.width);
+	var solidData;
 	tilesets = map.data.tilesets;
 	
 	map.encounterAreas = [];
@@ -1027,19 +1066,22 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	map.warps = {};
 	map.points = {};
 	
-	for(var x=0;x<solidData.length;++x){
-		solidData[x] = new Array(map.data.height);
-		for(var y=0;y<solidData[0].length;++y){
-			solidData[x][y] = SD_NONE;
-		}
-	}
+	
 	
 	for(var n=0;n<map.data.layers.length;++n){
 		var layer = map.data.layers[n];
 		if(layer.type == 'tilelayer'){
-			if(layer.properties && layer.properties.solid == '0') continue;
-			
+			if(!layer.properties || layer.properties.data_layer != '1') continue;
 			var j = 0;
+			
+			solidData = new Array(map.data.width);
+			for(var x=0;x<solidData.length;++x){
+				solidData[x] = new Array(map.data.height);
+				for(var y=0;y<solidData[0].length;++y){
+					solidData[x][y] = SD_NONE;
+				}
+			}
+			
 			
 			for(var y=0;y<solidData[0].length;++y){
 				for(var x=0;x<solidData.length;++x, ++j){
@@ -1099,6 +1141,9 @@ for(var mi=0;mi<mapsNames.length;++mi){
 		}
 	}
 	
+	if(solidData == null){
+		console.warn('Couldn\'t find data layer!');
+	}
 	
 	map.solidData = solidData;
 	
@@ -1106,6 +1151,7 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	
 	var sEnd = +new Date();
 	process.stdout.write(' ('+(sEnd - sStart)+' ms)\n');
+	
 	
 }
 
@@ -1513,6 +1559,7 @@ function startIO(){
 					client.char.direction = DIR_DOWN;
 					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
 					client.char.y += 2;
+					client.char.lastY = client.char.y;
 					client.retransmitChar = true;
 					break;
 				case SD_LEDGE_LEFT:
@@ -1523,6 +1570,7 @@ function startIO(){
 					client.char.direction = DIR_LEFT;
 					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
 					client.char.x -= 2;
+					client.char.lastX = client.char.x;
 					client.retransmitChar = true;
 					break;
 				case SD_LEDGE_UP:
@@ -1533,6 +1581,7 @@ function startIO(){
 					client.char.direction = DIR_UP;
 					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
 					client.char.y -= 2;
+					client.char.lastY = client.char.y;
 					client.retransmitChar = true;
 					break;
 				case SD_LEDGE_RIGHT:
@@ -1543,6 +1592,7 @@ function startIO(){
 					client.char.direction = DIR_RIGHT;
 					getClientMapInstance().ledgesUsed.push({username: client.username, x:client.char.x, y: client.char.y, dir: client.char.direction});
 					client.char.x += 2;
+					client.char.lastX = client.char.x;
 					client.retransmitChar = true;
 					break;
 				default: return;

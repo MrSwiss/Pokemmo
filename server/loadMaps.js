@@ -26,7 +26,7 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	map.height = map.data.height;
 	map.properties = map.data.properties;
 	
-	var solidData = new Array(map.data.width);
+	var solidData;
 	tilesets = map.data.tilesets;
 	
 	map.encounterAreas = [];
@@ -34,19 +34,22 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	map.warps = {};
 	map.points = {};
 	
-	for(var x=0;x<solidData.length;++x){
-		solidData[x] = new Array(map.data.height);
-		for(var y=0;y<solidData[0].length;++y){
-			solidData[x][y] = SD_NONE;
-		}
-	}
+	
 	
 	for(var n=0;n<map.data.layers.length;++n){
 		var layer = map.data.layers[n];
 		if(layer.type == 'tilelayer'){
-			if(layer.properties && layer.properties.solid == '0') continue;
-			
+			if(!layer.properties || layer.properties.data_layer != '1') continue;
 			var j = 0;
+			
+			solidData = new Array(map.data.width);
+			for(var x=0;x<solidData.length;++x){
+				solidData[x] = new Array(map.data.height);
+				for(var y=0;y<solidData[0].length;++y){
+					solidData[x][y] = SD_NONE;
+				}
+			}
+			
 			
 			for(var y=0;y<solidData[0].length;++y){
 				for(var x=0;x<solidData.length;++x, ++j){
@@ -106,6 +109,9 @@ for(var mi=0;mi<mapsNames.length;++mi){
 		}
 	}
 	
+	if(solidData == null){
+		console.warn('Couldn\'t find data layer!');
+	}
 	
 	map.solidData = solidData;
 	
@@ -113,6 +119,7 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	
 	var sEnd = +new Date();
 	process.stdout.write(' ('+(sEnd - sStart)+' ms)\n');
+	
 	
 }
 

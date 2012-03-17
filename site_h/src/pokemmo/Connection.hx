@@ -65,6 +65,8 @@ class Connection {
 			chr.tick();
 			
 			Main.log('Invalid move!');
+			
+			if(chr.freezeTicks < 5) chr.freezeTicks = 5;
 		});
 		
 		socket.on('update', function(data: {

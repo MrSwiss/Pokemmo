@@ -59,7 +59,11 @@ class CPokemon extends GameObject {
 		var renderPos = getRenderPos();
 		var map = Map.cur;
 		
-		if(image != null && image.loaded){
+		if (image != null && image.loaded) {
+			if (jumping) {
+				ctx.drawImage(Game.getRes('miscSprites').obj, 0, 64, 32, 32, renderPos.x + offsetX + (POKEMON_WIDTH-32)/2, renderPos.y + offsetY - renderOffsetY + 30, 32, 32);
+			}
+			
 			ctx.save();
 			ctx.drawImage(image.obj, POKEMON_WIDTH * direction, Math.floor(((Renderer.numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
 			ctx.restore();
@@ -187,7 +191,7 @@ class CPokemon extends GameObject {
 		if(jumping) return;
 		if(walking) return;
 		
-		if(Math.abs(x - targetX) + Math.abs(y - targetY) > 2){
+		if(Math.abs(x - targetX) + Math.abs(y - targetY) > 3){
 			x = targetX;
 			y = targetY;
 			return;

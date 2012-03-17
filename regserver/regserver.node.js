@@ -75,6 +75,8 @@ function createAccount(username, password, email, callback){
 	var passhash = sha512(password, passsalt);
 	
 	accounts.count(function(err, count) {
+		console.log('Registered accounts: '+count);
+		
 		if(err){
 			console.warn(err.message);
 			callback('internal_error');

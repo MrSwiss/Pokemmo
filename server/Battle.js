@@ -56,7 +56,8 @@ function Battle(type, arg1, arg2){
 			spDefPower : 0,
 			speedPower : 0,
 			accuracy: 0,
-			evasion: 0
+			evasion: 0,
+			learnableMoves: []
 		};
 	}
 	
@@ -68,7 +69,8 @@ function Battle(type, arg1, arg2){
 			spDefPower : 0,
 			speedPower : 0,
 			accuracy: 0,
-			evasion: 0
+			evasion: 0,
+			learnableMoves: []
 		};
 	}
 	
@@ -110,6 +112,10 @@ function Battle(type, arg1, arg2){
 	};
 	
 	self.init = function(){
+		if(client){
+			client.socket.on('battleLearnMove', onBattleLearnMove);
+		}
+		
 		switch(type){
 		case BATTLE_WILD:
 			client.socket.on('battleMove', onBattleMoveWild);
@@ -124,12 +130,25 @@ function Battle(type, arg1, arg2){
 	}
 	
 	self.destroy = function(){
+		if(client){
+			client.socket.removeListener('battleLearnMove', onBattleLearnMove);
+		}
+		
 		switch(type){
 			case BATTLE_WILD:
 				client.socket.removeListener('battleMove', onBattleMoveWild);
 				client.socket.removeListener('battleFlee', onBattleFleeWild);
 			break;
 		}
+	}
+	
+	function onBattleLearnMove(data){
+		if(player1.pokemon.battleStats.learnableMoves.indexOf(data.move) == -1) return;
+		var slot = Number(data.slot);
+		if(slot < 0 || slot >= 4 || slot != slot) return;
+		
+		player1.pokemon.battleStats.learnableMoves.remove(data.move);
+		player1.pokemon.learnMove(data.slot, data.move);
 	}
 	
 	function onBattleMoveWild(data){
@@ -281,12 +300,18 @@ function Battle(type, arg1, arg2){
 			player.pokemon.addEV(pokemonData[enemy.pokemon.id].evYield);
 			
 			var exp = player.pokemon.level < 100 ? enemy.pokemon.calculateExpGain(type == BATTLE_TRAINER) : 0;
+			player.pokemon.experience += exp;
+			
 			pushResult(new BattleTurnResult(player, 'pokemonDefeated', exp));
 			
 			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
 				player.pokemon.experience -= player.pokemon.experienceNeeded;
 				player.pokemon.levelUp();
 				pushResult(new BattleTurnResult(player, 'pokemonLevelup', player.pokemon.ownerInfo));
+			}
+			
+			if(player.pokemon.battleStats.learnableMoves.length > 0){
+				pushResult(new BattleTurnResult(player, 'pokemonLearnMoves', player.pokemon.battleStats.learnableMoves));
 			}
 		}
 	}
