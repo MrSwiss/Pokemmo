@@ -13,36 +13,40 @@ class CFollower extends CPokemon {
 	public var chr:CCharacter;
 	public var forceTarget:Bool;
 	public var createdTick:Int;
+	
+	private var lastFollower:String;
+	
 	public function new(chr:CCharacter) {
 		super(chr.follower, chr.lastX, chr.lastY);
 		this.chr = chr;
 		forceTarget = false;
 		createdTick = Renderer.numRTicks;
-		
+		renderPriority = 10;
+		canIdleJump = true;
 	}
 	
 	override public function render(ctx:CanvasRenderingContext2D):Void {
 		if(chr.follower != null){
-			var src = 'resources/followers/'+chr.follower+'.png';
-			if(image == null || image.obj.src != src){
-				image = Game.curGame.getImage(src);
+			if(lastFollower != chr.follower){
+				image = Game.curGame.getImage('resources/followers/' + chr.follower + '.png');
 			}
 		}else if(image != null){
 			image = null;
 		}
 		
+		lastFollower = chr.follower;
+		
 		if(chr.username == Game.username && !Game.curGame.drawPlayerFollower) return;
 		if(x == chr.x && y == chr.y && !walking && !chr.walking) return;
 		
-		
+		ctx.save();
 		if(Renderer.numRTicks - createdTick < 10){
-			ctx.save();
 			ctx.globalAlpha = (Renderer.numRTicks - createdTick) / 10;
 		}
 		
 		super.render(ctx);
 		
-		if(Renderer.numRTicks - createdTick < 10) ctx.restore();
+		ctx.restore();
 	}
 	
 	override public function tick():Void {

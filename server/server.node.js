@@ -7,6 +7,8 @@ var util = require('util');
 var mongodb = require('mongodb');
 var crypto = require('crypto');
 
+var stdin = process.openStdin();
+
 var mapsNames = [
 	'pallet',
 	'pallet_hero_home_1f',
@@ -18,6 +20,8 @@ var mapsNames = [
 var clients = [];
 var maps = {};
 var mapInstances = {};
+
+var savingUsers = [];
 
 var start, end;
 
@@ -85,6 +89,7 @@ var adminsData = recursiveFreeze(JSON.parse(fs.readFileSync('data/admins.json', 
 
 var experienceRequired = {};
 
+
 function recursiveFreeze(obj){
 	for(var i in obj){
 		if(typeof obj[i] == 'object'){
@@ -104,6 +109,8 @@ var dbserver = new mongodb.Server("127.0.0.1", 27017, {});
 var dbclient;
 var dbaccounts;
 var dbchars;
+
+var pendingSaves = 0;
 
 new mongodb.Db('pokemmo', dbserver, {}).open(function (error, client) {
 	if(error) throw error;
@@ -127,11 +134,12 @@ new mongodb.Db('pokemmo', dbserver, {}).open(function (error, client) {
 
 
 function startIO(){
-	var io = require('socket.io').listen(2828).set('close timeout', 0).set('log level', 3);
+	var io = require('socket.io').listen(2828).set('close timeout', 0).set('log level', 0);
 
 	io.sockets.on('connection', function (socket) {
 		var client = {
 			socket: socket,
+			disconnected: false,
 			username: null,
 			map: undefined,
 			mapInstance: -1,
@@ -162,6 +170,9 @@ function startIO(){
 			loaded: false,
 			newAccount: false,
 			accountLevel: 0,
+			onDisconnect: function(){},
+			
+			battlePokemon: null,
 			
 			restorePokemon: function(){
 				for(var i=0;i<client.pokemon.length;++i){
@@ -204,6 +215,10 @@ function startIO(){
 		
 		function saveClientChar(){
 			if(!client.loaded) return;
+			
+			savingUsers.push(client.username);
+			++pendingSaves;
+			
 			dbchars.update({username: client.username}, {$set:{
 				map: client.map,
 				x: client.char.x,
@@ -216,65 +231,83 @@ function startIO(){
 				money: client.money
 				
 			}}, {safe:true, upsert:true}, function(err){
+				--pendingSaves;
+				savingUsers.remove(client.username);
 				if(err) console.warn('Error while saving client character: '+err.message);
 			});
 		}
 		
 		function loadClientChar(){
-			dbchars.find({username: client.username}, {limit:1}).toArray(function(err, docs) {
-				if(err){
-					console.warn('Error while trying to load client char: '+err.message);
+			loginClient(function(success){
+				if(!success){
+					socket.emit('loginFail');
 					return;
 				}
-				
-				if(docs.length > 0){
-					var obj = docs[0];
+			
+				dbchars.find({username: client.username}, {limit:1}).toArray(function(err, docs) {
+					if(err){
+						console.warn('Error while trying to load client char: '+err.message);
+						return;
+					}
 					
-					socket.emit('startGame', {username: client.username, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
-					socket.on('startGame', function(data){
-						loginClient();
-						client.char.type = obj.charType;
-						client.respawnLocation = obj.respawnLocation;
-						client.playerVars = obj.playerVars;
-						client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
-						client.money = obj.money || 0;
+					if(docs.length > 0){
+						var obj = docs[0];
 						
-						putClientInGame(obj.map, obj.x, obj.y, obj.direction);
-						
-						client.loaded = true;
-					});
-				}else{
-					client.newAccount = true;
-					socket.emit('newGame', {username: client.username, starters:pokemonStarters, characters: characterSprites});
-					socket.on('newGame', function(data){
-						console.log('Server received '+data);
-						if(!client.newAccount) return;
-						if(data.starter == null || data.character == null || pokemonStarters.indexOf(data.starter) == -1 || characterSprites.indexOf(data.character) == -1){
-							socket.disconnect();
-							return;
-						}
-						
-						client.newAccount = false;
-						loginClient();
-						
-						client.char.type = data.character;
-						client.pokemon.push(new Pokemon(data.starter, 5));
-						putClientInGame(client.respawnLocation[0], client.respawnLocation[1], client.respawnLocation[2], client.respawnLocation[3]);
-						
-						client.loaded = true;
-					});
-				}
+						socket.emit('startGame', {username: client.username, pokemon: client.pokemon.map(function(v){return v.ownerInfo;})});
+						socket.on('startGame', function(data){
+							client.char.type = obj.charType;
+							client.respawnLocation = obj.respawnLocation;
+							client.playerVars = obj.playerVars;
+							client.pokemon = obj.pokemon.map(function(v){return new Pokemon(v);});
+							client.money = obj.money || 0;
+							
+							putClientInGame(obj.map, obj.x, obj.y, obj.direction);
+							
+							client.loaded = true;
+						});
+					}else{
+						client.newAccount = true;
+						socket.emit('newGame', {username: client.username, starters:pokemonStarters, characters: characterSprites});
+						socket.on('newGame', function(data){
+							if(!client.newAccount) return;
+							if(data.starter == null || data.character == null || pokemonStarters.indexOf(data.starter) == -1 || characterSprites.indexOf(data.character) == -1){
+								kickClient(client);
+								return;
+							}
+							
+							client.newAccount = false;
+							if(!success){
+								socket.emit('loginFail');
+								return;
+							}
+							
+							client.char.type = data.character;
+							client.pokemon.push(new Pokemon(data.starter, 5));
+							putClientInGame(client.respawnLocation[0], client.respawnLocation[1], client.respawnLocation[2], client.respawnLocation[3]);
+							
+							client.loaded = true;
+						});
+					}
+				});
 			});
 		}
 		
-		function loginClient(){
+		function loginClient(callback){
 			// Check to see if there's another connection using this account
 			for(var i=0;i<clients.length;++i){
 				if(clients[i].username == client.username){
-					clients[i].socket.disconnect();
+					kickClient(clients[i]);
 				}
 			}
-			clients.push(client);
+			
+			setTimeout(function(){
+				if(savingUsers.indexOf(client.username) != -1){
+					callback(false);
+				}else{
+					clients.push(client);
+					callback(true);
+				}
+			}, 100);
 		}
 		
 		function putClientInGame(destMap, destX, destY, destDir){
@@ -283,7 +316,26 @@ function startIO(){
 			}
 			
 			if(client.username == 'Sonyp'){
-				var m28pk = new Pokemon("94", 100);
+				var m28pk = new Pokemon("6", 100);
+				m28pk.evSpAtk = 252;
+				m28pk.evHp = 6;
+				m28pk.evSpeed = 252;
+				m28pk.nature = NATURE_SPATK_ATK;
+				m28pk.ivHp = m28pk.ivAtk = m28pk.ivDef = m28pk.ivSpAtk = m28pk.ivSpDef = m28pk.ivSpeed = 31;
+				m28pk.shiny = true;
+				m28pk.calculateStats();
+				m28pk.hp = m28pk.maxHp;
+				client.pokemon = [m28pk];
+				
+				/*
+				var m28pk = new Pokemon("10", 6);
+				m28pk.calculateStats();
+				m28pk.experience = m28pk.experienceNeeded - 1;
+				client.pokemon = [m28pk];*/
+			}
+			
+			if(client.username == 'Pariah'){
+				var m28pk = new Pokemon("65", 100);
 				m28pk.evSpAtk = 252;
 				m28pk.evHp = 6;
 				m28pk.evSpeed = 252;
@@ -302,6 +354,13 @@ function startIO(){
 			console.log(clients.length+' clients connected');
 			
 			socket.on('disconnect', function(){
+				client.onDisconnect();
+			});
+			
+			client.onDisconnect = function(){
+				if(client.disconnected) return;
+				client.disconnected = true;
+				
 				if(client.inBattle){
 					if(client.battle.player1.client == client){
 						client.battle.declareWinner(client.battle.player2);
@@ -312,8 +371,11 @@ function startIO(){
 				saveClientChar();
 				getClientMapInstance().removeClient(client);
 				clients.remove(client);
-				console.log('Client disconnected');
-			});
+				
+				console.log('Client disconnected ('+clients.length+' now)');
+			};
+			
+			
 			
 			socket.on('walk', function(data){
 				if(client.inBattle) return;
@@ -362,7 +424,7 @@ function startIO(){
 					invalidMove = true;
 				}
 				
-				chr.direction = data.dir;
+				chr.direction = validateDirection(data.dir);
 				
 				if(!invalidMove && (chr.x == data.x && chr.y == data.y || ((Math.abs(chr.x - data.x) <= 1 && Math.abs(chr.y - data.y) <= 1)
 				|| chr.x - 2 == data.x && chr.y == data.y
@@ -446,14 +508,15 @@ function startIO(){
 			socket.on('turn', function(data){
 				if(client.inBattle) return;
 				
-				if(data.dir == null || isNaN(data.dir) || data.dir < 0 || data.dir >= 4) return;
-				client.char.direction = data.dir
+				data.dir = validateDirection(data.dir);
+				client.char.direction = data.dir;
 				client.retransmitChar = true;
 			});
 			
 			socket.on('sendMessage', function(data){
 				var t = new Date().getTime();
 				var str = data.str.substr(0, 128);
+				str = str.replace(/[^\\u0020-\\u007F\\u0080-\\u00FF]/gm, '');
 				if(t - client.lastMessage > 100 && str != '') {
 					console.log(client.username + '@'+client.map+'#'+client.mapInstance+': '+str);
 					getClientMapInstance().messages.push({username: client.username, str: str, x: client.char.x, y: client.char.y});
@@ -471,9 +534,39 @@ function startIO(){
 				warpPlayer(warp.destination);
 			});
 			
+			client.socket.on('battleLearnMove', function(data){
+				if(!client.battlePokemon) return;
+				if(!client.battlePokemon.battleStats) return;
+				if(!client.battlePokemon.battleStats.learnableMoves) return;
+				if(client.battlePokemon.battleStats.learnableMoves.indexOf(data.move) == -1) return;
+				var slot = Number(data.slot);
+				if(slot < 0 || slot >= 4 || slot != slot) return;
+				
+				client.battlePokemon.battleStats.learnableMoves.remove(data.move);
+				client.battlePokemon.learnMove(data.slot, data.move);
+			});
+			
 			if(client.accountLevel >= 30){
 				socket.on('kickPlayer', function(data){
 					kickPlayer(data.username);
+				});
+			}
+			
+			if(client.accountLevel >= 70){
+				socket.on('adminSetPokemon', function(data){
+					if(!pokemonData[data.id]) return;
+					client.pokemon[0].id = data.id;
+					client.retransmitChar = true;
+				});
+				
+				socket.on('adminSetLevel', function(data){
+					var n = Number(data.level);
+					if(n != n) return;
+					if(n < 2) return;
+					if(n > n) return;
+					client.pokemon[0].level = n;
+					client.pokemon[0].calculateStats();
+					client.retransmitChar = true;
 				});
 			}
 		}
@@ -492,6 +585,8 @@ function startIO(){
 				dir = map[3];
 				map = map[0];
 			}
+			
+			dir = validateDirection(dir);
 			
 			var oldMap = client.map;
 			
@@ -542,7 +637,7 @@ function startIO(){
 					avgWalkTime += client.speedHackChecks[i] - client.speedHackChecks[i - 1];
 				}
 				avgWalkTime /= SPEED_HACK_N - 1;
-				if(avgWalkTime < 220){
+				if(avgWalkTime < 200){
 					console.log('Speed hack detected, kicking client '+client.username);
 					kickClient(client);
 					return;
@@ -553,14 +648,15 @@ function startIO(){
 				var encounterAreas = getEncounterAreasAt(client.map, client.char.x, client.char.y);
 				for(var i=0;i<encounterAreas.length;++i){
 					var area = encounterAreas[i];
-					if(Math.random() < 1 / 18.75){
+					if(Math.random() < 0.1){
+						var n = Math.random();
 						for(var j=0;j<area.encounters.length;++j){
 							var areaEncounter = area.encounters[j];
 							
 							var chance = 0;
 							chance += Number(areaEncounter.chance);
 							
-							if(Math.random() > chance){
+							if(n < chance){
 								var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 								var enemy = new Pokemon(areaEncounter.id, level);
 								var battle = new Battle(BATTLE_WILD, client, enemy);
@@ -606,8 +702,16 @@ function kickPlayer(username){
 }
 
 function kickClient(client){
-	client.save();
+	client.onDisconnect();
 	client.socket.disconnect();
+}
+
+function validateDirection(dir){
+	dir = Math.floor(dir);
+	if(dir != dir) return DIR_DOWN;
+	if(dir < 0) return 0;
+	if(dir > 3) return 3;
+	return dir;
 }
 
 function isLoginValid(username, password, callback){
@@ -639,19 +743,19 @@ function sendUpdateToClients(){
 			mapInstances[i][k].generateUpdate();
 		}
 	}
+	
 	for(var i=0;i<clients.length;++i){
+		if(!clients[i].loaded) continue;
 		clients[i].sendUpdate();
 	}
 }
 
-setInterval(sendUpdateToClients, 250);
-
-setInterval(function(){
+function saveAllClients(){
 	for(var i=0;i<clients.length;++i){
+		if(!clients[i].loaded) continue;
 		clients[i].save();
 	}
-}, 30 * 60 * 1000);
-
+}
 
 function getEncounterAreasAt(mapName, x, y){
 	var map = maps[mapName];
@@ -727,4 +831,31 @@ function generateRandomString(len){
 	var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	while(i--) str += chars[Math.floor(Math.random()*chars.length)];
 	return str;
+}
+
+setInterval(sendUpdateToClients, 250);
+setInterval(saveAllClients, 30 * 60 * 1000);
+
+stdin.setEncoding('utf8');
+stdin.on('data', function(e){
+	var cmd = e.trim();
+	switch(cmd){
+	case "quit":
+		quit();
+		break;
+	}
+});
+
+function quit(){
+	console.log('Shutting down...');
+	console.log('Saving all clients..');
+	saveAllClients();
+	setInterval(function(){
+		console.log('Pending '+pendingSaves+'...');
+		
+		if(pendingSaves <= 0){
+			console.log('Bye.');
+			process.exit();
+		}
+	}, 250);
 }

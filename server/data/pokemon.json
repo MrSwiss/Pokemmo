@@ -505,7 +505,7 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "harden"}
+			{"level": -1, "move": "harden"}
 		],
 
 		"learnableTM": [
@@ -627,7 +627,7 @@
 
 
 		"learnset": [
-			{"level": 1, "move": "harden"}
+			{"level": -1, "move": "harden"}
 		],
 
 		"learnableTM": [
@@ -6285,9 +6285,7 @@
 		},
 
 
-		"evolveTo":		"134",
-		"evolveItem":	"Water Stone",
-
+		"evolveCustom":	"eevee",
 
 		"learnset": [
 			{"level": 1, "move": "tackle"},

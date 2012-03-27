@@ -13,6 +13,7 @@ import pokemmo.Chat;
 import pokemmo.transitions.BlackScreen;
 import pokemmo.transitions.FadeIn;
 import pokemmo.transitions.FadeOut;
+import pokemmo.Battle;
 
 /**
  * ...
@@ -20,8 +21,12 @@ import pokemmo.transitions.FadeOut;
  */
 
 class Connection {
-	inline static public var SERVER_HOST:String = "http://localhost:2828";
-	inline static public var REGSERVER_HOST:String = "http://localhost:2827";
+	//inline static public var SERVER_HOST:String = "http://localhost:2828";
+	//inline static public var REGSERVER_HOST:String = "http://localhost:2827";
+	
+	inline static public var SERVER_HOST:String = "http://pokemmo.net:2828";
+	inline static public var REGSERVER_HOST:String = "http://pokemmo.net:2827";
+	
 	
 	static public var socket:SocketIOConnection;
 	static public var lastAckMove:Int = 0;
@@ -30,236 +35,259 @@ class Connection {
 	static public function setup():Void {
 		socket = (untyped io.connect)(SERVER_HOST);
 		
-		socket.on('connect', function(data:Dynamic):Void {
-			Main.log('Connected');
-		});
+		socket.on('connect', onConnect);
+		socket.on('disconnect', onDisconnect);
+		socket.on('setInfo', onSetInfo);
+		socket.on('loadMap', onLoadMap);
+		socket.on('invalidMove', onInvalidMove);
+		socket.on('update', onUpdate);
+		socket.on('battleWild', onBattleWild);
+		socket.on('battleTurn', onBattleTurn);
+		socket.on('loginFail', onLoginFail);
+		socket.on('newGame', onNewGame);
+		socket.on('startGame', onStartGame);
+	}
+	
+	static private function onConnect(data:Dynamic) {
+		Main.log('Connected');
+	}
+	
+	static private function onDisconnect(data:Dynamic) {
+		Game.state = ST_DISCONNECTED;
+		Game.curGame = null;
+		UI.removeAllInputs();
+		socket.disconnect();
+	}
+	
+	static private function onSetInfo(data: {
+		var pokemon:Array<PokemonOwned>;
+		var accountLevel:Int;
+	}) {
+		Game.setPokemonParty(data.pokemon);
+		Game.accountLevel = data.accountLevel;
+	}
+	
+	static private function onLoadMap(data: {
+		var mapid:String;
+		var chars:Array<CCharacterData>;
+	}) {
+		if(Game.curGame != null && Game.curGame.queueLoadMap){
+			Game.curGame.queuedMap = data.mapid;
+			Game.curGame.queuedChars = data.chars;
+			return;
+		}
+		Game.loadMap(data.mapid, data.chars);
+	}
+	
+	static private function onInvalidMove(data: {
+		var ack:Int;
+		var x:Int;
+		var y:Int;
+	}) {
+		lastAckMove = data.ack;
+		var chr = Game.curGame.getPlayerChar();
 		
-		socket.on('disconnect', function(data:Dynamic){
-			Game.state = ST_DISCONNECTED;
-			Game.curGame = null;
-			UI.removeAllInputs();
-			socket.disconnect();
-		});
+		chr.x = data.x;
+		chr.y = data.y;
+		chr.walking = false;
+		chr.walkingPerc = 0.0;
+		chr.tick();
 		
-		socket.on('setInfo', function(data:Dynamic){
-			Game.setPokemonParty(data.pokemon);
-			Game.accountLevel = data.accountLevel;
-		});
+		Main.log('Invalid move!');
 		
-		socket.on('loadMap', function(data:Dynamic){
-			if(Game.curGame != null && Game.curGame.queueLoadMap){
-				Game.curGame.queuedMap = data.mapid;
-				Game.curGame.queuedChars = data.chars;
-				return;
-			}
-			Game.loadMap(data.mapid, data.chars);
-		});
-		
-		socket.on('invalidMove', function(data){
-			lastAckMove = data.ack;
-			var chr = Game.curGame.getPlayerChar();
-			
-			chr.x = data.x;
-			chr.y = data.y;
-			chr.walking = false;
-			chr.tick();
-			
-			Main.log('Invalid move!');
-			
-			if(chr.freezeTicks < 5) chr.freezeTicks = 5;
-		});
-		
-		socket.on('update', function(data: {
-				var map:String;
-				var chars:Array<CCharacterData>;
-				var messages:Array<ChatLogEntry>;
-				var cremoved:Array<String>;
-				var warpsUsed:Array<{
-					var username:String;
-					var warpName:String;
-					var x:Int;
-					var y:Int;
-					var direction:Int;
-				}>;
-			}){
-			//
-			
-			if (Std.is(data, String)) data = JSON.parse(untyped data);
-			if (Game == null) return;
-			if (!Game.curGame.loaded) return;
-			if (data.map != Game.curGame.map.id) return;
-			
-			// The server doesn't trasmit some messages if there's nothing in them,
-			// create the arrays so the script below doesn't fail
-			if (data.chars == null) data.chars = [];
-			if (data.messages == null) data.messages = [];
-			if (data.cremoved == null) data.cremoved = [];
-			if (data.warpsUsed == null) data.warpsUsed = [];
-			
-			var cremoved = data.cremoved;
-			
-			for(i in 0...data.warpsUsed.length){
-				var warp = data.warpsUsed[i];
-				cremoved.remove(warp.username);
-				if(warp.username == Game.username) continue;
-				
-				(function(warp){
-					var chr = Game.curGame.getCharByUsername(warp.username);
-					
-					
-					var tmpWarp = CWarp.getWarpByName(data.warpsUsed[i].warpName);
-					chr.canUpdate = false;
-					
-					var animation = function(){
-						chr.direction = warp.direction;
-						if(Std.is(tmpWarp, CDoor)){
-							chr.enterDoor(cast tmpWarp);
-						}else if(Std.is(tmpWarp, CWarpArrow)){
-							chr.enterWarpArrow(cast tmpWarp);
-						}else if (Std.is(tmpWarp, CStairs)) {
-							chr.enterStairs(cast tmpWarp);
-						}
-					};
-					
-					if(chr.x != data.warpsUsed[i].x || chr.y != data.warpsUsed[i].y || chr.walking){
-						chr.targetX = warp.x;
-						chr.targetY = warp.y;
-						chr.onTarget = animation;
-					}else{
-						animation();
-					}
-				})(warp);
-			}
-			
-			var chars = data.chars;
-			
-			for (i in 0...chars.length) {
-				var charData = chars[i];
-				
-				var chr = Game.curGame.getCharByUsername(charData.username);
-				
-				if(chr != null){
-					chr.follower = charData.follower;
-				}
-				
-				if(charData.username == Game.username){
-					var src = 'resources/chars_sprites/'+charData.type+'.png';
-					if (Game.getRes('playerBacksprite') == null || Game.getRes('playerBacksprite').obj.src != src) {
-						Game.setRes('playerBacksprite', new ImageResource('resources/chars_sprites/'+charData.type+'.png'));
-					}
-					continue;
-				}
-				
-				
-				if(chr != null){
-					if (!chr.canUpdate) continue;
-						
-					chr.inBattle = charData.inBattle;
-					chr.battleEnemy = charData.battleEnemy;
-					chr.targetX = charData.x;
-					chr.targetY = charData.y;
-					chr.targetDirection = charData.direction;
-					
-					//if(!chr.walking){
-						chr.lastX = charData.lastX;
-						chr.lastY = charData.lastY;
-					//}
-					
-					if(chr.x == charData.x && chr.y == charData.y){
-						chr.direction = charData.direction;
-					}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
-					|| chr.x - 2 == charData.x && chr.y == charData.y
-					|| chr.x + 2 == charData.x && chr.y == charData.y
-					|| chr.x == charData.x && chr.y - 2 == charData.y
-					|| chr.x == charData.x && chr.y + 2 == charData.y){
-						// Let the bot move the character
-					}else{
-						// Character too far to be moved by the bot, move him manually
-						chr.direction = charData.direction;
-						chr.x = charData.x;
-						chr.y = charData.y;
-					}
-				}else{
-					chr = new CCharacter(charData);
-				}
-			}
-			
-			for (i in 0...cremoved.length) {
-				var chr = Game.curGame.getCharByUsername(cremoved[i]);
-				if (chr != null) chr.destroy();
-			}
-			
-			for(i in 0...data.messages.length){
-				var m = data.messages[i];
-				m.timestamp = Date.now().getTime();
-				Chat.pushMessage(m);
-			}
-			
-		});
-		
-		socket.on('battleWild', function(data: {
+		if(chr.freezeTicks < 5) chr.freezeTicks = 5;
+	}
+	
+	static private function onUpdate(data: {
+			var map:String;
+			var chars:Array<CCharacterData>;
+			var messages:Array<ChatLogEntry>;
+			var cremoved:Array<String>;
+			var warpsUsed:Array<{
+				var username:String;
+				var warpName:String;
 				var x:Int;
 				var y:Int;
-				var battle:{
-					var curPokemon:PokemonOwned;
-					var enemy:Pokemon;
+				var direction:Int;
+			}>;
+		}){
+		//
+		
+		if (Std.is(data, String)) data = JSON.parse(untyped data);
+		if (Game.curGame == null) return;
+		if (!Game.curGame.loaded) return;
+		if (data.map != Game.curGame.map.id) return;
+		
+		// The server doesn't trasmit some messages if there's nothing in them,
+		// create the arrays so the script below doesn't fail
+		if (data.chars == null) data.chars = [];
+		if (data.messages == null) data.messages = [];
+		if (data.cremoved == null) data.cremoved = [];
+		if (data.warpsUsed == null) data.warpsUsed = [];
+		
+		var cremoved = data.cremoved;
+		
+		for(warp in data.warpsUsed){
+			cremoved.remove(warp.username);
+			if(warp.username == Game.username) continue;
+			
+			(function(warp){
+				var chr = Game.curGame.getCharByUsername(warp.username);
+				
+				
+				var tmpWarp = CWarp.getWarpByName(warp.warpName);
+				chr.canUpdate = false;
+				
+				var animation = function(){
+					chr.direction = warp.direction;
+					if(Std.is(tmpWarp, CDoor)){
+						chr.enterDoor(cast tmpWarp);
+					}else if(Std.is(tmpWarp, CWarpArrow)){
+						chr.enterWarpArrow(cast tmpWarp);
+					}else if (Std.is(tmpWarp, CStairs)) {
+						chr.enterStairs(cast tmpWarp);
+					}
 				};
-			}) {
+				
+				if(chr.x != warp.x || chr.y != warp.y || chr.walking){
+					chr.targetX = warp.x;
+					chr.targetY = warp.y;
+					chr.onTarget = animation;
+				}else{
+					animation();
+				}
+			})(warp);
+		}
+		
+		var chars = data.chars;
+		
+		for (i in 0...chars.length) {
+			var charData = chars[i];
 			
-			var battle = Game.curGame.initBattle(Battle.BATTLE_WILD);
-			battle.x = data.x;
-			battle.y = data.y;
-			battle.background = Game.curGame.getImage('resources/ui/battle_background1.png');
+			var chr = Game.curGame.getCharByUsername(charData.username);
 			
-			var enemy = data.battle.enemy;
-			
-			
-			battle.enemyPokemon = enemy;
-			battle.enemyPokemon.sprite = Game.curGame.getImage('resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png');
-			
-			battle.curPokemon = data.battle.curPokemon;
-			battle.curPokemon.backsprite = Game.curGame.getImage('resources/back' + (battle.curPokemon.shiny ? '_shiny' : '') + '/'+battle.curPokemon.id+'.png');
-			
-			var chr = Game.curGame.getPlayerChar();
 			if(chr != null){
-				chr.inBattle = true;
-				chr.battleEnemy = battle.enemyPokemon.id;
+				chr.follower = charData.follower;
 			}
 			
-			Renderer.startTransition(new BattleTransition001()).step = -1;
-		});
+			if (charData.username == Game.username) {
+				if (charData.type != Game.playerBackspriteType) {
+					Game.playerBackspriteType = charData.type;
+					Game.setRes('playerBacksprite', new ImageResource('resources/chars_sprites/'+charData.type+'.png'));
+				}
+				continue;
+			}
+			
+			
+			if(chr != null){
+				if (!chr.canUpdate) continue;
+					
+				chr.inBattle = charData.inBattle;
+				chr.battleEnemy = charData.battleEnemy;
+				chr.targetX = charData.x;
+				chr.targetY = charData.y;
+				chr.targetDirection = charData.direction;
+				
+				//if(!chr.walking){
+					chr.lastX = charData.lastX;
+					chr.lastY = charData.lastY;
+				//}
+				
+				if(chr.x == charData.x && chr.y == charData.y){
+					chr.direction = charData.direction;
+				}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
+				|| chr.x - 2 == charData.x && chr.y == charData.y
+				|| chr.x + 2 == charData.x && chr.y == charData.y
+				|| chr.x == charData.x && chr.y - 2 == charData.y
+				|| chr.x == charData.x && chr.y + 2 == charData.y){
+					// Let the bot move the character
+				}else{
+					// Character too far to be moved by the bot, move him manually
+					chr.direction = charData.direction;
+					chr.x = charData.x;
+					chr.y = charData.y;
+				}
+			}else{
+				chr = new CCharacter(charData);
+			}
+		}
 		
-		socket.on('battleTurn', function(data){
-			Game.curGame.battle.resultQueue = Game.curGame.battle.resultQueue.concat(data.results);
-			Game.curGame.battle.runQueue();
-		});
+		for (i in 0...cremoved.length) {
+			var chr = Game.curGame.getCharByUsername(cremoved[i]);
+			if (chr != null) chr.destroy();
+		}
 		
-		socket.on('loginFail', function(data) {
-			TitleScreen.loginFailed();
-		});
+		for(m in data.messages){
+			m.timestamp = Date.now().getTime();
+			Chat.pushMessage(m);
+		}
 		
-		socket.on('newGame', function(data: {
-			var username:String;
-			var starters:Array<String>;
-			var characters:Array<String>;
-		}) {
-			Game.username = data.username;
-			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
-				TitleScreen.destroy();
-				Game.state = ST_NEWGAME;
-				NewGameScreen.init(data.starters, data.characters);
+	}
+	
+	static private function onBattleWild(data: {
+			var x:Int;
+			var y:Int;
+			var battle:{
+				var curPokemon:PokemonOwned;
+				var enemy:Pokemon;
 			};
-		});
+		}){
 		
-		socket.on('startGame', function(data: {
-			var username:String;
-			var pokemon:Array<PokemonOwned>;
-		}) {
-			Game.username = data.username;
-			Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
-				TitleScreen.destroy();
-				socket.emit('startGame', {});
-			};
-		});
+		var battle = Game.curGame.initBattle(Battle.BATTLE_WILD);
+		battle.x = data.x;
+		battle.y = data.y;
+		battle.background = Game.curGame.getImage('resources/ui/battle_background1.png');
+		
+		var enemy = data.battle.enemy;
+		
+		
+		battle.enemyPokemon = enemy;
+		battle.enemyPokemon.sprite = Game.curGame.getImage('resources/sprites' + (battle.enemyPokemon.shiny ? '_shiny' : '') + '/'+battle.enemyPokemon.id+'.png');
+		
+		battle.setCurPokemon(data.battle.curPokemon);
+		
+		var chr = Game.curGame.getPlayerChar();
+		if(chr != null){
+			chr.inBattle = true;
+			chr.battleEnemy = battle.enemyPokemon.id;
+		}
+		
+		Renderer.startTransition(new BattleTransition001()).step = -1;
+	}
+	
+	static private function onBattleTurn(data: {
+		var results:Array<BattleTurnResult>;
+	}):Void {
+		Game.curGame.battle.resultQueue = Game.curGame.battle.resultQueue.concat(data.results);
+		Game.curGame.battle.runQueue();
+	}
+	
+	static private function onLoginFail(data:Dynamic) {
+		TitleScreen.loginFailed();
+	}
+	
+	static private function onNewGame(data: {
+		var username:String;
+		var starters:Array<String>;
+		var characters:Array<String>;
+	}) {
+		Game.username = data.username;
+		Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+			TitleScreen.destroy();
+			Game.state = ST_NEWGAME;
+			NewGameScreen.init(data.starters, data.characters);
+		};
+	}
+	
+	static private function onStartGame(data: {
+		var username:String;
+		var pokemon:Array<PokemonOwned>;
+	}) {
+		Game.username = data.username;
+		Renderer.startTransition(new FadeOut(10)).onComplete = function():Void {
+			TitleScreen.destroy();
+			Game.state = ST_UNKNOWN;
+			socket.emit('startGame', {});
+		};
 	}
 }

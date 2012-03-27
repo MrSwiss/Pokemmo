@@ -30,7 +30,8 @@ class Util {
 	
 	static private function findMaximumTextSize(arr:Array<String>, maxWidth:Int, ctx:CanvasRenderingContext2D, low:Int, high:Int):Int {
 		if (high < low) return -1;
-		if (high - low <= 1) return high;
+		if (high - low <= 1) return low + 1;
+		
 		var mid = Math.floor((low + high) / 2);
 		var w = ctx.measureText(arr.slice(0, mid).join(' ')).width;
 		if (w > maxWidth) {

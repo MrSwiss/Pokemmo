@@ -212,11 +212,10 @@ class TitleScreen {
 		ctx.restore();
 		
 		
-		
-		if (tweets != null) {
+		if (tweets != null && tweets.length > 0) {
 			ctx.save();
 			var MAX_TWEET_WIDTH = 185;
-			var tweetsHeight:Int = 0;
+			var tweetsHeight:Int = 10;
 			for (t in tweets) {
 				ctx.font = 'italic 12px Courier';
 				var w = ctx.measureText(t.text).width;
@@ -227,6 +226,9 @@ class TitleScreen {
 				}
 				tweetsHeight += 10;
 			}
+			
+			if (tweetsHeight <= 0) return;
+			
 			Util.drawRoundedRect(20, 275, 260, tweetsHeight, 15, '#FFFFFF', 0.7);
 			
 			ctx.translate(30, 300);
@@ -258,6 +260,10 @@ class TitleScreen {
 			
 			ctx.drawImage(ctx.canvas, 0, 0);
 		}
+		
+		ctx.font = '12px Courier';
+		ctx.fillStyle = '#000000';
+		ctx.fillText('Version: '+Version.Major+"."+Version.Minor+"/"+Version.Build, 10, 600);
 	}
 }
 

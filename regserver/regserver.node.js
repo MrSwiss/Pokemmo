@@ -9,7 +9,7 @@ var server = new mongodb.Server("127.0.0.1", 27017, {});
 var dbclient;
 var accounts;
 
-var MAX_ACCOUNTS = 200;
+var MAX_ACCOUNTS = 10;
 
 var lastRegisteredIPs = [];
 
@@ -154,7 +154,7 @@ function startIO(){
 		console.log('Registered accounts: '+count);
 	});
 	
-	var io = require('socket.io').listen(2827).set('close timeout', 0).set('log level', 3);
+	var io = require('socket.io').listen(2827).set('close timeout', 0).set('log level', 0);
 	io.sockets.on('connection', function (socket) {
 		var ip = socket.handshake.address.address;
 		socket.on('register', function(data){

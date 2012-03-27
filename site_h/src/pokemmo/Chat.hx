@@ -22,6 +22,7 @@ class Chat {
 		untyped chatBox.style.opacity = '0';
 		chatBox.style.position = 'fixed';
 		chatBox.maxLength = 128;
+		chatLog = [];
 		
 		chatBox.onblur = function(e:Event) {
 			Chat.inChat = false;
@@ -29,9 +30,8 @@ class Chat {
 			// Force the messages to fade out again, a little faster though
 			var now = Date.now().getTime();
 			
-			var chatLog = Chat.chatLog;
 			for (i in untyped Math.max(chatLog.length - 12, 0)...chatLog.length) {
-				chatLog[i].timestamp2 = Math.max(now - 2500, chatLog[i].timestamp2);
+				chatLog[i].timestamp2 = Math.max(now - 6000, chatLog[i].timestamp2);
 			}
 		}
 		
@@ -46,7 +46,6 @@ class Chat {
 	}
 	
 	static public function resetChat():Void {
-		chatLog = [];
 		chatBox.value = '';
 		inChat = false;
 		justSentMessage = true;
@@ -90,9 +89,31 @@ class Chat {
 	}
 	
 	static public function sendMessage():Void {
-		filterChatText();
-		Connection.socket.emit('sendMessage', {str:chatBox.value } );
+		var str = chatBox.value;
+		if (str.indexOf('/kick ') == 0 && Game.accountLevel >= 30) {
+			Connection.socket.emit('kickPlayer', { username:str.substr('/kick '.length) } );
+			resetChat();
+			Main.jq(Main.onScreenCanvas).focus();
+			return;
+		}
+		
+		if (str.indexOf('/setpokemon ') == 0 && Game.accountLevel >= 70) {
+			Connection.socket.emit('adminSetPokemon', { id:str.substr('/setpokemon '.length) } );
+			resetChat();
+			Main.jq(Main.onScreenCanvas).focus();
+			return;
+		}
+		
+		if (str.indexOf('/setlevel ') == 0 && Game.accountLevel >= 70) {
+			Connection.socket.emit('adminSetLevel', { level:str.substr('/setlevel '.length) } );
+			resetChat();
+			Main.jq(Main.onScreenCanvas).focus();
+			return;
+		}
+		
 		resetChat();
+		filterChatText();
+		Connection.socket.emit('sendMessage', {str:str } );
 		Main.jq(Main.onScreenCanvas).focus();
 	}
 	
@@ -162,18 +183,27 @@ class Chat {
 		}
 		
 		ctx.globalAlpha = 1;
+	}
+	
+	static public function renderBubbles(ctx:CanvasRenderingContext2D):Void {
+		var now = Date.now().getTime();
 		
-		var BUBBLE_TIME = 2500;
 		var CORNER_RADIUS = 10;
 		var offx = Renderer.getOffsetX();
 		var offy = Renderer.getOffsetY();
 		var tmpCanvas = Main.tmpCanvas;
 		var tmpCtx = Main.tmpCtx;
 		for (msg in chatLog) {
-			if (now - msg.timestamp >= BUBBLE_TIME) continue;
+			var duration = 2500 * (msg.str.length / 70 + 1);
+			
+			if (now - msg.timestamp >= duration) continue;
 			if (msg.chr == null) msg.chr = Game.curGame.getCharByUsername(msg.username);
 			if (msg.chr == null)  continue;
-			var perc = Util.clamp((BUBBLE_TIME - (now - msg.timestamp)) / 750, 0, 0.7);
+			
+			
+			var time = now - msg.timestamp;
+			
+			var perc = Util.clamp((duration - time) / 1000, 0, 0.7);
 			
 			var x:Int, y:Int, width:Int = msg.bubbleWidth, height:Int = msg.bubbleHeight;
 			
@@ -185,7 +215,7 @@ class Chat {
 			x -= Math.floor(width / 2);
 			y -= height;
 			
-			y -= Math.floor((now - msg.timestamp) / 150);
+			y -= Math.floor((now - msg.timestamp) / 300);
 			
 			//Util.drawRoundedRect(x, y, width, height, CORNER_RADIUS, '#FFFFFF' perc);
 			
@@ -209,8 +239,10 @@ class Chat {
 		}
 	}
 	
+	static private var chatFilterRegex:EReg;
 	static private function filterChatText():Void {
-		chatBox.value = (~/[^a-zA-Z0-9.,:-=\(\)\[\]\{\}\/\\ '"!?@#$%&*]/).replace(chatBox.value, '');
+		if (chatFilterRegex == null) chatFilterRegex = new EReg("[^\\u0020-\\u007F\\u0080-\\u00FF]", "");
+		chatBox.value = chatFilterRegex.replace(chatBox.value, '');
 	}
 }
 

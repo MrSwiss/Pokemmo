@@ -23,7 +23,10 @@ var cMovesData = {};
 for(var i in movesData){
 	var d = movesData[i];
 	var c = cMovesData[i] = {
-		type: d.type
+		type: d.type,
+		power: d.power || 0,
+		accuracy: d.accuracy,
+		maxPP: d.pp_max
 	};
 };
 

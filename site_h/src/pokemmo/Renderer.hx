@@ -77,7 +77,8 @@ class Renderer {
 		
 		switch(Game.state) {
 		case ST_UNKNOWN:
-			null;
+			ctx.fillStyle = '#000000';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
 		case ST_MAP:
 			if (g == null) return;
 			var map = g.map;
@@ -95,7 +96,9 @@ class Renderer {
 			Game.curGame.renderObjects(ctx);
 			map.renderOver(ctx);
 			
-			for(i in 0...gameRenderHooks.length) gameRenderHooks[i]();
+			for(hk in gameRenderHooks) hk();
+			
+			Chat.renderBubbles(ctx);
 			
 			if (g.inBattle && g.battle.step != BATTLE_STEP_TRANSITION) {
 				g.battle.render(ctx);
@@ -159,7 +162,7 @@ class Renderer {
 		}
 		
 		UI.render(ctx);
-		if (curTransition != null) curTransition.render(ctx);
+		if (isInTransition()) curTransition.render(ctx);
 		
 		onScreenCtx.clearRect(0, 0, onScreenCanvas.width, onScreenCanvas.height);
 		onScreenCtx.drawImage(canvas, 0, 0);
@@ -203,5 +206,9 @@ class Renderer {
 	
 	static public function stopTransition():Void {
 		curTransition = null;
+	}
+	
+	static inline public function isInTransition():Bool {
+		return curTransition != null;
 	}
 }

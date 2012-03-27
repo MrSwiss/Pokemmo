@@ -42,6 +42,10 @@ class Battle {
 	private var textCompletedTime:Float;
 	private var textDelay:Float;
 	private var textOnComplete:Void->Void;
+	private var textOnYes:Void->Void;
+	private var textOnNo:Void->Void;
+	private var textQuestion:Bool;
+	private var textQuestionSelectedAnswer:Bool;
 	private var animStep:Int;
 	
 	public var canRenderEnemy:Bool;
@@ -64,7 +68,9 @@ class Battle {
 	private var finishMap:String;
 	private var finishMapChars:Array<CCharacterData>;
 	
+	private var learningMove:String;
 	
+	private var forgetMoveSelected:Int;
 	
 	public var runningQueue:Bool;
 	
@@ -87,60 +93,111 @@ class Battle {
 		UI.hookDirButtons(buttonHandler);
 	}
 	
+	public function setCurPokemon(pk:PokemonOwned):Void {
+		pk.backsprite = Game.curGame.getImage('resources/back' + (pk.shiny ? '_shiny' : '') + '/' + pk.id + '.png');
+		pk.iconBig = Game.curGame.getImage('resources/picons/' + pk.id + '_1_x2.png');
+		
+		curPokemon = pk;
+	}
+	
 	public function render(ctx:CanvasRenderingContext2D):Void {
 		now = Date.now().getTime();
 		
 		ctx.save();
 		ctx.translate(Main.isPhone ? 0 : 160, Main.isPhone ? 0 : 140);
 		
-		if (step == BATTLE_STEP_TURN && curMove != null) {
-			curMove.render(ctx, this);
-		}
-		
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = 'rgb(0,0,0)';
-		ctx.strokeRect(-1, -1, 482, 226);
-		if (background.obj.width != 0) {
-			ctx.drawImage(background.obj, 0, 0);
-		}
-		
-		if (step != BATTLE_STEP_FIGHT_MENU) drawBottomPanel(ctx);
-		
-		if (step == BATTLE_STEP_FIGHT_MENU) drawFightMenu(ctx);
-		
-		if (canRenderEnemy) renderEnemy(ctx);
-		
-		if (step == BATTLE_STEP_TRANSITION || step == BATTLE_STEP_POKEMON_APPEARED_TMP || step == BATTLE_STEP_POKEMON_APPEARED) {
-			ctx.drawImage(Game.getRes('playerBacksprite').obj, 0, 0, 128, 128, 60, 96, 128, 128);
-		}else if (step == BATTLE_STEP_GO_POKEMON) {
-			drawGoPokemonAnimation(ctx);
+		if (step == BATTLE_STEP_LEARN_MOVE) {
+			renderLearnMove(ctx);
 		}else{
-			if(canRenderPlayerPokemon) drawPlayerPokemon(ctx);
+			if (step == BATTLE_STEP_TURN && curMove != null) {
+				curMove.render(ctx, this);
+			}
+			
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = 'rgb(0,0,0)';
+			ctx.strokeRect(-1, -1, 482, 226);
+			if (background.obj.width != 0) {
+				ctx.drawImage(background.obj, 0, 0);
+			}
+			
+			if (step != BATTLE_STEP_FIGHT_MENU) drawBottomPanel(ctx);
+			
+			if (step == BATTLE_STEP_FIGHT_MENU) drawFightMenu(ctx);
+			
+			if (canRenderEnemy) renderEnemy(ctx);
+			
+			if (step == BATTLE_STEP_TRANSITION || step == BATTLE_STEP_POKEMON_APPEARED_TMP || step == BATTLE_STEP_POKEMON_APPEARED) {
+				ctx.drawImage(Game.getRes('playerBacksprite').obj, 0, 0, 128, 128, 60, 96, 128, 128);
+			}else if (step == BATTLE_STEP_GO_POKEMON) {
+				drawGoPokemonAnimation(ctx);
+			}else{
+				if(canRenderPlayerPokemon) drawPlayerPokemon(ctx);
+			}
+			
+			drawEnemyStatus(ctx);
+			
+			if (step != BATTLE_STEP_TRANSITION
+			&& step != BATTLE_STEP_POKEMON_APPEARED_TMP
+			&& step != BATTLE_STEP_POKEMON_APPEARED
+			&& step != BATTLE_STEP_GO_POKEMON) {
+				drawPokemonStatus(ctx);
+			}
+			
+			if (step == BATTLE_STEP_POKEMON_APPEARED_TMP) {
+				step = BATTLE_STEP_POKEMON_APPEARED;
+				setBattleText(Util.getPokemonDisplayName(enemyPokemon) +' appeared!', -1, function():Void{
+					var pk = curPokemon;
+					setBattleText("Go! " + Util.getPokemonDisplayName(curPokemon) + "!");
+					step = BATTLE_STEP_GO_POKEMON;
+					animStep = 0;
+					selectedMove = 0;
+				});
+			}
+			
+			
+			if (step != BATTLE_STEP_FIGHT_MENU && text != '' && textCompleted && textQuestion) {
+				ctx.drawImage(Game.getRes('battleYesNo').obj, 370, 130);
+				if (textQuestionSelectedAnswer) {
+					ctx.drawImage(Game.getRes('battleMisc').obj, 96, 0, 32, 32, 376 + Math.floor((now % 1000) / 500) * 2, 148, 32, 32);
+				}else {
+					ctx.drawImage(Game.getRes('battleMisc').obj, 96, 0, 32, 32, 376 + Math.floor((now % 1000) / 500) * 2, 178, 32, 32);
+				}
+			}
+		}
+		ctx.restore();
+	}
+	
+	private function renderLearnMove(ctx:CanvasRenderingContext2D) {
+		ctx.drawImage(Game.getRes('battleLearnMove').obj, 0, 0);
+		
+		ctx.drawImage(curPokemon.iconBig.obj, 16, 32);
+		ctx.drawImage(Game.getRes('types').obj, 0, 24 * PokemonConst.typeNameToInt(Game.getPokemonData(curPokemon.id).type1), 64, 24, 96, 70, 64, 24);
+		if (Game.getPokemonData(curPokemon.id).type2 != null) {
+			ctx.drawImage(Game.getRes('types').obj, 0, 24 * PokemonConst.typeNameToInt(Game.getPokemonData(curPokemon.id).type2), 64, 24, 164, 70, 64, 24);
 		}
 		
-		drawEnemyStatus(ctx);
+		ctx.font = '24px Font2';
+		Renderer.drawShadowText2(ctx, Util.getPokemonDisplayName(curPokemon), 80, 56, 'rgb(248,248,248)', 'rgb(96,96,96)');
 		
-		if (step != BATTLE_STEP_TRANSITION
-		&& step != BATTLE_STEP_POKEMON_APPEARED_TMP
-		&& step != BATTLE_STEP_POKEMON_APPEARED
-		&& step != BATTLE_STEP_GO_POKEMON) {
-			drawPokemonStatus(ctx);
+		ctx.save();
+		for (i in 0...5) {
+			var move = (i < 4 ? curPokemon.moves[i] : learningMove);
+			var movePP = (i < 4 ? curPokemon.movesPP[i] : Game.getMoveData(learningMove).maxPP);
+			var moveMaxPP = (i < 4 ? curPokemon.movesMaxPP[i] : movePP);
+			var moveType = Game.getMoveData(i < 4 ? curPokemon.moves[i] : learningMove).type;
+			
+			ctx.drawImage(Game.getRes('types').obj, 0, 24 * PokemonConst.typeNameToInt(moveType), 64, 24, 246, 42, 64, 24);
+			Renderer.drawShadowText2(ctx, move.toUpperCase(), 326, 64, 'rgb(32,32,32)', 'rgb(216,216,216)');
+			Renderer.drawShadowText2(ctx, Std.string(movePP), 412 + (movePP < 10 ? 8 : 0), 86, 'rgb(32,32,32)', 'rgb(216,216,216)');
+			Renderer.drawShadowText2(ctx, Std.string(moveMaxPP), 448, 86, 'rgb(32,32,32)', 'rgb(216,216,216)');
+			
+			
+			ctx.translate(0, 56);
 		}
-		
-		if (step == BATTLE_STEP_POKEMON_APPEARED_TMP) {
-			step = BATTLE_STEP_POKEMON_APPEARED;
-			setBattleText(Util.getPokemonDisplayName(enemyPokemon) +' appeared!', -1, function():Void{
-				var pk = curPokemon;
-				setBattleText("Go! " + Util.getPokemonDisplayName(curPokemon) + "!");
-				step = BATTLE_STEP_GO_POKEMON;
-				animStep = 0;
-				selectedMove = 0;
-			});
-		}
-		
-		
 		
 		ctx.restore();
+		
+		ctx.drawImage(Game.getRes('battleLearnMoveSelection').obj, 240, 36 + 56 * forgetMoveSelected);
 	}
 	
 	private function drawBottomPanel(ctx:CanvasRenderingContext2D):Void {
@@ -149,14 +206,15 @@ class Battle {
 		if(text != ''){
 			var str = text.substr(0, Math.floor((now - textTime) / 30));
 			
-			
 			ctx.font = '24px Font2';
 			
-			
 			var maxWidth = (step == BATTLE_STEP_ACTION_MENU ? 150 : 420);
-			if(ctx.measureText(str).width > maxWidth){
+			var lastLine = str;
+			var secondLine = null;
+			if (ctx.measureText(str).width > maxWidth) {
 				var firstLine = str;
-				var secondLine = '';
+				secondLine = '';
+				
 				do{
 					var arr = firstLine.split(' ');
 					secondLine = arr.pop() + ' ' + secondLine;
@@ -175,6 +233,8 @@ class Battle {
 				ctx.fillText(firstLine, 24, 266);
 				ctx.fillText(secondLine, 24, 294);
 				
+				lastLine = secondLine;
+				
 			}else{
 				ctx.fillStyle = 'rgb(104,88,112)';
 				ctx.fillText(str, 24, 268);
@@ -190,19 +250,40 @@ class Battle {
 					textCompleted = true;
 					textCompletedTime = now;
 					
-					if(textDelay == 0){
-						if(textOnComplete != null) textOnComplete();
-					}else if(textDelay != -1){
-						if (textOnComplete != null) Main.setTimeout(function() { textOnComplete(); }, textDelay);
-					}else {
-						UI.hookAButton(textOnComplete);
+					if (textQuestion) {
+						textQuestionSelectedAnswer = true;
+						UI.hookAButton(function():Void {
+							UI.unHookABButtons();
+							if (textQuestionSelectedAnswer) {
+								textOnYes();
+							}else {
+								textOnNo();
+							}
+						});
+						
+						UI.hookBButton(function():Void {
+							UI.unHookABButtons();
+							textOnNo();
+						});
+						
+					}else{
+						if(textDelay == 0){
+							if(textOnComplete != null) textOnComplete();
+						}else if(textDelay != -1){
+							if (textOnComplete != null) Main.setTimeout(function() { textOnComplete(); }, textDelay);
+						}else {
+							UI.hookAButton(function() { Main.setTimeout(textOnComplete, 100); } );
+						}
 					}
-					
-				}else if(textDelay == -1 && now - textCompletedTime > 100){
-					var tmp = Math.floor((now % 1000) / 250);
-					if(tmp == 3) tmp = 1;
-					tmp *= 2;
-					ctx.drawImage(Game.getRes('battleMisc').obj, 0, 0, 32, 32, 24 + ctx.measureText(str).width, 240 + tmp, 32, 32);
+				}else {
+					if (!textQuestion) {
+						if(textDelay == -1 && now - textCompletedTime > 100){
+							var tmp = Math.floor((now % 1000) / 250);
+							if(tmp == 3) tmp = 1;
+							tmp *= 2;
+							ctx.drawImage(Game.getRes('battleMisc').obj, 0, 0, 32, 32, 24 + ctx.measureText(lastLine).width, 240 + tmp + (secondLine != null ? 28 : 0), 32, 32);
+						}
+					}
 				}
 			}
 		}
@@ -238,8 +319,8 @@ class Battle {
 		var y2 = 300;
 		
 		for (i in 0...4) {
-			var x = x1;
-			var y = y1;
+			var x = 0;
+			var y = 0;
 			
 			switch(i) {
 				case 0: x = x1; y = y1;
@@ -249,10 +330,11 @@ class Battle {
 			}
 			
 			var n = curPokemon.moves[i] == null ? '--' : curPokemon.moves[i].toUpperCase();
-			ctx.font = '24px Font2';
+			ctx.font = '16px Font4';
 			ctx.fillStyle = 'rgb(208,208,208)';
 			ctx.fillText(n, x, y + 2);
 			ctx.fillText(n, x + 2, y);
+			ctx.fillText(n, x + 2, y + 2);
 			
 			ctx.fillStyle = 'rgb(72,72,72)';
 			ctx.fillText(n, x, y);
@@ -417,7 +499,7 @@ class Battle {
 		var pokemonLevel = 'Lv' + enemyPokemon.level;
 		var lvlX = 168 - (enemyPokemon.level < 10 ? 0 : (enemyPokemon.level < 100) ? 8 : 16);
 		
-		ctx.font = '21px Font2';
+		ctx.font = '16px Font4';
 		Renderer.drawShadowText2(ctx, pokemonName, 40, 56, 'rgb(64,64,64)', 'rgb(216,208,176)');
 		Renderer.drawShadowText2(ctx, pokemonLevel, lvlX, 56, 'rgb(64,64,64)', 'rgb(216,208,176)');
 		
@@ -463,7 +545,7 @@ class Battle {
 		var lvlX = 412 - (curPokemon.level < 10 ? 0 : (curPokemon.level < 100) ? 8 : 16);
 		var maxHpX = 422 - (curPokemon.maxHp >= 100 ? 8 : 0);
 		
-		ctx.font = '21px Font2';
+		ctx.font = '16px Font4';
 		Renderer.drawShadowText2(ctx, pokemonName, 284, 172, 'rgb(64,64,64)', 'rgb(216,208,176)');
 		Renderer.drawShadowText2(ctx, pokemonLevel, lvlX, 172, 'rgb(64,64,64)', 'rgb(216,208,176)');
 		Renderer.drawShadowText2(ctx, Std.string(curPokemon.maxHp), maxHpX, 208, 'rgb(64,64,64)', 'rgb(216,208,176)');
@@ -524,6 +606,7 @@ class Battle {
 	}
 	
 	public function setBattleText(str:String, delay:Float = null, onComplete:Void->Void = null):Void {
+		textQuestion = false;
 		text = str == null ? '' : str;
 		textTime = now;
 		if (delay == null) {
@@ -532,6 +615,13 @@ class Battle {
 		textDelay = delay;
 		textOnComplete = onComplete;
 		textCompleted = false;
+	}
+	
+	public function setBattleTextQuestion(str:String, onYes:Void->Void, onNo:Void->Void):Void {
+		setBattleText(str);
+		textQuestion = true;
+		textOnYes = onYes;
+		textOnNo = onNo;
 	}
 	
 	public function runQueue(force:Bool = false):Void {
@@ -555,19 +645,22 @@ class Battle {
 			Main.setTimeout(function():Void{
 				moveStartTime = Date.now().getTime();
 				playMove(action.value.move);
-			}, 1000);
+			}, 1500);
 		case "moveMiss":
 			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.toUpperCase()+"!");
 			Main.setTimeout(function():Void{
 				setBattleText('But it missed!');
 				Main.setTimeout(function() { runQueue(true); }, 1000);
-			}, 1000);
+			}, 1500);
 		case "moveDebuff":
 			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.move.toUpperCase()+"!");
 			Main.setTimeout(function():Void{
 				moveStartTime = Date.now().getTime();
 				moveFinished();
 			}, 1000);
+			
+		case "debuff":
+			runQueue(true);
 			
 		case "applyStatus":
 			actionEnemyPokemon.status = action.value;
@@ -602,19 +695,6 @@ class Battle {
 			});
 			
 		case "win":
-			Game.setPokemonParty(action.value.pokemon);
-			
-			finishX = action.value.x;
-			finishY = action.value.y;
-			finishMap = action.value.map;
-			finishMapChars = action.value.mapChars;
-			
-			if(type == BATTLE_WILD && action.player == PLAYER_SELF){
-				finish();
-				return;
-			}
-			
-			
 			finish();
 			
 		case "flee":
@@ -640,7 +720,187 @@ class Battle {
 			//TODO
 		case "pokemonLevelup": runQueue(true);
 		
+		case "pokemonLearnedMove":
+			if (action.player != 0) return;
+			
+			learnedMoves(action, function() {
+				runQueue(true);
+			});
+			
+		case "pokemonLearnMoves":
+			if (action.player != 0) return;
+			var arr:Array<String> = action.value;
+			var func:Void->Void = null;
+			var i = -1;
+			func = function():Void {
+				++i;
+				if (i >= arr.length) {
+					runQueue(true);
+					return;
+				}
+				
+				learnMoveOver(arr[i], func);
+			}
+			
+			func();
+			
 		default: Main.log('Unknown battle action: '+action.type);
+		}
+	}
+	
+	private function learnedMoves(action:BattleTurnResult, onComplete:Void->Void) {
+		var arr:Array<String> = action.value;
+		var i = 0;
+		var func:Void->Void = null;
+		func = function():Void {
+			if (i >= arr.length) {
+				onComplete();
+				return;
+			}
+			setBattleText(Util.getPokemonDisplayName(curPokemon) + ' learned ' + arr[i++].toUpperCase()+'!', -1, func);
+		}
+		
+		func();
+	}
+	
+	private function learnMoveOver(move:String, func:Void->Void):Void {
+		learningMove = move;
+		var previousStep = null;
+		var aAction:Void->Void = null;
+		var bAction:Void->Void = null;
+		var ctx = Main.ctx;
+		
+		setBattleText(Util.getPokemonDisplayName(curPokemon) + ' is trying to learn ' + move.toUpperCase() + '.', -1, function():Void {
+			setBattleText('But, ' + Util.getPokemonDisplayName(curPokemon) + " can't learn more than four moves.", -1, function():Void {
+				setBattleTextQuestion('Delete a move to make room for ' + move.toUpperCase() + '?', function():Void {
+					var transition:Void->Void = null;
+					var tstep:Int = 0;
+					transition = function():Void {
+						ctx.save();
+						ctx.translate(Main.isPhone ? 0 : 160, Main.isPhone ? 0 : 140);
+						
+						if (tstep < 10) {
+							ctx.globalAlpha = tstep / 10;
+							ctx.fillStyle = '#000000';
+							ctx.fillRect(0, 0, 480, 320);
+						}else if (tstep < 15) {
+							if (tstep == 10) {
+								forgetMoveSelected = 0;
+								previousStep = step;
+								step = BATTLE_STEP_LEARN_MOVE;
+							}
+							ctx.fillStyle = '#000000';
+							ctx.fillRect(0, 0, 480, 320);
+						}else if(tstep < 25){
+							ctx.globalAlpha = 1 - (tstep - 15) / 10;
+							ctx.fillStyle = '#000000';
+							ctx.fillRect(0, 0, 480, 320);
+						}else {
+							Renderer.unHookRender(transition);
+							
+							UI.hookAButton(aAction);
+							UI.hookBButton(bAction);
+						}
+						
+						ctx.restore();
+						++tstep;
+					}
+					
+					Renderer.hookRender(transition);
+				}, function():Void {
+					func();
+				});
+			});
+		});
+		
+		aAction = function():Void {
+			UI.unHookAllBButton();
+			var oldMove = curPokemon.moves[forgetMoveSelected];
+			Connection.socket.emit('battleLearnMove', { slot: forgetMoveSelected, move: move } );
+			
+			var transition:Void->Void = null;
+			var tstep:Int = 0;
+			transition = function():Void {
+				ctx.save();
+				ctx.translate(Main.isPhone ? 0 : 160, Main.isPhone ? 0 : 140);
+				
+				if (tstep < 10) {
+					ctx.globalAlpha = tstep / 10;
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+				}else if (tstep < 15) {
+					if (tstep == 10) {
+						curPokemon.moves[forgetMoveSelected] = learningMove;
+						step = previousStep;
+						setBattleText('1, 2, and... ... ... Poof!', -1, function() {
+							setBattleText(Util.getPokemonDisplayName(curPokemon) + ' forgot ' + oldMove.toUpperCase() + '.', -1, function() {
+								setBattleText('And...', -1, function() {
+									setBattleText(Util.getPokemonDisplayName(curPokemon) + ' learned ' + move.toUpperCase() + '!', -1, function() {
+										func();
+									});
+								});
+							});
+						});
+					}
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+				}else if(tstep < 25){
+					ctx.globalAlpha = 1 - (tstep - 15) / 10;
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+				}else {
+					Renderer.unHookRender(transition);
+				}
+				
+				ctx.restore();
+				
+				++tstep;
+			}
+			
+			Renderer.hookRender(transition);
+		}
+		
+		bAction = function():Void {
+			UI.unHookAllAButton();
+			var transition:Void->Void = null;
+			var tstep:Int = 0;
+			transition = function():Void {
+				ctx.save();
+				ctx.translate(Main.isPhone ? 0 : 160, Main.isPhone ? 0 : 140);
+				
+				if (tstep < 10) {
+					ctx.globalAlpha = tstep / 10;
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+				}else if (tstep < 15) {
+					if (tstep == 10) {
+						step = previousStep;
+						
+						setBattleTextQuestion('Are you sure you want ' + Util.getPokemonDisplayName(curPokemon) + ' to stop learning ' + learningMove.toUpperCase() + '?', function() {
+							setBattleText(null);
+							func();
+						}, function() {
+							learnMoveOver(learningMove, func);
+						});
+					}
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+				}else if(tstep < 25){
+					ctx.globalAlpha = 1 - (tstep - 15) / 10;
+					ctx.fillStyle = '#000000';
+					ctx.fillRect(0, 0, 480, 320);
+					
+					
+				}else {
+					Renderer.unHookRender(transition);
+				}
+				
+				ctx.restore();
+				
+				++tstep;
+			}
+			
+			Renderer.hookRender(transition);
 		}
 	}
 	
@@ -650,10 +910,13 @@ class Battle {
 		renderFunc = function() {
 			var result = action.value.resultHp;
 			var pok:Pokemon;
+			var enemy:Pokemon;
 			if(action.player == 1){
 				pok = curPokemon;
+				enemy = enemyPokemon;
 			}else{
 				pok = enemyPokemon;
+				enemy = curPokemon;
 			}
 			
 			var step = Math.ceil(pok.maxHp / 50);
@@ -671,7 +934,16 @@ class Battle {
 			
 			if(pok.hp == result){
 				Renderer.unHookRender(renderFunc);
-				Main.setTimeout(function() { runQueue(true); }, 100);
+				
+				if(action.value.effec == 0){
+					setBattleText("It doesn't affect "+Util.getPokemonStatusBarName(pok), -1, function() { runQueue(true); });
+				}else if(action.value.effec < 1){
+					setBattleText("It's not very effective...", -1, function() { runQueue(true); });
+				}else if(action.value.effec > 1){
+					setBattleText("It's super effective!", -1, function() { runQueue(true); });
+				}else {
+					Main.setTimeout(function() { runQueue(true); }, 100);
+				}
 			}
 		};
 		
@@ -704,12 +976,21 @@ class Battle {
 				if(info.type != 'pokemonLevelup') throw 'Assertion failed';
 				
 				var backsprite = curPokemon.backsprite;
-				curPokemon = info.value;
-				curPokemon.backsprite = backsprite;
+				setCurPokemon(info.value);
 				pok = curPokemon;
+				if (action.player != 0) return;
 				
 				
 				pok.experience = 0;
+				
+				Renderer.unHookRender(renderFunc);
+				setBattleText(Util.getPokemonDisplayName(curPokemon) + ' grew to LV. '+curPokemon.level+'!', -1, function():Void {
+					if (resultQueue.length > 0 && resultQueue[0].type == "pokemonLearnedMove") {
+						learnedMoves(resultQueue.shift(), animateExp);
+					}else{
+						animateExp();
+					}
+				});
 			}
 			
 			
@@ -736,21 +1017,15 @@ class Battle {
 		
 		var action = curAction;
 		if (action.type == 'moveAttack') {
-			if(action.value.effec == 0){
-				setBattleText("It's not effective...", 0, animateHp);
-			}else if(action.value.effec < 1){
-				setBattleText("It's not very effective...", 0, animateHp);
-			}else if(action.value.effec > 1){
-				setBattleText("It's very effective!", 0, animateHp);
-			}else{
-				animateHp();
-			}
+			animateHp();
 		}else{
 			runQueue(true);
 		}
 	}
 	
 	private function buttonHandler(dir:Int):Void {
+		if (Renderer.isInTransition()) return;
+		
 		if(step == BATTLE_STEP_ACTION_MENU){
 			switch(selectedAction){
 			case 0:
@@ -805,11 +1080,40 @@ class Battle {
 					selectedMove = 2;
 				}
 			}
+		}else if (step == BATTLE_STEP_LEARN_MOVE) {
+			if (dir == Game.DIR_UP) {
+				if (forgetMoveSelected > 0) --forgetMoveSelected;
+			}else if (dir == Game.DIR_DOWN) {
+				if (forgetMoveSelected < 4) ++forgetMoveSelected;
+			}
+		}
+		
+		if (text != '' && textCompleted && textQuestion) {
+			if (textQuestionSelectedAnswer) {
+				if (dir == Game.DIR_DOWN) {
+					textQuestionSelectedAnswer = false;
+				}
+			}else {
+				if (dir == Game.DIR_UP) {
+					textQuestionSelectedAnswer = true;
+				}
+			}
 		}
 	}
 	
 	public function finish():Void {
 		UI.unHookDirButtons(buttonHandler);
+		
+		
+		Connection.socket.emit('battleFinished');
+		Connection.socket.once('battleFinishDetails', function(data:Dynamic):Void {
+			finishX = data.x;
+			finishY = data.y;
+			finishMap = data.map;
+			finishMapChars = data.mapChars;
+			Game.setPokemonParty(data.pokemon);
+		});
+		
 		
 		var step = 0;
 		var func = null;
@@ -826,8 +1130,12 @@ class Battle {
 			}else if(step < 20){
 				ctx.globalAlpha = 1;
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				// While the map details haven't been received, do not progress
+				if (finishMap == null) return;
+				
 				if(step == 15){
-					if(finishMap == Map.cur.id){
+					if(finishMapChars == null){
 						var chr = Game.curGame.getPlayerChar();
 						if(chr != null){
 							chr.x = finishX;
@@ -849,7 +1157,7 @@ class Battle {
 					}
 				}
 				
-			}else{
+			}else {
 				ctx.globalAlpha = 1 - (step - 20) / 8;
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				ctx.globalAlpha = 1;
@@ -872,4 +1180,5 @@ enum BATTLE_STEP {
 	BATTLE_STEP_ACTION_MENU;
 	BATTLE_STEP_FIGHT_MENU;
 	BATTLE_STEP_TURN;
+	BATTLE_STEP_LEARN_MOVE;
 }

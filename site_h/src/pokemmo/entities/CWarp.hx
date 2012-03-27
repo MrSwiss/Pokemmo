@@ -1,4 +1,5 @@
 package pokemmo.entities;
+import pokemmo.CCharacter;
 import pokemmo.Game;
 import pokemmo.GameObject;
 
@@ -15,6 +16,10 @@ class CWarp extends GameObject{
 		this.name = name;
 		
 		disable = false;
+	}
+	
+	public function canWarp(obj:CCharacter):Bool {
+		return true;
 	}
 	
 	static public function getWarpAt(x:Int, y:Int):CWarp {

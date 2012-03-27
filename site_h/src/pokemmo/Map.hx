@@ -63,8 +63,7 @@ class Map {
 		if(cacheMap != this || cacheOffsetX != Renderer.getOffsetX() || cacheOffsetY != Renderer.getOffsetY()){
 			Main.mapCacheCtx.fillStyle = '#000000';
 			Main.mapCacheCtx.fillRect(0, 0, Main.mapCacheCanvas.width, Main.mapCacheCanvas.height);
-			for(i in 0...layers.length){
-				var layer = layers[i];
+			for(layer in layers){
 				if (layer.properties.overchars == '1') continue;
 				if(layer.properties.animated == '1') continue;
 				layer.render(Main.mapCacheCtx, this);
@@ -81,16 +80,14 @@ class Map {
 	}
 	
 	public function renderAnimated(ctx:CanvasRenderingContext2D):Void {
-		for(i in 0...layers.length){
-			var layer = layers[i];
+		for(layer in layers){
 			if (layer.properties.animated != '1') continue;
 			layer.render(ctx, this);
 		}
 	}
 	
 	public function renderOver(ctx:CanvasRenderingContext2D):Void {
-		for(i in 0...layers.length){
-			var layer = layers[i];
+		for(layer in layers){
 			if(layer.properties.overchars != '1') continue;
 			layer.render(ctx, this);
 		}

@@ -57,6 +57,12 @@ class UI {
 		untyped __js__("document").body.appendChild(hiddenInput);
 		
 		Main.jq(w).keydown(function(e:KeyboardEvent) {
+			if (!Chat.inChat && e.keyCode == 68 && e.shiftKey && selectedInput == null) {
+				Main.printDebug();
+				e.preventDefault();
+				return;
+			}
+			
 			if (e.keyCode == 13) { // ENTER
 				if (Game.state == ST_MAP) {
 					if (!Chat.inChat && !Chat.justSentMessage) {
@@ -192,8 +198,6 @@ class UI {
 			hiddenInput.selectionEnd =  hiddenInput.value.length;
 		}
 		
-		if (Renderer.curTransition != null) return;
-		
 		for (i in 0...inputs.length) {
 			inputs[i].tick();
 		}
@@ -203,9 +207,7 @@ class UI {
 			var arr = AButtonHooks.copy();
 			AButtonHooks = [];
 			
-			for(i in 0...arr.length){
-				arr[i]();
-			}
+			if(!Renderer.isInTransition()) for(e in arr) e();
 		}
 		
 		if(fireBHooks){
@@ -213,9 +215,7 @@ class UI {
 			var arr = BButtonHooks.copy();
 			BButtonHooks = [];
 			
-			for(i in 0...arr.length){
-				arr[i]();
-			}
+			if(!Renderer.isInTransition()) for(e in arr) e();
 		}
 		
 		if(fireEnterHooks){
@@ -223,19 +223,18 @@ class UI {
 			var arr = enterButtonHooks.copy();
 			enterButtonHooks = [];
 			
-			for(i in 0...arr.length){
-				arr[i]();
+			if(!Renderer.isInTransition()) for(e in arr) e();
+		}
+		
+		if(!Renderer.isInTransition()){
+			for (i in 0...arrowKeysPressed.length) {
+				for (j in 0...dirButtonHooks.length) {
+					dirButtonHooks[j](arrowKeysPressed[i]);
+				}
 			}
 		}
 		
-		
-		for (i in 0...arrowKeysPressed.length) {
-			for (j in 0...dirButtonHooks.length) {
-				dirButtonHooks[j](arrowKeysPressed[i]);
-			}
-		}
-		
-		while(arrowKeysPressed.length > 0) arrowKeysPressed.pop();
+		arrowKeysPressed = [];
 	}
 	
 	static public function render(ctx:CanvasRenderingContext2D):Void {
@@ -262,6 +261,19 @@ class UI {
 	
 	inline static public function unHookBButton(func:Void->Void):Void {
 		BButtonHooks.remove(func);
+	}
+	
+	inline static public function unHookABButtons():Void {
+		AButtonHooks = [];
+		BButtonHooks = [];
+	}
+	
+	inline static public function unHookAllAButton():Void {
+		BButtonHooks = [];
+	}
+	
+	inline static public function unHookAllBButton():Void {
+		BButtonHooks = [];
 	}
 	
 	inline static public function unHookEnterButton(func:Void->Void):Void {

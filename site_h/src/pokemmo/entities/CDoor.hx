@@ -1,4 +1,5 @@
 package pokemmo.entities;
+import pokemmo.CCharacter;
 import pokemmo.Game;
 import pokemmo.GameObject;
 import pokemmo.Map;
@@ -21,6 +22,10 @@ class CDoor extends CWarp {
 	
 	public function open():Void {
 		openStep = 1;
+	}
+	
+	override public function canWarp(obj:CCharacter):Bool {
+		return super.canWarp(obj);
 	}
 	
 	override public function render(ctx:CanvasRenderingContext2D):Void {

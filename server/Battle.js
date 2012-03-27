@@ -38,6 +38,8 @@ function Battle(type, arg1, arg2){
 			}
 		}
 		
+		client.battlePokemon = player1.pokemon;
+		
 		player2.pokemon = arg2;
 		player2.pokemonList = [arg2];
 		
@@ -112,9 +114,6 @@ function Battle(type, arg1, arg2){
 	};
 	
 	self.init = function(){
-		if(client){
-			client.socket.on('battleLearnMove', onBattleLearnMove);
-		}
 		
 		switch(type){
 		case BATTLE_WILD:
@@ -130,9 +129,6 @@ function Battle(type, arg1, arg2){
 	}
 	
 	self.destroy = function(){
-		if(client){
-			client.socket.removeListener('battleLearnMove', onBattleLearnMove);
-		}
 		
 		switch(type){
 			case BATTLE_WILD:
@@ -140,15 +136,6 @@ function Battle(type, arg1, arg2){
 				client.socket.removeListener('battleFlee', onBattleFleeWild);
 			break;
 		}
-	}
-	
-	function onBattleLearnMove(data){
-		if(player1.pokemon.battleStats.learnableMoves.indexOf(data.move) == -1) return;
-		var slot = Number(data.slot);
-		if(slot < 0 || slot >= 4 || slot != slot) return;
-		
-		player1.pokemon.battleStats.learnableMoves.remove(data.move);
-		player1.pokemon.learnMove(data.slot, data.move);
 	}
 	
 	function onBattleMoveWild(data){
@@ -306,8 +293,12 @@ function Battle(type, arg1, arg2){
 			
 			while(player.pokemon.level < 100 && player.pokemon.experience >= player.pokemon.experienceNeeded){
 				player.pokemon.experience -= player.pokemon.experienceNeeded;
-				player.pokemon.levelUp();
-				pushResult(new BattleTurnResult(player, 'pokemonLevelup', player.pokemon.ownerInfo));
+				var lvlup = player.pokemon.levelUp();
+				pushResult(new BattleTurnResult(player, 'pokemonLevelup', JSON.parse(JSON.stringify(player.pokemon.ownerInfo))));
+				
+				if(lvlup.movesLearned.length > 0){
+					pushResult(new BattleTurnResult(player, 'pokemonLearnedMove', lvlup.movesLearned));
+				}
 			}
 			
 			if(player.pokemon.battleStats.learnableMoves.length > 0){
@@ -347,44 +338,51 @@ function Battle(type, arg1, arg2){
 	self.declareWinner = function(player){
 		winner = player;
 		
-		if(player1.client){
-			player1.client.inBattle = false;
-			player1.client.retrasmitChar = true;
-			
-			if(winner != player1){
-				player1.client.moveToSpawn();
-				player1.client.restorePokemon();
-			}
-		}
+		finishBattleFor(player1, winner);
+		finishBattleFor(player2, winner);
 		
-		if(player2.client){
-			player2.client.inBattle = false;
-			player2.client.retrasmitChar = true;
-			
-			if(winner != player2){
-				player2.client.moveToSpawn();
-				player2.client.restorePokemon();
-			}
-		}
-		
-		pushResult(new BattleTurnResult(winner, 'win', function(res, p){
-			var obj = {
-				map: p.client.map,
-				x: p.client.char.x,
-				y: p.client.char.y,
-				pokemon: p.client.pokemon.map(function(v){return v.ownerInfo})
-			};
-			
-			p.client.retransmitChar = true;
-			
-			if(winner != p){
-				obj.mapChars = p.client.getMapInstance().chars;
-			}
-			
-			return obj;
-		}));
+		pushResult(new BattleTurnResult(winner, 'win'));
 		flushResults();
 		self.destroy();
+	}
+	
+	function finishBattleFor(player, winner){
+		if(!player.client) return;
+		var client = player.client;
+		var socket = client.socket;
+		
+		var func = function(){
+			client.inBattle = false;
+			client.battle = null;
+			client.retransmitChar = true;
+			
+			var clientOldMap = client.map;
+			var clientOldMapInstance = client.mapInstance;
+			
+			if(winner != player){
+				client.moveToSpawn();
+				client.restorePokemon();
+			}
+			
+			var obj = {
+				map: client.map,
+				x: client.char.x,
+				y: client.char.y,
+				pokemon: client.pokemon.map(function(v){return v.ownerInfo})
+			};
+			
+			if(winner != player){
+				obj.mapChars = client.getMapInstance().chars;
+			}
+			
+			socket.emit('battleFinishDetails', obj);
+		};
+		
+		if(client.disconnected){
+			func();
+		}else{
+			socket.once('battleFinished', func);
+		}
 	}
 	
 	function processAction(player, enemy){
@@ -393,8 +391,7 @@ function Battle(type, arg1, arg2){
 			var success = Math.floor(Math.random() * 256) < chance;
 			
 			if(success){
-				player.client.inBattle = false;
-				player.client.battle = null;
+				finishBattleFor(player, player);
 				self.destroy();
 				var res = new BattleTurnResult(player, "flee", {x: player.client.char.x, y: player.client.char.y}, true);
 				pushResult(res);
@@ -404,7 +401,7 @@ function Battle(type, arg1, arg2){
 			
 			return new BattleTurnResult(player, "fleeFail");
 		}else if(player.action.type == BATTLE_ACTION_MOVE){
-			player.pokemon.movesPP[player.action.value] -= 1;
+			//player.pokemon.movesPP[player.action.value] -= 1;
 			return processMove(player, enemy, player.pokemon.moves[player.action.value]);
 		}
 		
@@ -415,6 +412,10 @@ function Battle(type, arg1, arg2){
 		
 		var moveData = movesData[moveId];
 		
+		if(moveData.moveType == 'buff'){
+			moveData = movesData.tackle;
+		}
+		
 		if(moveData.accuracy != -1){
 			if(Math.random() >= (moveData.accuracy) * (accuracyMultipler[player.pokemon.battleStats.accuracy] / accuracyMultipler[enemy.pokemon.battleStats.evasion])){
 				return new BattleTurnResult(player, "moveMiss", moveData.name);
@@ -424,6 +425,7 @@ function Battle(type, arg1, arg2){
 		switch(moveData.moveType){
 		case "simple":
 			var obj = calculateDamage(player.pokemon, enemy.pokemon, moveData);
+			
 			enemy.pokemon.hp = Math.max(enemy.pokemon.hp - obj.damage, 0);
 			
 			var res = [new BattleTurnResult(player, "moveAttack", {move: moveData.name, resultHp: enemy.pokemon.hp, isCritical: obj.isCritical, effec:obj.effec})]
@@ -453,6 +455,7 @@ function Battle(type, arg1, arg2){
 			enemy.pokemon.battleStats[moveData.debuffStat] -= Number(moveData.debuffAmount);
 			if(enemy.pokemon.battleStats[moveData.debuffStat] < -6) enemy.pokemon.battleStats[moveData.debuffStat] = -6;
 			return new BattleTurnResult(player, "moveDebuff", {move: moveData.name, stat:moveData.debuffStat});
+			
 			
 		case "applyStatus":
 			var status = Number(moveData.applyStatus);
@@ -486,7 +489,7 @@ function Battle(type, arg1, arg2){
 			modifier *= 1.5;
 		}
 		
-		var typeEffectiveness = getTypeEffectiveness(moveData.type, enemyPokemon.type1) * getTypeEffectiveness(moveData.type, enemyPokemon.type2);
+		var typeEffectiveness = getTypeEffectiveness(moveData.type, pokemonData[enemyPokemon.id].type1) * getTypeEffectiveness(moveData.type, pokemonData[enemyPokemon.id].type2);
 		modifier *= typeEffectiveness;
 		
 		var criticalChance = [0, 0.065, 0.125, 0.25, 0.333, 0.5];

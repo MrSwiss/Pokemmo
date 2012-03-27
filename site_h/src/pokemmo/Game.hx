@@ -36,6 +36,7 @@ class Game {
 	static private var pokemonData:Dynamic;
 	static private var movesData:Dynamic;
 	
+	static public var playerBackspriteType:String;
 	
 	static private var loadedBasicUI:Bool;
 	
@@ -87,6 +88,9 @@ class Game {
 			loadImageResource('battleEnemyBar', 'resources/ui/battle_enemy_bar.png');
 			loadImageResource('battleIntroPokeball', 'resources/ui/battle_intro_pokeball.png');
 			loadImageResource('animatedTileset', 'resources/tilesets/animated.png');
+			loadImageResource('battleYesNo', 'resources/ui/battle_yesno.png');
+			loadImageResource('battleLearnMove', 'resources/ui/battle_learnmove.png');
+			loadImageResource('battleLearnMoveSelection', 'resources/ui/battle_learnmove_selection.png');
 			
 			loadJSON('data/pokemon.json', function(data:Dynamic):Void {
 				pokemonData = data;
@@ -99,8 +103,7 @@ class Game {
 		
 		loadJSON('resources/maps/'+id+'.json', function(data:Dynamic){
 			var map = new Map(id, data);
-			for(i in 0...map.tilesets.length){
-				var tileset = map.tilesets[i];
+			for(tileset in map.tilesets){
 				if(!tileset.loaded){
 					if(tileset.error){
 						loadError = true;
@@ -123,9 +126,9 @@ class Game {
 			
 			if(map.properties.preload_pokemon != null){
 				var arr = map.properties.preload_pokemon.split(',');
-				for(i in 0...arr.length){
-					curGame.getImage('resources/followers/'+arr[i]+'.png');
-					curGame.getImage('resources/sprites/'+arr[i]+'.png');
+				for(pk in arr){
+					curGame.getImage('resources/followers/'+pk+'.png');
+					curGame.getImage('resources/sprites/'+pk+'.png');
 				}
 			}
 			
@@ -135,8 +138,8 @@ class Game {
 			curGame.parseMapObjects();
 			
 			var arr = chars;
-			for(i in 0...arr.length){
-				var chr = new CCharacter(arr[i]);
+			for(chrData in arr){
+				var chr = new CCharacter(chrData);
 				if (chr.username == username) chr.freezeTicks = 10;
 			}
 		});
@@ -184,6 +187,9 @@ class Game {
 	
 	inline static public function getMoveData(id:String): {
 		var type:String;
+		var power:Int;
+		var accuracy:Int;
+		var maxPP:Int;
 	}{
 		return movesData[untyped id.toLowerCase()];
 	}
@@ -237,6 +243,10 @@ class Game {
 		for (i in 0...arr.length) {
 			arr[i].tick();
 		}
+		
+		if (Renderer.numRTicks % 30 * 60 * 10 == 0) {
+			cachedImages = new Hash<ImageResource>();
+		}
 	}
 	
 	public function renderObjects(ctx:CanvasRenderingContext2D):Void {
@@ -254,23 +264,6 @@ class Game {
 		var A_FIRST = -1;
 		var B_FIRST = 1;
 		arr.sort(function(a:GameObject, b:GameObject):Int {
-			if(Std.is(a, CCharacter) && untyped a.username == username){
-				if(Std.is(b, CGrassAnimation)) return A_FIRST;
-				return B_FIRST;
-			}
-			if(Std.is(b, CCharacter) && untyped b.username == username){
-				if(Std.is(a, CGrassAnimation)) return B_FIRST;
-				return A_FIRST;
-			}
-			
-			if(Std.is(a, CCharacter) && Std.is(b, CFollower)){
-				return B_FIRST;
-			}
-			
-			if(Std.is(b, CCharacter) && Std.is(a, CFollower)){
-				return A_FIRST;
-			}
-			
 			if(a.y < b.y){
 				return A_FIRST;
 			}
@@ -279,7 +272,19 @@ class Game {
 				return B_FIRST;
 			}
 			
-			if(a.y == b.y){
+			if (a.y == b.y) {
+				if (Std.is(a, CCharacter)) {
+					if(untyped a.username == username && Std.is(b, CCharacter)){
+						return B_FIRST;
+					}
+				}
+				
+				if (Std.is(b, CCharacter)) {
+					if(untyped b.username == username && Std.is(a, CCharacter)){
+						return A_FIRST;
+					}
+				}
+				
 				if(a.renderPriority > b.renderPriority) return A_FIRST;
 				if(b.renderPriority > a.renderPriority) return B_FIRST;
 				
@@ -330,11 +335,9 @@ class Game {
 	}
 	
 	private function parseMapObjects():Void {
-		for(i in 0...map.layers.length){
-			if(map.layers[i].type != 'objectgroup') continue;
-			var objects = map.layers[i].objects;
-			for(k in 0...objects.length){
-				var obj = objects[k];
+		for(layer in map.layers){
+			if(layer.type != 'objectgroup') continue;
+			for(obj in layer.objects){
 				switch(obj.type){
 				case "warp":
 					if(obj.properties.type == 'door'){

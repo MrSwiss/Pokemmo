@@ -47,6 +47,7 @@ class PokemonConst {
 			case 'ground': return TYPE_GROUND;
 			case 'rock': return TYPE_ROCK;
 			case 'fight': return TYPE_FIGHT;
+			case 'fighting': return TYPE_FIGHT;
 			case 'steel': return TYPE_STEEL;
 			case 'dark': return TYPE_DARK;
 			case 'psychic': return TYPE_PSYCHIC;
@@ -75,7 +76,7 @@ class PokemonConst {
 	
 	static public function getStatusApplyPhrase(id:Int, name:String):String {
 		switch(id) {
-			case STATUS_SLEEP: return name+" feel asleep!";
+			case STATUS_SLEEP: return name+" fell asleep!";
 			case STATUS_FREEZE: return name+" is frozen solid!";
 			case STATUS_PARALYZE: return name+" is paralyzed";
 			case STATUS_POISON: return name+" is poisoned!";
@@ -118,8 +119,11 @@ typedef PokemonOwned = {
 	public var virus:Int;
 	
 	public var icon:ImageResource;
+	public var iconBig:ImageResource;
 }
 
 typedef PokemonData = {
 	var name:String;
+	var type1:String;
+	var type2:String;
 }

@@ -237,7 +237,7 @@ class CCharacter extends GameObject {
 				if(isControllable() && !noclip){
 					var tmpPos = getFrontPosition();
 					var tmpWarp = CWarp.getWarpAt(tmpPos.x, tmpPos.y);
-					if(tmpWarp != null){
+					if(tmpWarp != null && tmpWarp.canWarp(this)){
 						if (Std.is(tmpWarp, CDoor)) {
 							enterDoor(cast tmpWarp);
 						}else if(Std.is(tmpWarp, CWarpArrow)){
@@ -526,8 +526,6 @@ class CCharacter extends GameObject {
 	}
 	
 	public function enterStairs(warp:CStairs) {
-		if (direction != warp.fromDir) return;
-		
 		var tmpX = x;
 		var tmpY = y;
 		
@@ -716,13 +714,6 @@ class CCharacter extends GameObject {
 			ctx.fillStyle = '#FFFFFF';
 			ctx.fillText(username, renderPos.x + offsetX + CHAR_WIDTH/2, renderPos.y + offsetY + 16);
 			ctx.restore();
-			
-			if (Game.accountLevel >= 30) {
-				UI.setCursor('pointer');
-				if(UI.mouseDown && !UI.mouseWasDown){
-					Connection.socket.emit('kickPlayer', { username: username } );
-				}
-			}
 		}
 		
 		if (jumping) {
@@ -730,9 +721,6 @@ class CCharacter extends GameObject {
 		}
 		
 		ctx.drawImage(image.obj, dirId, Math.floor(animationStep) * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, CHAR_WIDTH, CHAR_HEIGHT);
-		
-		
-		
 		
 		if (map.isTileGrass(x, y) && !walking) {
 			ctx.drawImage(Game.getRes('miscSprites').obj, 0, 0, 32, 32, x * map.tilewidth + offsetX, y * map.tileheight + offsetY, 32, 32);

@@ -1,4 +1,5 @@
 package pokemmo.entities;
+import pokemmo.CCharacter;
 
 /**
  * ...
@@ -14,4 +15,8 @@ class CStairs extends CWarp {
 		this.fromDir = fromDir;
 	}
 	
+	
+	override public function canWarp(chr:CCharacter):Bool {
+		return chr.direction == fromDir;
+	}
 }

@@ -47,10 +47,6 @@ class TextInput extends UIInput {
 			return;
 		}
 		
-		if (isUnderMouse()) {
-			UI.setCursor('text');
-		}
-		
 		if (selected) {
 			value = UI.hiddenInput.value;
 		}
@@ -62,6 +58,10 @@ class TextInput extends UIInput {
 	
 	override public function render(ctx:CanvasRenderingContext2D):Void {
 		var now = Date.now().getTime();
+		
+		if (isUnderMouse()) {
+			UI.setCursor('text');
+		}
 		
 		if (maxLength > 0) {
 			if (value.length > maxLength) {

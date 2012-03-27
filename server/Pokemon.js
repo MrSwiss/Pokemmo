@@ -215,20 +215,60 @@ function Pokemon(arg1, arg2){
 	}
 	
 	self.levelUp = function(){
+		var oldMaxHp = self.maxHp;
+		
 		self.level += 1;
 		self.calculateStats();
 		
-		if(self.battleStats){
+		if(self.hp > 0) self.hp += self.maxHp - oldMaxHp;
+		
+		var data = pokemonData[self.id];
+		
+		if(data.evolveLevel && self.level >= data.evolveLevel){
+			self.id = data.evolveTo;
+			data = pokemonData[self.id];
+		}
+		
+		var learnset = data.learnset;
+		var movesLearned = [];
+		
+		if(self.battleStats.learnableMoves){
 			for(var i=0;i<learnset.length;++i){
 				if(movesData[learnset[i].move] == null){
 					console.warn('Move "'+learnset[i].move+'" doesn\'t exist for '+pokemonData[self.id].name);
 					continue;
 				}
 				
-				if(movesData[learnset[i].move].level != self.level) continue;
-				self.battleStats.learnableMoves.push(learnset[i].move);
+				if(learnset[i].level != -1 || self.moves.indexOf(learnset[i].move) != -1){
+					if(learnset[i].level != self.level){
+						continue;
+					}
+				}
+				
+				if(self.moves[0] == null){
+					self.learnMove(0, learnset[i].move);
+					movesLearned.push(learnset[i].move);
+				} else if(self.moves[1] == null){
+					self.learnMove(1, learnset[i].move);
+					movesLearned.push(learnset[i].move);
+				} else if(self.moves[2] == null){
+					self.learnMove(2, learnset[i].move);
+					movesLearned.push(learnset[i].move);
+				} else if(self.moves[3] == null){
+					self.learnMove(3, learnset[i].move);
+					movesLearned.push(learnset[i].move);
+				} else {
+					self.battleStats.learnableMoves.push(learnset[i].move);
+				}
 			}
 		}
+		
+		
+		
+		
+		return {
+			movesLearned: movesLearned
+		};
 	}
 	
 	self.learnMove = function(slot, move){
@@ -358,5 +398,9 @@ function Pokemon(arg1, arg2){
 		
 		self.calculateStats();
 		self.hp = self.maxHp;
+	}
+	
+	if(self.moves[0] == null){
+		self.learnMove(0, 'tackle');
 	}
 }

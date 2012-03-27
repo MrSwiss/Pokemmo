@@ -21,6 +21,7 @@ class CPokemon extends GameObject {
 	public var image:ImageResource;
 	
 	public var canDrawGrass:Bool;
+	public var canIdleJump:Bool;
 	
 	public var walking:Bool;
 	public var walkingPerc:Float;
@@ -44,9 +45,11 @@ class CPokemon extends GameObject {
 		walkingPerc = 0.0;
 		walkingHasMoved = false;
 		jumping = false;
+		canIdleJump = false;
 		
 		renderOffsetX = 0;
 		renderOffsetY = 0;
+		
 		
 		
 		targetX = x;
@@ -65,7 +68,7 @@ class CPokemon extends GameObject {
 			}
 			
 			ctx.save();
-			ctx.drawImage(image.obj, POKEMON_WIDTH * direction, Math.floor(((Renderer.numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY, POKEMON_WIDTH, POKEMON_HEIGHT);
+			ctx.drawImage(image.obj, POKEMON_WIDTH * direction, Math.floor(((Renderer.numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY + (canIdleJump && (Renderer.numRTicks + randInt) % 10 < 5 ? -2 : 0), POKEMON_WIDTH, POKEMON_HEIGHT);
 			ctx.restore();
 			
 			if(canDrawGrass && map.isTileGrass(x, y) && !walking){

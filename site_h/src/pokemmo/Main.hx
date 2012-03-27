@@ -1,9 +1,11 @@
 package pokemmo;
 
+import js.Boot;
 import js.Lib;
 import UserAgentContext;
 import SocketIOConnection;
 import pokemmo.Game;
+import JSON;
 
 /**
  * ...
@@ -42,7 +44,18 @@ class Main {
 			var i = 0;
 			var arr = this;
 			
-			if((i = arr.indexOf(e, i)) != -1){
+			if((i = arr.indexOf(e)) != -1){
+				arr.splice(i, 1);
+				return true;
+			}
+			return false;
+		};");
+		
+		untyped __js__("Array.prototype.removeLast = function(e){
+			var i = 0;
+			var arr = this;
+			
+			if((i = arr.lastIndexOf(e)) != -1){
 				arr.splice(i, 1);
 				return true;
 			}
@@ -131,6 +144,29 @@ class Main {
 		
 		setInterval(tick, 1000 / 30);
 		
+	}
+	
+	static public function printDebug():Void {
+		var w = Lib.window.open("", "Debug Info");
+		
+		w.document.body.innerHTML = '';
+		w.document.write(JSON.stringify( {
+			version: {
+				major: Version.Major,
+				minor: Version.Minor,
+				build: Version.Build
+			}
+		}));
+	}
+	
+	static private function resolveObject(obj:Dynamic, path:String):Dynamic {
+		var arr = path.split('.');
+		
+		while (arr.length > 0) {
+			obj = obj[untyped arr.shift()];
+		}
+		
+		return obj;
 	}
 	
 	inline static public function setTimeout(func:Void->Void, delay:Float):Void {
