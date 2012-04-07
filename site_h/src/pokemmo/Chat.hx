@@ -207,9 +207,8 @@ class Chat {
 			
 			var x:Int, y:Int, width:Int = msg.bubbleWidth, height:Int = msg.bubbleHeight;
 			
-			var pos:Point = msg.chr.getRenderPos();
-			x = pos.x + offx + Math.floor(CCharacter.CHAR_WIDTH / 2);
-			y = pos.y + offy + 20;
+			x = msg.chr.getRenderPosX() + offx + Math.floor(CCharacter.CHAR_WIDTH / 2);
+			y = msg.chr.getRenderPosY() + offy + 20;
 			
 			
 			x -= Math.floor(width / 2);

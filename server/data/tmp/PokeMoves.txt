@@ -1,0 +1,500 @@
+{
+// increased critical hit ratio, hits both opponents in a double battle, only hits opposing adjacent Pokémon in triple battles
+// Affected by Protect, Mirror Move, King's Rock, Not affected by Magic Coat, Snatch
+	"air_cutter": { 
+			"name": "Air Cutter",
+			"type": "flying",
+			"pp": 25,
+			"pp_max": 40,
+			"power": 55,
+			"accuracy": 0.95,
+			"contact": false,
+			"type": "simple"
+	},
+	
+// increased critical hit ratio, targeting May affect anyone adjacent to the user
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"crabhammer": {
+			"name": "Crabhammer",
+			"type": "water",
+			"pp": 10,
+			"pp_max": 16,
+			"power": 90,
+			"accuracy": 0.85,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// increased critical hit ratio, targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"cross_chop": {
+			"name": "Cross Chop",
+			"type": "fighting",
+			"pp": 5,
+			"pp_max": 8,
+			"power": 100,
+			"accuracy": 0.80,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"drill_peck": {
+			"name": "Drill Peck",
+			"type": "flying",
+			"pp": 20,
+			"pp_max": 32,
+			"power": 80,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"egg_bomb": {
+			"name": "Egg Bomb",
+			"type": "normal",
+			"pp": 10,
+			"pp_max": 16,
+			"power": 100,
+			"accuracy": 0.75,
+			"contact": false,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Magic Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"featherdance": {
+			"name": "FeatherDance",
+			"type": "flying",
+			"pp": 15,
+			"pp_max": 24,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "atk",
+			"debuffAmount": "2"
+	},
+	
+// In a double battle, Growl hits both opponents. In a triple battle, Growl will only hit opposing adjacent Pokémon. 
+// Growl will not affect a Pokémon with the abilities Soundproof, Hyper Cutter, Clear Body, or White Smoke. 
+// Affected by Protect, Magic Coat, Magic Bounce Not affected by King's Rock, Snatch
+	"growl": {
+			"name": "Growl",
+			"type": "normal",
+			"pp": 40,
+			"pp_max": 64,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "atk",
+			"debuffAmount": "1"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"horn_attack": {
+			"name": "Horn Attack",
+			"type": "normal",
+			"pp": 25,
+			"pp_max": 40,
+			"power": 65,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch			
+	"hydro_pump": {
+			"name": "Hydro Pump",
+			"type": "water",
+			"pp": 5,
+			"pp_max": 8,
+			"power": 120,
+			"accuracy": 0.80,
+			"contact": false,
+			"type": "simple"	
+	},
+	
+// Hyper Voice hits all opposing Pokémon in double battles. In a triple battle, Hyper Voice will only hit opposing adjacent Pokémon. 	
+// Pokémon with the ability Soundproof will not be affected by this move. 	
+// Affected by Protect, Not affected by Magic Coat, Snatch, King's Rock		
+	"hyper_voice": {
+			"name": "Hyper Voice",
+			"type": "normal",
+			"pp": 10,
+			"pp_max": 16,
+			"power": 90,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "simple"
+	},
+	
+	
+// increased critical hit ratio, targeting May affect anyone adjacent to the user
+// Affected by Protect, Mirror Move, King's Rock Not affected by Magic Coat, Snatch			
+	"karate_chop": {
+			"name": "Karate Chop",
+			"type": "fighting",
+			"pp": 25,
+			"pp_max": 40,
+			"power": 50,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"kinesis": {
+			"name": "Kinesis",
+			"type": "psychic",
+			"pp": 15,
+			"pp_max": 24,
+			"accuracy": 0.80,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "accuracy",
+			"debuffAmount": "1"
+	},
+
+// Leer hits both opponents in a double battle. In a triple battle, Leer will only hit opposing adjacent Pokémon
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch	 	
+	"leer": {
+			"name": "Leer",
+			"type": "normal",
+			"pp": 30,
+			"pp_max": 48,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "def",
+			"debuffAmount": "1"
+	},
+	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"megahorn": {
+			"name": "Megahorn",
+			"type": "bug",
+			"pp": 10,
+			"pp_max": 16,
+			"power": 120,
+			"accuracy": 0.85,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"mega_kick": {
+			"name": "Mega Kick",
+			"type": "normal",
+			"pp": 5,
+			"pp_max": 8,
+			"power": 120,
+			"accuracy": 0.75,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Mirror Move, King's Rock, Not affected by Magic Coat, Snatch	 	
+	"mega_punch": {
+			"name": "Mega Punch",
+			"type": "normal",
+			"pp": 20,
+			"pp_max": 32,
+			"power": 80,
+			"accuracy": 0.85,
+			"contact": true,
+			"type": "simple"
+	},
+	
+	
+// targeting May affect anyone adjacent to the user
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"metal_sound": {
+			"name": "Metal Sound",
+			"type": "steel",
+			"pp": 40,
+			"pp_max": 64,
+			"accuracy": 0.85,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "spDef",
+			"debuffAmount": "2"
+	},
+	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"peck": {
+			"name": "Peck",
+			"type": "flying",
+			"pp": 35,
+			"pp_max": 56,
+			"power": 35,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Mirror Move, King's Rock, Not affected by Magic Coat, Snatch		
+	"pound": {
+			"name": "Pound",
+			"type": "normal",
+			"pp": 35,
+			"pp_max": 56,
+			"power": 40,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// increased critical hit ratio, hits both opponents in a double battle, only hits opposing adjacent Pokémon in triple battles	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch
+	"razor_leaf": {
+			"name": "Razor Leaf",
+			"type": "grass",
+			"pp": 25,
+			"pp_max": 40,
+			"power": 55,
+			"accuracy": 0.95,
+			"contact": false,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"rock_throw": {
+			"name": "Rock Throw",
+			"type": "rock",
+			"pp": 15,
+			"pp_max": 24,
+			"power": 50,
+			"accuracy": 0.90,
+			"contact": false,
+			"type": "simple"
+	},
+	
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"scary_face": {
+			"name": "Scary Face",
+			"type": "normal",
+			"pp": 10,
+			"pp_max": 16,
+			"accuracy": 0.90,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "speed",
+			"debuffAmount": "2"
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"scratch": {
+			"name": "Scratch",
+			"type": "normal",
+			"pp": 35,
+			"pp_max": 56,
+			"power": 40,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+	
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"screech": {
+			"name": "Screech",
+			"type": "normal",
+			"pp": 40,
+			"pp_max": 64,
+			"accuracy": 0.85,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "def",
+			"debuffAmount": "2"
+	}
+	
+// capable of hitting opponents while they are using the move Fly or Bounce, targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"sky_uppercut": {
+			"name": "Sky Uppercut",
+			"type": "fighting",
+			"pp": 15,
+			"pp_max": 24,
+			"power": 85,
+			"accuracy": 0.90,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch			
+	"slam": {
+			"name": "Slam",
+			"type": "normal",
+			"pp": 20,
+			"pp_max": 32,
+			"power": 80,
+			"accuracy": 0.75,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// increased critical hit ratio, targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch	
+	"slash": {
+			"name": "Slash",
+			"type": "normal",
+			"pp": 20,
+			"pp_max": 32,
+			"power": 70,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// SmokeScreen will not affect a target with the abilities Keen Eye, Clear Body, or White Smoke, targeting May affect anyone adjacent to the user	 
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"smokescreen": {
+			"name": "SmokeScreen",
+			"type": "normal",
+			"pp": 20,
+			"pp_max": 32,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "accuracy",
+			"debuffAmount": "1"
+	},
+// Hits both opponents in a double battle. In a triple battle, String Shot will only hit opposing adjacent Pokémon
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch	
+	"string_shot": {
+			"name": "Sring Shot",
+			"type": "bug",
+			"pp": 40,
+			"pp_max": 64,
+			"accuracy": 0.95,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "speed",
+			"debuffAmount": "1"
+	},	
+
+// Hits both opponents in a double battle. In a triple battle, Sweet Scent will only hit opposing adjacent Pokémon
+// outside of battle Sweet Scent causes wild Pokémon to appear in clear weather conditions while standing. If Repel is in effect, Sweet Scent is prioritized 
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"sweet_scent": {
+			"name": "Sweet Scent",
+			"type": "normal",
+			"pp": 20,
+			"pp_max": 32,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "speed",
+			"debuffAmount": "1"
+	},
+
+// targeting May affect anyone adjacent to the user
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"tackle": {
+			"name": "Tackle",
+			"type": "normal",
+			"pp": 35,
+			"pp_max": 56,
+			"power": 35,
+			"accuracy": 0.95,
+			"contact": true,
+			"type": "simple"
+	},
+	
+// Hits both opponents in a double battle. In a triple battle, Tail Whip will only hit opposing adjacent Pokémon
+// Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch		
+	"tail_whip": {
+			"name": "Tail Whip",
+			"type": "normal",
+			"pp": 30,
+			"pp_max": 48,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "debuff",
+			"debuffStat": "def",
+			"debuffAmount": "1"
+	},	
+	
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"vicegrip": {
+			"name": "ViceGrip",
+			"type": "normal",
+			"pp": 30,
+			"pp_max": 48,
+			"power": 55,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"vine_whip": {
+			"name": "Vine Whip",
+			"type": "grass",
+			"pp": 10,
+			"pp_max": 24,
+			"power": 35,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+
+// targeting May affect anyone adjacent to the user		
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"water_gun": {
+			"name": "Water Gun",
+			"type": "water",
+			"pp": 25,
+			"pp_max": 40,
+			"power": 40,
+			"accuracy": 1.0,
+			"contact": false,
+			"type": "simple"
+	},
+	
+// targeting May affect anyone adjacent to the user	
+// Outside of battle, allows players to climb waterfalls	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch		
+	"waterfall": {
+			"name": "Waterfall",
+			"type": "water",
+			"pp": 15,
+			"pp_max": 24,
+			"power": 80,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+
+// targeting May affect anyone adjacent to the user	
+// Affected by Protect, King's Rock, Not affected by Magic Coat, Snatch			
+	"wing_attack": {
+			"name": "Wing Attack",
+			"type": "flying",
+			"pp": 35,
+			"pp_max": 56,
+			"power": 60,
+			"accuracy": 1.0,
+			"contact": true,
+			"type": "simple"
+	},
+}

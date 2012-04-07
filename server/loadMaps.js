@@ -42,18 +42,20 @@ for(var mi=0;mi<mapsNames.length;++mi){
 			if(!layer.properties || layer.properties.data_layer != '1') continue;
 			var j = 0;
 			
-			solidData = new Array(map.data.width);
-			for(var x=0;x<solidData.length;++x){
-				solidData[x] = new Array(map.data.height);
-				for(var y=0;y<solidData[0].length;++y){
-					solidData[x][y] = SD_NONE;
+			var twidth = map.data.width;
+			var theight = map.data.height;
+			
+			solidData = new Array(twidth);
+			for(var x=0;x<twidth;++x){
+				solidData[x] = new Array(theight);
+				for(var y=0;y<theight;++y){
+					solidData[x][y] = 0; // SD_NONE
 				}
 			}
 			
-			
-			for(var y=0;y<solidData[0].length;++y){
-				for(var x=0;x<solidData.length;++x, ++j){
-					
+			for(var y=0;y<theight;++y){
+				for(var x=0;x<twidth;++x, ++j){
+				
 					var tileid = layer.data[j];
 					if(!tileid) continue;
 					
@@ -64,11 +66,11 @@ for(var mi=0;mi<mapsNames.length;++mi){
 					
 					if(tileset.tileproperties[curTilesetTileid]){
 						if(tileset.tileproperties[curTilesetTileid].solid == '1'){
-							solidData[x][y] = SD_SOLID;
+							solidData[x][y] = 1; // SD_SOLID
 						}
 						
 						if(tileset.tileproperties[curTilesetTileid].water == '1'){
-							solidData[x][y] = SD_WATER;
+							solidData[x][y] = 2; // SD_WATER
 						}
 						
 						if(tileset.tileproperties[curTilesetTileid].ledge == '1'){
@@ -115,12 +117,10 @@ for(var mi=0;mi<mapsNames.length;++mi){
 	
 	map.solidData = solidData;
 	
-	recursiveFreeze(map);
+	//recursiveFreeze(map);
 	
 	var sEnd = +new Date();
 	process.stdout.write(' ('+(sEnd - sStart)+' ms)\n');
-	
-	
 }
 
 end = +new Date();

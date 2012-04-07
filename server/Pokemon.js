@@ -134,7 +134,7 @@ function Pokemon(arg1, arg2){
 	}
 	
 	self.addEV = function(data){
-		var total = self.evHp + self.evAtk + self.evDef + self.SpAtk + self.evSpDef + self.evSpeed;
+		var total = self.evHp + self.evAtk + self.evDef + self.evSpAtk + self.evSpDef + self.evSpeed;
 		var tmp;
 		if(total >= MAX_EV) return;
 		

@@ -17,7 +17,7 @@ class CFollower extends CPokemon {
 	private var lastFollower:String;
 	
 	public function new(chr:CCharacter) {
-		super(chr.follower, chr.lastX, chr.lastY);
+		super(chr.follower, chr.lastX, chr.lastY, Game.DIR_DOWN, chr.followerShiny);
 		this.chr = chr;
 		forceTarget = false;
 		createdTick = Renderer.numRTicks;
@@ -33,6 +33,8 @@ class CFollower extends CPokemon {
 		}else if(image != null){
 			image = null;
 		}
+		
+		shiny = chr.followerShiny;
 		
 		lastFollower = chr.follower;
 		

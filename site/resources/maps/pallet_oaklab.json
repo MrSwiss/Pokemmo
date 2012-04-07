@@ -36,7 +36,7 @@
                  "name":"pallet_warp",
                  "properties":
                     {
-                     "destination":"[\"pallet\", 94, 155, 0]",
+                     "destination":"{\"mapName\":\"pallet\", \"x\":94, \"y\":155, \"direction\":0}",
                      "type":"arrow"
                     },
                  "type":"warp",

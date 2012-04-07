@@ -1,0 +1,233 @@
+<-- Move List -->
+absorb
+acid
+acid armor
+aerial ace
+agility
+amnesia
+ancientpower
+aromatherapy
+astonish
+aurora beam
+barrage
+barrier
+baton pass
+belly drum
+bind
+bite
+blizzard
+block
+body slam
+bone club
+bone rush
+bonemerang
+bounce
+brick break
+bubble
+bubblebeam
+calm mind
+camouflage
+charge
+clamp
+comet punch
+confuse ray
+confusion
+constrict
+conversion
+conversion 2
+cosmic power
+counter
+covet
+crunch
+curse
+defense curl
+destiny bond
+detect
+dig
+disable
+dizzy punch
+double kick
+double team
+doubleslap
+dragon dance
+dragon rage
+dragonbreath
+dream eater
+dynamicpunch
+earthquake
+ember
+encore
+endeavor
+endure
+explosion
+extremespeed
+faint attack
+fake out
+fake tears
+false swipe
+fire blast
+fire punch
+fire spin
+fissure
+flail
+flame wheel
+flamethrower
+flatter
+focus energy
+follow me
+foresight
+fury attack
+fury cutter
+fury swipes
+future sight
+giga drain
+glare
+growth
+grudge
+guillotine
+gust
+harden
+haze
+headbutt
+heat wave
+helping hand
+hi jump kick
+horn drill
+hyper beam
+hyper fang
+hypnosis
+ice beam
+ice punch
+icicle spear
+icy wind
+imprison
+ingrain
+iron tail
+jump kick
+knock off
+leech life
+leech seed
+lick
+light screen
+lovely kiss
+low kick
+mach punch
+magical leaf
+magnitude
+mean look
+meditate
+mega drain
+memento
+metal claw
+meteor mash
+metronome
+mimic
+mind reader
+minimize
+mirror coat
+mirror move
+mist
+moonlight
+mud shot
+mud sport
+night shade
+nightmare
+odor sleuth
+outrage
+pay day
+perish song
+petal dance
+pin missile
+poison fang
+poison gas
+poison sting
+poisonpowder
+powder snow
+protect
+psybeam
+psych up
+psychic
+pursuit
+quick attack
+rage
+rain dance
+rapid spin
+recover
+recycle
+reflect
+refresh
+rest
+revenge
+reversal
+roar
+rock blast
+role play
+rolling kick
+rollout
+safeguard
+sand tomb
+sandstorm
+seismic toss
+selfdestruct
+shadow ball
+shadow punch
+sharpen
+sheer cold
+signal beam
+silver wind
+sing
+skull bash
+sky attack
+sleep powder
+sleep talk
+sludge
+sludge bomb
+smog
+snore
+softboiled
+solarbeam
+sonicboom
+spark
+spike cannon
+spikes
+spit up
+spite
+splash
+spore
+stockpile
+stomp
+stun spore
+submission
+substitute
+sunny day
+super fang
+superpower
+supersonic
+swagger
+swallow
+swift
+swords dance
+synthesis
+tail whip
+take down
+teleport
+thrash
+thunder
+thunder wave
+thunderbolt
+thunderpunch
+thundershock
+tickle
+transform
+tri attack
+trick
+twineedle
+twister
+uproar
+vital throw
+water sport
+whirlwind
+withdraw
+wrap
+yawn
+zap cannon

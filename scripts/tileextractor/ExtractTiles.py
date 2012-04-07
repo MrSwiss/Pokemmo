@@ -4,7 +4,7 @@ import sys, time, os
 import re
 
 tileSize = (16,16)
-outputWidth = 10
+outputWidth = 8
 outputSpare = 1
 scale = 2
 
@@ -180,7 +180,7 @@ def extractTiles(filename, filetype) :
 	for tile in tiles :
 		writeTile(tile, out, (i*tileSize[0], j*tileSize[1]))
 		i += 1
-		if i == outputWidth - outputSpare :
+		if i == outputWidth - outputSpare + 1 :
 			i = 0
 			j += 1
 	size = (out.size[0] * scale, out.size[1] * scale)

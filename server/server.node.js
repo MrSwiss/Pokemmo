@@ -153,7 +153,8 @@ function startIO(){
 				lastX: 0,
 				lastY: 0,
 				direction: DIR_DOWN,
-				get follower(){return client.pokemon[0].id}
+				get follower(){return client.pokemon[0].id},
+				get folShiny(){return client.pokemon[0].shiny}
 			},
 			lastAckMove: 0,
 			inBattle: false,
@@ -276,11 +277,6 @@ function startIO(){
 							}
 							
 							client.newAccount = false;
-							if(!success){
-								socket.emit('loginFail');
-								return;
-							}
-							
 							client.char.type = data.character;
 							client.pokemon.push(new Pokemon(data.starter, 5));
 							putClientInGame(client.respawnLocation[0], client.respawnLocation[1], client.respawnLocation[2], client.respawnLocation[3]);
@@ -534,7 +530,7 @@ function startIO(){
 				warpPlayer(warp.destination);
 			});
 			
-			client.socket.on('battleLearnMove', function(data){
+			socket.on('battleLearnMove', function(data){
 				if(!client.battlePokemon) return;
 				if(!client.battlePokemon.battleStats) return;
 				if(!client.battlePokemon.battleStats.learnableMoves) return;
@@ -653,10 +649,8 @@ function startIO(){
 						for(var j=0;j<area.encounters.length;++j){
 							var areaEncounter = area.encounters[j];
 							
-							var chance = 0;
-							chance += Number(areaEncounter.chance);
 							
-							if(n < chance){
+							if(n < Number(areaEncounter.chance)){
 								var level = areaEncounter.min_level + Math.floor(Math.random() * (areaEncounter.max_level - areaEncounter.min_level));
 								var enemy = new Pokemon(areaEncounter.id, level);
 								var battle = new Battle(BATTLE_WILD, client, enemy);

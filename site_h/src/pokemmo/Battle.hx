@@ -3,6 +3,7 @@ package pokemmo;
 import pokemmo.Pokemon;
 import pokemmo.CCharacter;
 import UserAgentContext;
+import pokemmo.Connection;
 
 /**
  * ...
@@ -20,11 +21,10 @@ class Battle {
 	inline static public var BATTLE_TRAINER = 1;
 	inline static public var BATTLE_VERSUS = 2;
 	
-	inline static public var PLAYER_SELF = 0;
-	inline static public var PLAYER_ENEMY = 1;
-	
 	public var step:BATTLE_STEP;
 	public var type:Int;
+	public var myId:Int;
+	public var myTeam:Int;
 	public var x:Int;
 	public var y:Int;
 	public var curPokemon:PokemonOwned;
@@ -63,10 +63,7 @@ class Battle {
 	public var curMove:Move;
 	
 	private var randInt:Int;
-	private var finishX:Int;
-	private var finishY:Int;
-	private var finishMap:String;
-	private var finishMapChars:Array<CCharacterData>;
+	private var battleFinished:Bool;
 	
 	private var learningMove:String;
 	
@@ -74,8 +71,30 @@ class Battle {
 	
 	public var runningQueue:Bool;
 	
-	public function new(type:Int) {
-		this.type = type;
+	private var players:Array<BattlePlayer>;
+	
+	public function new(data:BattleInitData) {
+		type = data.type;
+		x = data.x;
+		y = data.y;
+		myId = data.id;
+		myTeam = data.team;
+		battleFinished = false;
+		
+		players = data.info.players;
+		
+		
+		switch(type) {
+		case BATTLE_WILD:
+			setCurPokemon(cast data.info.players[myId].pokemon);
+			enemyPokemon = data.info.players[myId == 0 ? 1:0].pokemon;
+		default: throw "Invalid battle type";
+		}
+		
+		background = Game.curGame.getImage('resources/ui/battle_background1.png');
+		
+		enemyPokemon.sprite = Game.curGame.getImage('resources/sprites' + (enemyPokemon.shiny ? '_shiny' : '') + '/' + enemyPokemon.id + '.png');
+		
 		
 		randInt = Math.floor(Math.random() * 100000);
 		step = BATTLE_STEP_TRANSITION;
@@ -576,7 +595,7 @@ class Battle {
 			case 3:
 				setBattleText(null);
 				step = BATTLE_STEP_TURN;
-				Connection.socket.emit('battleFlee', {});
+				Connection.socket.emit('battleAction', {type: 'run'});
 				
 			default: openActionMenu();
 			}
@@ -592,7 +611,7 @@ class Battle {
 			UI.unHookBButton(bAction);
 			setBattleText(null);
 			step = BATTLE_STEP_TURN;
-			Connection.socket.emit('battleMove', {move: selectedMove});
+			Connection.socket.emit('battleAction', {type: 'move', move: selectedMove});
 		};
 		
 		bAction = function(){
@@ -636,8 +655,8 @@ class Battle {
 		curAction = action;
 		
 		
-		var actionPlayerPokemon:Pokemon = action.player == PLAYER_SELF ? curPokemon : enemyPokemon;
-		var actionEnemyPokemon:Pokemon = action.player == PLAYER_SELF ? enemyPokemon : curPokemon;
+		var actionPlayerPokemon:Pokemon = action.player != null ? players[action.player].pokemon : null;
+		var actionEnemyPokemon:Pokemon = action.player != null ? players[action.player == 0 ? 1:0].pokemon : null;
 		
 		switch(action.type){
 		case "moveAttack":
@@ -645,13 +664,13 @@ class Battle {
 			Main.setTimeout(function():Void{
 				moveStartTime = Date.now().getTime();
 				playMove(action.value.move);
-			}, 1500);
+			}, 1000);
 		case "moveMiss":
 			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.toUpperCase()+"!");
 			Main.setTimeout(function():Void{
 				setBattleText('But it missed!');
 				Main.setTimeout(function() { runQueue(true); }, 1000);
-			}, 1500);
+			}, 1000);
 		case "moveDebuff":
 			setBattleText(Util.getPokemonDisplayName(actionPlayerPokemon)+" used "+action.value.move.toUpperCase()+"!");
 			Main.setTimeout(function():Void{
@@ -670,7 +689,7 @@ class Battle {
 		case "pokemonDefeated":
 			var attacker:Pokemon;
 			var defeated:Pokemon;
-			if(action.player == 0){
+			if(getPlayerTeam(action.player) != myTeam){
 				attacker = curPokemon;
 				defeated = enemyPokemon;
 				enemyFainted = true;
@@ -685,7 +704,7 @@ class Battle {
 			
 			
 			setBattleText(Util.getPokemonDisplayName(defeated) + ' fainted!', -1, function() {
-				if(action.player == 0 && action.value > 0){
+				if(getPlayerTeam(action.player) != myTeam && action.value > 0){
 					setBattleText(Util.getPokemonDisplayName(attacker) + ' gained '+action.value+' EXP. Points!', -1, function(){
 						animateExp();
 					});
@@ -698,10 +717,8 @@ class Battle {
 			finish();
 			
 		case "flee":
-			finishX = action.value.x;
-			finishY = action.value.y;
-			finishMap = Game.curGame.map.id;
 			setBattleText("Got away safely!", -1, function():Void {
+				battleFinished = true;
 				finish();
 			});
 			
@@ -711,7 +728,7 @@ class Battle {
 			});
 			
 		case "switchFainted":
-			if(action.player != 0){
+			if(action.player != myId){
 				setBattleText('The opponent is selecting another pokemon');
 				runningQueue = false;
 				return;
@@ -721,14 +738,14 @@ class Battle {
 		case "pokemonLevelup": runQueue(true);
 		
 		case "pokemonLearnedMove":
-			if (action.player != 0) return;
+			if (action.player != myId) return;
 			
 			learnedMoves(action, function() {
 				runQueue(true);
 			});
 			
 		case "pokemonLearnMoves":
-			if (action.player != 0) return;
+			if (action.player != myId) return;
 			var arr:Array<String> = action.value;
 			var func:Void->Void = null;
 			var i = -1;
@@ -746,6 +763,10 @@ class Battle {
 			
 		default: Main.log('Unknown battle action: '+action.type);
 		}
+	}
+	
+	private inline function getPlayerTeam(p:Int):Int {
+		return p < Math.floor(players.length / 2) ? 0 : 1;
 	}
 	
 	private function learnedMoves(action:BattleTurnResult, onComplete:Void->Void) {
@@ -911,7 +932,7 @@ class Battle {
 			var result = action.value.resultHp;
 			var pok:Pokemon;
 			var enemy:Pokemon;
-			if(action.player == 1){
+			if(action.player != myId){
 				pok = curPokemon;
 				enemy = enemyPokemon;
 			}else{
@@ -942,7 +963,7 @@ class Battle {
 				}else if(action.value.effec > 1){
 					setBattleText("It's super effective!", -1, function() { runQueue(true); });
 				}else {
-					Main.setTimeout(function() { runQueue(true); }, 100);
+					Main.setTimeout(function() { runQueue(true); }, 200);
 				}
 			}
 		};
@@ -952,7 +973,7 @@ class Battle {
 	
 	private function animateExp():Void {
 		var action = curAction;
-		if(action.player != PLAYER_SELF || curPokemon.level >= 100){
+		if(getPlayerTeam(action.player) == myTeam || curPokemon.level >= 100){
 			runQueue(true);
 			return;
 		}
@@ -978,7 +999,7 @@ class Battle {
 				var backsprite = curPokemon.backsprite;
 				setCurPokemon(info.value);
 				pok = curPokemon;
-				if (action.player != 0) return;
+				if (action.player != myId) return;
 				
 				
 				pok.experience = 0;
@@ -1019,7 +1040,7 @@ class Battle {
 		if (action.type == 'moveAttack') {
 			animateHp();
 		}else{
-			runQueue(true);
+			Main.setTimeout(function() { runQueue(true); }, 200);
 		}
 	}
 	
@@ -1106,12 +1127,9 @@ class Battle {
 		
 		
 		Connection.socket.emit('battleFinished');
-		Connection.socket.once('battleFinishDetails', function(data:Dynamic):Void {
-			finishX = data.x;
-			finishY = data.y;
-			finishMap = data.map;
-			finishMapChars = data.mapChars;
+		Connection.socket.once('battleFinish', function(data:Dynamic):Void {
 			Game.setPokemonParty(data.pokemon);
+			battleFinished = true;
 		});
 		
 		
@@ -1131,21 +1149,9 @@ class Battle {
 				ctx.globalAlpha = 1;
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				
-				// While the map details haven't been received, do not progress
-				if (finishMap == null) return;
+				if (!battleFinished) return;
 				
 				if(step == 15){
-					if(finishMapChars == null){
-						var chr = Game.curGame.getPlayerChar();
-						if(chr != null){
-							chr.x = finishX;
-							chr.y = finishY;
-						}
-					}else{
-						Renderer.unHookRender(func);
-						Game.loadMap(finishMap, finishMapChars);
-					}
-					
 					Game.curGame.inBattle = false;
 					Game.curGame.battle = null;
 					Game.curGame.drawPlayerChar = true;

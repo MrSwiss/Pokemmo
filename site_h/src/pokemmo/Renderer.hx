@@ -86,9 +86,8 @@ class Renderer {
 			
 			var chr = g.getPlayerChar();
 			if(chr != null){
-				var charRenderPos = chr.getRenderPos();
-				cameraX = charRenderPos.x / map.tilewidth + 1 - (Main.screenWidth / map.tilewidth) / 2;
-				cameraY = charRenderPos.y / map.tileheight - (Main.screenHeight / map.tileheight) / 2;
+				cameraX = chr.getRenderPosX() / map.tilewidth + 1 - (Main.screenWidth / map.tilewidth) / 2;
+				cameraY = chr.getRenderPosY() / map.tileheight - (Main.screenHeight / map.tileheight) / 2;
 			}
 			
 			map.render(ctx);

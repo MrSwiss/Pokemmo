@@ -22,7 +22,7 @@
  <objectgroup name="warps" width="15" height="11">
   <object name="pallet_warp" type="warp" x="128" y="320" width="32" height="32">
    <properties>
-    <property name="destination" value="[&quot;pallet&quot;, 93, 149, 0]"/>
+    <property name="destination" value="{&quot;mapName&quot;:&quot;pallet&quot;, &quot;x&quot;:93, &quot;y&quot;:149, &quot;direction&quot;:0}"/>
     <property name="type" value="arrow"/>
    </properties>
   </object>

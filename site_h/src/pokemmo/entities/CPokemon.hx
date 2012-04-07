@@ -5,7 +5,6 @@ import pokemmo.GameObject;
 import pokemmo.ImageResource;
 import pokemmo.Main;
 import pokemmo.Map;
-import pokemmo.Point;
 import pokemmo.Renderer;
 import UserAgentContext;
 
@@ -19,6 +18,8 @@ class CPokemon extends GameObject {
 	inline public static var POKEMON_HEIGHT = 64;
 	
 	public var image:ImageResource;
+	
+	public var shiny:Bool;
 	
 	public var canDrawGrass:Bool;
 	public var canIdleJump:Bool;
@@ -34,7 +35,7 @@ class CPokemon extends GameObject {
 	public var renderOffsetX:Float;
 	public var renderOffsetY:Float;
 	
-	public function new(id:String, x:Int, y:Int, dir:Int = Game.DIR_DOWN) {
+	public function new(id:String, x:Int, y:Int, dir = Game.DIR_DOWN, shiny = false) {
 		super(x, y, dir);
 		
 		image = id == null ? null : Game.curGame.getImage('resources/followers/' + id + '.png');
@@ -50,26 +51,30 @@ class CPokemon extends GameObject {
 		renderOffsetX = 0;
 		renderOffsetY = 0;
 		
-		
+		this.shiny = shiny;
 		
 		targetX = x;
 		targetY = y;
 	}
 	
+	override public function destroy():Void {
+		super.destroy();
+	}
+	
 	override public function render(ctx:CanvasRenderingContext2D):Void {
 		var offsetX = Renderer.getOffsetX();
 		var offsetY = Renderer.getOffsetY();
-		var renderPos = getRenderPos();
+		var renderPosX = getRenderPosX();
+		var renderPosY = getRenderPosY();
 		var map = Map.cur;
 		
 		if (image != null && image.loaded) {
 			if (jumping) {
-				ctx.drawImage(Game.getRes('miscSprites').obj, 0, 64, 32, 32, renderPos.x + offsetX + (POKEMON_WIDTH-32)/2, renderPos.y + offsetY - renderOffsetY + 30, 32, 32);
+				ctx.drawImage(Game.getRes('miscSprites').obj, 0, 64, 32, 32, renderPosX + offsetX + (POKEMON_WIDTH-32)/2, renderPosY + offsetY - renderOffsetY + 30, 32, 32);
 			}
 			
-			ctx.save();
-			ctx.drawImage(image.obj, POKEMON_WIDTH * direction, Math.floor(((Renderer.numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPos.x + offsetX, renderPos.y + offsetY + (canIdleJump && (Renderer.numRTicks + randInt) % 10 < 5 ? -2 : 0), POKEMON_WIDTH, POKEMON_HEIGHT);
-			ctx.restore();
+			ctx.drawImage(image.obj, POKEMON_WIDTH * direction, Math.floor(((Renderer.numRTicks + randInt) % 10)/5) * POKEMON_HEIGHT, POKEMON_WIDTH, POKEMON_HEIGHT, renderPosX + offsetX, renderPosY + offsetY + (canIdleJump && (Renderer.numRTicks + randInt) % 10 < 5 ? -2 : 0), POKEMON_WIDTH, POKEMON_HEIGHT);
+			
 			
 			if(canDrawGrass && map.isTileGrass(x, y) && !walking){
 				ctx.drawImage(Game.getRes('miscSprites').obj, 0, 0, 32, 32, x * map.tilewidth + offsetX, y * map.tileheight + offsetY, 32, 32);
@@ -86,8 +91,9 @@ class CPokemon extends GameObject {
 		}else {
 			walkingPerc += 0.1;
 			if (walkingPerc >= (1 - CCharacter.CHAR_MOVE_WAIT) / 2 && !walkingHasMoved) {
-				var frontPosition = getFrontPosition();
-				if (Map.cur.isTileLedge(frontPosition.x, frontPosition.y) && Map.cur.getLedgeDir(frontPosition.x, frontPosition.y) == direction) {
+				var frontX = getFrontPositionX();
+				var frontY = getFrontPositionY();
+				if (Map.cur.isTileLedge(frontX, frontY) && Map.cur.getLedgeDir(frontX, frontY) == direction) {
 					useLedge();
 				}
 				
@@ -114,11 +120,10 @@ class CPokemon extends GameObject {
 		}
 	}
 	
-	public function getRenderPos():Point {
+	public function getRenderPosX():Int {
 		var curMap = Map.cur;
-		if(!walking) return {x: Math.floor(x * curMap.tilewidth - POKEMON_WIDTH/4 + renderOffsetX), y: Math.floor(y * curMap.tileheight - POKEMON_HEIGHT/2 + renderOffsetY)};
+		if (!walking) return Math.floor(x * curMap.tilewidth - POKEMON_WIDTH / 4 + renderOffsetX);
 		var destX:Float = x * curMap.tilewidth - POKEMON_WIDTH/4;
-		var destY:Float = y * curMap.tileheight - POKEMON_HEIGHT/2;
 		var perc = (walkingPerc - CCharacter.CHAR_MOVE_WAIT) / (1-CCharacter.CHAR_MOVE_WAIT);
 		
 		if(walkingPerc > CCharacter.CHAR_MOVE_WAIT){
@@ -126,25 +131,46 @@ class CPokemon extends GameObject {
 				switch(direction){
 					case Game.DIR_LEFT: destX += (curMap.tilewidth) * (1-perc);
 					case Game.DIR_RIGHT: destX -= (curMap.tilewidth) * (1-perc);
-					case Game.DIR_UP: destY += (curMap.tileheight) * (1-perc);
-					case Game.DIR_DOWN: destY -= (curMap.tileheight) * (1-perc);
 				}
 			}else{
 				switch(direction){
 					case Game.DIR_LEFT: destX -= (curMap.tilewidth) * perc;
 					case Game.DIR_RIGHT: destX += (curMap.tilewidth) * perc;
+				}
+			}
+		}
+		
+		return Math.floor(destX + renderOffsetX);
+	}
+	
+	public function getRenderPosY():Int {
+		var curMap = Map.cur;
+		if(!walking) return Math.floor(y * curMap.tileheight - POKEMON_HEIGHT/2 + renderOffsetY);
+		var destY:Float = y * curMap.tileheight - POKEMON_HEIGHT/2;
+		var perc = (walkingPerc - CCharacter.CHAR_MOVE_WAIT) / (1-CCharacter.CHAR_MOVE_WAIT);
+		
+		if(walkingPerc > CCharacter.CHAR_MOVE_WAIT){
+			if(walkingHasMoved){
+				switch(direction){
+					case Game.DIR_UP: destY += (curMap.tileheight) * (1-perc);
+					case Game.DIR_DOWN: destY -= (curMap.tileheight) * (1-perc);
+				}
+			}else{
+				switch(direction){
 					case Game.DIR_UP: destY -= (curMap.tileheight) * perc;
 					case Game.DIR_DOWN: destY += (curMap.tileheight) * perc;
 				}
 			}
 		}
 		
-		return {x:Math.floor(destX + renderOffsetX), y:Math.floor(destY + renderOffsetY)};
+		return Math.floor(destY + renderOffsetY);
 	}
 	
 	public function useLedge():Void {
-		var front = getFrontPosition();
-		var dest = getFrontPosition(2);
+		var frontX = getFrontPositionX();
+		var frontY = getFrontPositionY();
+		var destX = getFrontPositionX(2);
+		var destY = getFrontPositionY(2);
 		var dir = direction;
 		
 		walking = true;
@@ -155,7 +181,7 @@ class CPokemon extends GameObject {
 		renderFunc = function() {
 			++tmpCount;
 			
-			if(x != dest.x || y != dest.y) walking = true;
+			if(x != destX || y != destY) walking = true;
 			direction = dir;
 			
 			renderOffsetY = Math.min(Math.round((8/15 * (tmpCount * tmpCount)) + (-8 * tmpCount)), 0);
@@ -170,8 +196,8 @@ class CPokemon extends GameObject {
 				walkingPerc = 0.0;
 				walkingHasMoved = false;
 				jumping = false;
-				x = dest.x;
-				y = dest.y;
+				x = destX;
+				y = destY;
 				
 				Renderer.unHookRender(renderFunc);
 			}
@@ -180,12 +206,22 @@ class CPokemon extends GameObject {
 		Renderer.hookRender(renderFunc);
 	}
 	
-	private function getFrontPosition(n:Int = 1):Point{
+	private function getFrontPositionX(n:Int = 1):Int {
 		switch(direction){
-			case Game.DIR_LEFT: return {x: x - n, y: y};
-			case Game.DIR_RIGHT: return {x: x + n, y: y};
-			case Game.DIR_UP: return {x: x, y: y - n};
-			case Game.DIR_DOWN: return {x: x, y: y + n};
+			case Game.DIR_LEFT: return x - n;
+			case Game.DIR_RIGHT: return x + n;
+			case Game.DIR_UP: return x;
+			case Game.DIR_DOWN: return x;
+		}
+		return null;
+	}
+	
+	private function getFrontPositionY(n:Int = 1):Int {
+		switch(direction){
+			case Game.DIR_LEFT: return y;
+			case Game.DIR_RIGHT: return y;
+			case Game.DIR_UP: return y - n;
+			case Game.DIR_DOWN: return y + n;
 		}
 		return null;
 	}

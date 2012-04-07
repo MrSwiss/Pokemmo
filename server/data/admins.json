@@ -1,4 +1,8 @@
 {
-	"Sonyp": 100,
-	"Pariah": 70
+	"Sonyp": {
+		"level": 100
+	},
+	"Pariah": {
+		"level": 70
+	}
 }

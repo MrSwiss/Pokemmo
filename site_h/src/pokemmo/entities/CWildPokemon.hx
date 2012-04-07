@@ -12,8 +12,8 @@ import UserAgentContext;
 class CWildPokemon extends CPokemon {
 	private var createdTick:Int;
 	private var chr:CCharacter;
-	public function new(id:String, x:Int, y:Int, chr:CCharacter) {
-		super(id, x, y);
+	public function new(id:String, x:Int, y:Int, chr:CCharacter, shiny:Bool) {
+		super(id, x, y, Game.DIR_DOWN, shiny);
 		
 		this.chr = chr;
 		createdTick = Renderer.numRTicks;

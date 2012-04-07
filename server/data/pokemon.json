@@ -4,7 +4,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"overgrow",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -20,7 +20,7 @@
 
 
 		"evolveTo":		"2",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -54,7 +54,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"overgrow",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -70,7 +70,7 @@
 
 
 		"evolveTo":		"3",
-		"evolveLevel":	"32",
+		"evolveLevel":	32,
 
 
 		"learnset": [
@@ -105,7 +105,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"overgrow",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -152,7 +152,7 @@
 		"name":			"Charmander",
 		"type1":			"fire",
 		"ability1":		"blaze",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -168,7 +168,7 @@
 
 
 		"evolveTo":		"5",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -201,7 +201,7 @@
 		"name":			"Charmeleon",
 		"type1":			"fire",
 		"ability1":		"blaze",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -217,7 +217,7 @@
 
 
 		"evolveTo":		"6",
-		"evolveLevel":	"36",
+		"evolveLevel":	36,
 
 
 		"learnset": [
@@ -252,7 +252,7 @@
 		"type1":		"fire",
 		"type2":		"flying",
 		"ability1":		"blaze",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -300,7 +300,7 @@
 		"name":			"Squirtle",
 		"type1":			"water",
 		"ability1":		"torrent",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -316,7 +316,7 @@
 
 
 		"evolveTo":		"8",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -350,7 +350,7 @@
 		"name":			"Wartortle",
 		"type1":			"water",
 		"ability1":		"torrent",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -366,7 +366,7 @@
 
 
 		"evolveTo":		"9",
-		"evolveLevel":	"36",
+		"evolveLevel":	36,
 
 
 		"learnset": [
@@ -401,7 +401,7 @@
 		"name":			"Blastoise",
 		"type1":			"water",
 		"ability1":		"torrent",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -448,7 +448,7 @@
 		"name":			"Caterpie",
 		"type1":			"bug",
 		"ability1":		"shielddust",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -464,7 +464,7 @@
 
 
 		"evolveTo":		"11",
-		"evolveLevel":	"7",
+		"evolveLevel":	7,
 
 
 		"learnset": [
@@ -485,7 +485,7 @@
 		"name":			"Metapod",
 		"type1":			"bug",
 		"ability1":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	120,
@@ -501,7 +501,7 @@
 
 
 		"evolveTo":		"12",
-		"evolveLevel":	"10",
+		"evolveLevel":	10,
 
 
 		"learnset": [
@@ -522,7 +522,7 @@
 		"type1":		"bug",
 		"type2":		"flying",
 		"ability1":		"compoundeyes",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -569,7 +569,7 @@
 		"type1":		"bug",
 		"type2":		"poison",
 		"ability1":		"shielddust",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -585,7 +585,7 @@
 
 
 		"evolveTo":		"14",
-		"evolveLevel":	"7",
+		"evolveLevel":	7,
 
 
 		"learnset": [
@@ -607,7 +607,7 @@
 		"type1":		"bug",
 		"type2":		"poison",
 		"ability1":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	120,
@@ -623,7 +623,7 @@
 
 
 		"evolveTo":		"15",
-		"evolveLevel":	"10",
+		"evolveLevel":	10,
 
 
 		"learnset": [
@@ -644,7 +644,7 @@
 		"type1":		"bug",
 		"type2":		"poison",
 		"ability1":		"swarm",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -690,7 +690,7 @@
 		"type2":		"flying",
 		"ability1":		"keeneye",
 		"ability2":		"tangledfeet",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	255,
@@ -706,7 +706,7 @@
 
 
 		"evolveTo":		"17",
-		"evolveLevel":	"18",
+		"evolveLevel":	18,
 
 
 		"learnset": [
@@ -738,7 +738,7 @@
 		"type2":		"flying",
 		"ability1":		"keeneye",
 		"ability2":		"tangledfeet",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -754,7 +754,7 @@
 
 
 		"evolveTo":		"18",
-		"evolveLevel":	"36",
+		"evolveLevel":	36,
 
 
 		"learnset": [
@@ -786,7 +786,7 @@
 		"type2":		"flying",
 		"ability1":		"keeneye",
 		"ability2":		"tangledfeet",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -829,7 +829,7 @@
 		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"guts",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -845,7 +845,7 @@
 
 
 		"evolveTo":		"20",
-		"evolveLevel":	"20",
+		"evolveLevel":	20,
 
 
 		"learnset": [
@@ -877,7 +877,7 @@
 		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"guts",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	127,
@@ -922,7 +922,7 @@
 		"type1":		"normal",
 		"type2":		"flying",
 		"ability1":		"keeneye",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -938,7 +938,7 @@
 
 
 		"evolveTo":		"22",
-		"evolveLevel":	"20",
+		"evolveLevel":	20,
 
 
 		"learnset": [
@@ -970,7 +970,7 @@
 		"type1":		"normal",
 		"type2":		"flying",
 		"ability1":		"keeneye",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	90,
@@ -1013,7 +1013,7 @@
 		"type1":			"poison",
 		"ability1":		"intimidate",
 		"ability2":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -1029,7 +1029,7 @@
 
 
 		"evolveTo":		"24",
-		"evolveLevel":	"22",
+		"evolveLevel":	22,
 
 
 		"learnset": [
@@ -1064,7 +1064,7 @@
 		"type1":			"poison",
 		"ability1":		"intimidate",
 		"ability2":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	90,
@@ -1110,7 +1110,7 @@
 		"name":			"Pikachu",
 		"type1":			"electric",
 		"ability1":		"static",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -1160,7 +1160,7 @@
 		"name":			"Raichu",
 		"type1":			"electric",
 		"ability1":		"static",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -1199,7 +1199,7 @@
 		"name":			"Sandshrew",
 		"type1":			"ground",
 		"ability1":		"sandveil",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -1215,7 +1215,7 @@
 
 
 		"evolveTo":		"28",
-		"evolveLevel":	"22",
+		"evolveLevel":	22,
 
 
 		"learnset": [
@@ -1246,7 +1246,7 @@
 		"name":			"Sandslash",
 		"type1":			"ground",
 		"ability1":		"sandveil",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	90,
@@ -1290,7 +1290,7 @@
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	235,
@@ -1306,7 +1306,7 @@
 
 
 		"evolveTo":		"30",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -1341,7 +1341,7 @@
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -1393,7 +1393,7 @@
 		"type2":		"ground",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -1438,7 +1438,7 @@
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	235,
@@ -1454,7 +1454,7 @@
 
 
 		"evolveTo":		"33",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -1489,7 +1489,7 @@
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -1541,7 +1541,7 @@
 		"type2":		"ground",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -1586,7 +1586,7 @@
 		"type1":			"normal",
 		"ability1":		"cutecharm",
 		"ability2":		"magicguard",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"",
 		"catchRate":	150,
@@ -1641,7 +1641,7 @@
 		"type1":			"normal",
 		"ability1":		"cutecharm",
 		"ability2":		"magicguard",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"",
 		"catchRate":	25,
@@ -1683,7 +1683,7 @@
 		"name":			"Vulpix",
 		"type1":			"fire",
 		"ability1":		"flashfire",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -1731,7 +1731,7 @@
 		"name":			"Ninetales",
 		"type1":			"fire",
 		"ability1":		"flashfire",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -1771,7 +1771,7 @@
 		"name":			"Jigglypuff",
 		"type1":			"normal",
 		"ability1":		"cutecharm",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"",
 		"catchRate":	170,
@@ -1822,7 +1822,7 @@
 		"name":			"Wigglytuff",
 		"type1":			"normal",
 		"ability1":		"cutecharm",
-		"genderRatio":	"0.25",
+		"genderRatio":	0.25,
 
 		"experienceCurve":	"",
 		"catchRate":	50,
@@ -1864,7 +1864,7 @@
 		"type1":		"poison",
 		"type2":		"flying",
 		"ability1":		"innerfocus",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -1880,7 +1880,7 @@
 
 
 		"evolveTo":		"42",
-		"evolveLevel":	"22",
+		"evolveLevel":	22,
 
 
 		"learnset": [
@@ -1914,7 +1914,7 @@
 		"type1":		"poison",
 		"type2":		"flying",
 		"ability1":		"innerfocus",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	90,
@@ -1961,7 +1961,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	255,
@@ -1977,7 +1977,7 @@
 
 
 		"evolveTo":		"44",
-		"evolveLevel":	"21",
+		"evolveLevel":	21,
 
 
 		"learnset": [
@@ -2008,7 +2008,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -2055,7 +2055,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -2096,7 +2096,7 @@
 		"type2":		"grass",
 		"ability1":		"effectspore",
 		"ability2":		"dryskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -2112,7 +2112,7 @@
 
 
 		"evolveTo":		"47",
-		"evolveLevel":	"24",
+		"evolveLevel":	24,
 
 
 		"learnset": [
@@ -2146,7 +2146,7 @@
 		"type2":		"grass",
 		"ability1":		"effectspore",
 		"ability2":		"dryskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -2193,7 +2193,7 @@
 		"type2":		"poison",
 		"ability1":		"compoundeyes",
 		"ability2":		"tintedlens",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -2209,7 +2209,7 @@
 
 
 		"evolveTo":		"49",
-		"evolveLevel":	"31",
+		"evolveLevel":	31,
 
 
 		"learnset": [
@@ -2244,7 +2244,7 @@
 		"type2":		"poison",
 		"ability1":		"shielddust",
 		"ability2":		"tintedlens",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -2294,7 +2294,7 @@
 		"type1":			"ground",
 		"ability1":		"sandveil",
 		"ability2":		"arenatrap",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -2310,7 +2310,7 @@
 
 
 		"evolveTo":		"51",
-		"evolveLevel":	"26",
+		"evolveLevel":	26,
 
 
 		"learnset": [
@@ -2341,7 +2341,7 @@
 		"type1":			"ground",
 		"ability1":		"sandveil",
 		"ability2":		"arenatrap",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	50,
@@ -2387,7 +2387,7 @@
 		"type1":			"normal",
 		"ability1":		"pickup",
 		"ability2":		"technician",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	255,
@@ -2403,7 +2403,7 @@
 
 
 		"evolveTo":		"53",
-		"evolveLevel":	"28",
+		"evolveLevel":	28,
 
 
 		"learnset": [
@@ -2438,7 +2438,7 @@
 		"type1":			"normal",
 		"ability1":		"limber",
 		"ability2":		"technician",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	90,
@@ -2485,7 +2485,7 @@
 		"type1":			"water",
 		"ability1":		"damp",
 		"ability2":		"aftermath",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -2501,7 +2501,7 @@
 
 
 		"evolveTo":		"55",
-		"evolveLevel":	"33",
+		"evolveLevel":	33,
 
 
 		"learnset": [
@@ -2535,7 +2535,7 @@
 		"type1":			"water",
 		"ability1":		"damp",
 		"ability2":		"aftermath",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -2581,7 +2581,7 @@
 		"type1":			"fighting",
 		"ability1":		"vitalspirit",
 		"ability2":		"angerpoint",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -2597,7 +2597,7 @@
 
 
 		"evolveTo":		"57",
-		"evolveLevel":	"28",
+		"evolveLevel":	28,
 
 
 		"learnset": [
@@ -2633,7 +2633,7 @@
 		"type1":			"fighting",
 		"ability1":		"vitalspirit",
 		"ability2":		"angerpoint",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -2682,7 +2682,7 @@
 		"type1":			"fire",
 		"ability1":		"intimidate",
 		"ability2":		"flashfire",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"slow",
 		"catchRate":	190,
@@ -2732,7 +2732,7 @@
 		"type1":			"fire",
 		"ability1":		"intimidate",
 		"ability2":		"flashfire",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"slow",
 		"catchRate":	75,
@@ -2773,7 +2773,7 @@
 		"type1":			"water",
 		"ability1":		"waterabsorb",
 		"ability2":		"damp",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	255,
@@ -2789,7 +2789,7 @@
 
 
 		"evolveTo":		"61",
-		"evolveLevel":	"25",
+		"evolveLevel":	25,
 
 
 		"learnset": [
@@ -2821,7 +2821,7 @@
 		"type1":			"water",
 		"ability1":		"waterabsorb",
 		"ability2":		"damp",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -2871,7 +2871,7 @@
 		"type2":		"fighting",
 		"ability1":		"waterabsorb",
 		"ability2":		"damp",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -2913,7 +2913,7 @@
 		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	200,
@@ -2929,7 +2929,7 @@
 
 
 		"evolveTo":		"64",
-		"evolveLevel":	"16",
+		"evolveLevel":	16,
 
 
 		"learnset": [
@@ -2955,7 +2955,7 @@
 		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	100,
@@ -3007,7 +3007,7 @@
 		"type1":			"psychic",
 		"ability1":		"synchronize",
 		"ability2":		"innerfocus",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	50,
@@ -3055,7 +3055,7 @@
 		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	180,
@@ -3071,7 +3071,7 @@
 
 
 		"evolveTo":		"67",
-		"evolveLevel":	"28",
+		"evolveLevel":	28,
 
 
 		"learnset": [
@@ -3107,7 +3107,7 @@
 		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	90,
@@ -3159,7 +3159,7 @@
 		"type1":			"fighting",
 		"ability1":		"guts",
 		"ability2":		"noguard",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -3207,7 +3207,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	255,
@@ -3223,7 +3223,7 @@
 
 
 		"evolveTo":		"70",
-		"evolveLevel":	"21",
+		"evolveLevel":	21,
 
 
 		"learnset": [
@@ -3256,7 +3256,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -3305,7 +3305,7 @@
 		"type1":		"grass",
 		"type2":		"poison",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -3348,7 +3348,7 @@
 		"type2":		"poison",
 		"ability1":		"clearbody",
 		"ability2":		"liquidooze",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	190,
@@ -3364,7 +3364,7 @@
 
 
 		"evolveTo":		"73",
-		"evolveLevel":	"30",
+		"evolveLevel":	30,
 
 
 		"learnset": [
@@ -3398,7 +3398,7 @@
 		"type2":		"poison",
 		"ability1":		"clearbody",
 		"ability2":		"liquidooze",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	60,
@@ -3444,7 +3444,7 @@
 		"type2":		"ground",
 		"ability1":		"rockhead",
 		"ability2":		"sturdy",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	255,
@@ -3460,7 +3460,7 @@
 
 
 		"evolveTo":		"75",
-		"evolveLevel":	"25",
+		"evolveLevel":	25,
 
 
 		"learnset": [
@@ -3495,7 +3495,7 @@
 		"type2":		"ground",
 		"ability1":		"rockhead",
 		"ability2":		"sturdy",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	120,
@@ -3546,7 +3546,7 @@
 		"type2":		"ground",
 		"ability1":		"rockhead",
 		"ability2":		"sturdy",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -3592,7 +3592,7 @@
 		"type1":			"fire",
 		"ability1":		"runaway",
 		"ability2":		"flashfire",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -3608,7 +3608,7 @@
 
 
 		"evolveTo":		"78",
-		"evolveLevel":	"40",
+		"evolveLevel":	40,
 
 
 		"learnset": [
@@ -3641,7 +3641,7 @@
 		"type1":			"fire",
 		"ability1":		"runaway",
 		"ability2":		"flashfire",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -3688,7 +3688,7 @@
 		"type2":		"psychic",
 		"ability1":		"oblivious",
 		"ability2":		"owntempo",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -3704,7 +3704,7 @@
 
 
 		"evolveTo":		"80",
-		"evolveLevel":	"37",
+		"evolveLevel":	37,
 
 
 		"learnset": [
@@ -3742,7 +3742,7 @@
 		"type2":		"psychic",
 		"ability1":		"oblivious",
 		"ability2":		"owntempo",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -3793,7 +3793,7 @@
 		"type2":		"steel",
 		"ability1":		"magnetpull",
 		"ability2":		"sturdy",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -3809,7 +3809,7 @@
 
 
 		"evolveTo":		"82",
-		"evolveLevel":	"30",
+		"evolveLevel":	30,
 
 
 		"learnset": [
@@ -3843,7 +3843,7 @@
 		"type2":		"steel",
 		"ability1":		"magnetpull",
 		"ability2":		"sturdy",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -3889,7 +3889,7 @@
 		"type2":		"flying",
 		"ability1":		"keeneye",
 		"ability2":		"innerfocus",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -3934,7 +3934,7 @@
 		"type2":		"flying",
 		"ability1":		"runaway",
 		"ability2":		"earlybird",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -3950,7 +3950,7 @@
 
 
 		"evolveTo":		"85",
-		"evolveLevel":	"31",
+		"evolveLevel":	31,
 
 
 		"learnset": [
@@ -3983,7 +3983,7 @@
 		"type2":		"flying",
 		"ability1":		"runaway",
 		"ability2":		"earlybird",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -4027,7 +4027,7 @@
 		"type1":			"water",
 		"ability1":		"thickfat",
 		"ability2":		"hydration",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -4043,7 +4043,7 @@
 
 
 		"evolveTo":		"87",
-		"evolveLevel":	"34",
+		"evolveLevel":	34,
 
 
 		"learnset": [
@@ -4076,7 +4076,7 @@
 		"type2":		"ice",
 		"ability1":		"thickfat",
 		"ability2":		"hydration",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -4122,7 +4122,7 @@
 		"type1":			"poison",
 		"ability1":		"stench",
 		"ability2":		"stickyhold",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -4138,7 +4138,7 @@
 
 
 		"evolveTo":		"89",
-		"evolveLevel":	"38",
+		"evolveLevel":	38,
 
 
 		"learnset": [
@@ -4172,7 +4172,7 @@
 		"type1":			"poison",
 		"ability1":		"stench",
 		"ability2":		"stickyhold",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -4220,7 +4220,7 @@
 		"type1":			"water",
 		"ability1":		"shellarmor",
 		"ability2":		"skilllink",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	190,
@@ -4269,7 +4269,7 @@
 		"type2":		"ice",
 		"ability1":		"shellarmor",
 		"ability2":		"skilllink",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	60,
@@ -4310,7 +4310,7 @@
 		"type1":		"ghost",
 		"type2":		"poison",
 		"ability1":		"levitate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	190,
@@ -4326,7 +4326,7 @@
 
 
 		"evolveTo":		"93",
-		"evolveLevel":	"25",
+		"evolveLevel":	25,
 
 
 		"learnset": [
@@ -4362,7 +4362,7 @@
 		"type1":		"ghost",
 		"type2":		"poison",
 		"ability1":		"levitate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	90,
@@ -4415,7 +4415,7 @@
 		"type1":		"ghost",
 		"type2":		"poison",
 		"ability1":		"levitate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,
@@ -4466,7 +4466,7 @@
 		"type2":		"ground",
 		"ability1":		"rockhead",
 		"ability2":		"sturdy",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -4513,7 +4513,7 @@
 		"type1":			"psychic",
 		"ability1":		"insomnia",
 		"ability2":		"forewarn",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -4529,7 +4529,7 @@
 
 
 		"evolveTo":		"97",
-		"evolveLevel":	"26",
+		"evolveLevel":	26,
 
 
 		"learnset": [
@@ -4565,7 +4565,7 @@
 		"type1":			"psychic",
 		"ability1":		"insomnia",
 		"ability2":		"forewarn",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -4614,7 +4614,7 @@
 		"type1":			"water",
 		"ability1":		"hypercutter",
 		"ability2":		"shellarmor",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	225,
@@ -4630,7 +4630,7 @@
 
 
 		"evolveTo":		"99",
-		"evolveLevel":	"28",
+		"evolveLevel":	28,
 
 
 		"learnset": [
@@ -4664,7 +4664,7 @@
 		"type1":			"water",
 		"ability1":		"hypercutter",
 		"ability2":		"shellarmor",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -4711,7 +4711,7 @@
 		"type1":			"electric",
 		"ability1":		"soundproof",
 		"ability2":		"static",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -4727,7 +4727,7 @@
 
 
 		"evolveTo":		"101",
-		"evolveLevel":	"30",
+		"evolveLevel":	30,
 
 
 		"learnset": [
@@ -4761,7 +4761,7 @@
 		"type1":			"electric",
 		"ability1":		"soundproof",
 		"ability2":		"static",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -4807,7 +4807,7 @@
 		"type1":		"grass",
 		"type2":		"psychic",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	90,
@@ -4857,7 +4857,7 @@
 		"type1":		"grass",
 		"type2":		"psychic",
 		"ability1":		"chlorophyll",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -4898,7 +4898,7 @@
 		"type1":			"ground",
 		"ability1":		"rockhead",
 		"ability2":		"lightningrod",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -4914,7 +4914,7 @@
 
 
 		"evolveTo":		"105",
-		"evolveLevel":	"28",
+		"evolveLevel":	28,
 
 
 		"learnset": [
@@ -4950,7 +4950,7 @@
 		"type1":			"ground",
 		"ability1":		"rockhead",
 		"ability2":		"lightningrod",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -4998,7 +4998,7 @@
 		"type1":			"fighting",
 		"ability1":		"limber",
 		"ability2":		"reckless",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5014,7 +5014,7 @@
 
 
 		"evolveTo":		"107",
-		"evolveLevel":	"20",
+		"evolveLevel":	20,
 
 
 		"learnset": [
@@ -5051,7 +5051,7 @@
 		"type1":			"fighting",
 		"ability1":		"keeneye",
 		"ability2":		"ironfist",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5099,7 +5099,7 @@
 		"type1":			"normal",
 		"ability1":		"owntempo",
 		"ability2":		"oblivious",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5147,7 +5147,7 @@
 		"name":			"Koffing",
 		"type1":			"poison",
 		"ability1":		"levitate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	190,
@@ -5163,7 +5163,7 @@
 
 
 		"evolveTo":		"110",
-		"evolveLevel":	"35",
+		"evolveLevel":	35,
 
 
 		"learnset": [
@@ -5196,7 +5196,7 @@
 		"name":			"Weezing",
 		"type1":			"poison",
 		"ability1":		"levitate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -5243,7 +5243,7 @@
 		"type2":		"rock",
 		"ability1":		"lightningrod",
 		"ability2":		"rockhead",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	120,
@@ -5259,7 +5259,7 @@
 
 
 		"evolveTo":		"112",
-		"evolveLevel":	"42",
+		"evolveLevel":	42,
 
 
 		"learnset": [
@@ -5295,7 +5295,7 @@
 		"type2":		"rock",
 		"ability1":		"lightningrod",
 		"ability2":		"rockhead",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	60,
@@ -5343,7 +5343,7 @@
 		"type1":			"normal",
 		"ability1":		"naturalcure",
 		"ability2":		"serenegrace",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"",
 		"catchRate":	30,
@@ -5393,7 +5393,7 @@
 		"type1":			"grass",
 		"ability1":		"chlorophyll",
 		"ability2":		"leafguard",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5441,7 +5441,7 @@
 		"type1":			"normal",
 		"ability1":		"earlybird",
 		"ability2":		"scrappy",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5490,7 +5490,7 @@
 		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"sniper",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	225,
@@ -5506,7 +5506,7 @@
 
 
 		"evolveTo":		"117",
-		"evolveLevel":	"32",
+		"evolveLevel":	32,
 
 
 		"learnset": [
@@ -5537,7 +5537,7 @@
 		"type1":			"water",
 		"ability1":		"poisonpoint",
 		"ability2":		"sniper",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	75,
@@ -5581,7 +5581,7 @@
 		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"waterveil",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	225,
@@ -5597,7 +5597,7 @@
 
 
 		"evolveTo":		"119",
-		"evolveLevel":	"33",
+		"evolveLevel":	33,
 
 
 		"learnset": [
@@ -5631,7 +5631,7 @@
 		"type1":			"water",
 		"ability1":		"swiftswim",
 		"ability2":		"waterveil",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	60,
@@ -5677,7 +5677,7 @@
 		"type1":			"water",
 		"ability1":		"illuminate",
 		"ability2":		"naturalcure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	225,
@@ -5730,7 +5730,7 @@
 		"type2":		"psychic",
 		"ability1":		"illuminate",
 		"ability2":		"naturalcure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	60,
@@ -5772,7 +5772,7 @@
 		"type1":			"psychic",
 		"ability1":		"soundproof",
 		"ability2":		"filter",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5827,7 +5827,7 @@
 		"type2":		"flying",
 		"ability1":		"swarm",
 		"ability2":		"technician",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5874,7 +5874,7 @@
 		"type2":		"psychic",
 		"ability1":		"oblivious",
 		"ability2":		"forewarn",
-		"genderRatio":	"0.0",
+		"genderRatio":	0.0,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5921,7 +5921,7 @@
 		"name":			"Electabuzz",
 		"type1":			"electric",
 		"ability1":		"static",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -5964,7 +5964,7 @@
 		"name":			"Magmar",
 		"type1":			"fire",
 		"ability1":		"flamebody",
-		"genderRatio":	"0.75",
+		"genderRatio":	0.75,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6009,7 +6009,7 @@
 		"type1":			"bug",
 		"ability1":		"hypercutter",
 		"ability2":		"moldbreaker",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6055,7 +6055,7 @@
 		"type1":			"normal",
 		"ability1":		"intimidate",
 		"ability2":		"angerpoint",
-		"genderRatio":	"1.0",
+		"genderRatio":	1.0,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6102,7 +6102,7 @@
 		"name":			"Magikarp",
 		"type1":			"water",
 		"ability1":		"swiftswim",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	255,
@@ -6118,7 +6118,7 @@
 
 
 		"evolveTo":		"130",
-		"evolveLevel":	"20",
+		"evolveLevel":	20,
 
 
 		"learnset": [
@@ -6141,7 +6141,7 @@
 		"type1":		"water",
 		"type2":		"flying",
 		"ability1":		"intimidate",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6189,7 +6189,7 @@
 		"type2":		"ice",
 		"ability1":		"waterabsorb",
 		"ability2":		"shellarmor",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6237,7 +6237,7 @@
 		"name":			"Ditto",
 		"type1":			"normal",
 		"ability1":		"limber",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	35,
@@ -6270,7 +6270,7 @@
 		"type1":			"normal",
 		"ability1":		"runaway",
 		"ability2":		"adaptability",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6314,7 +6314,7 @@
 		"name":			"Vaporeon",
 		"type1":			"water",
 		"ability1":		"waterabsorb",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6363,7 +6363,7 @@
 		"name":			"Jolteon",
 		"type1":			"electric",
 		"ability1":		"voltabsorb",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6408,7 +6408,7 @@
 		"name":			"Flareon",
 		"type1":			"fire",
 		"ability1":		"flashfire",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6454,7 +6454,7 @@
 		"type1":			"normal",
 		"ability1":		"trace",
 		"ability2":		"download",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6501,7 +6501,7 @@
 		"type2":		"water",
 		"ability1":		"swiftswim",
 		"ability2":		"shellarmor",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6517,7 +6517,7 @@
 
 
 		"evolveTo":		"139",
-		"evolveLevel":	"40",
+		"evolveLevel":	40,
 
 
 		"learnset": [
@@ -6552,7 +6552,7 @@
 		"type2":		"water",
 		"ability1":		"swiftswim",
 		"ability2":		"shellarmor",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6600,7 +6600,7 @@
 		"type2":		"water",
 		"ability1":		"swiftswim",
 		"ability2":		"battlearmor",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6616,7 +6616,7 @@
 
 
 		"evolveTo":		"141",
-		"evolveLevel":	"40",
+		"evolveLevel":	40,
 
 
 		"learnset": [
@@ -6650,7 +6650,7 @@
 		"type2":		"water",
 		"ability1":		"swiftswim",
 		"ability2":		"battlearmor",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"mediumFast",
 		"catchRate":	45,
@@ -6699,7 +6699,7 @@
 		"type2":		"flying",
 		"ability1":		"rockhead",
 		"ability2":		"pressure",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6744,7 +6744,7 @@
 		"type1":			"normal",
 		"ability1":		"immunity",
 		"ability2":		"thickfat",
-		"genderRatio":	"0.875",
+		"genderRatio":	0.875,
 
 		"experienceCurve":	"slow",
 		"catchRate":	25,
@@ -6796,7 +6796,7 @@
 		"type1":		"ice",
 		"type2":		"flying",
 		"ability1":		"pressure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	3,
@@ -6841,7 +6841,7 @@
 		"type1":		"electric",
 		"type2":		"flying",
 		"ability1":		"pressure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	3,
@@ -6886,7 +6886,7 @@
 		"type1":		"fire",
 		"type2":		"flying",
 		"ability1":		"pressure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	3,
@@ -6930,7 +6930,7 @@
 		"name":			"Dratini",
 		"type1":			"dragon",
 		"ability1":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6946,7 +6946,7 @@
 
 
 		"evolveTo":		"148",
-		"evolveLevel":	"30",
+		"evolveLevel":	30,
 
 
 		"learnset": [
@@ -6980,7 +6980,7 @@
 		"name":			"Dragonair",
 		"type1":			"dragon",
 		"ability1":		"shedskin",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -6996,7 +6996,7 @@
 
 
 		"evolveTo":		"149",
-		"evolveLevel":	"55",
+		"evolveLevel":	55,
 
 
 		"learnset": [
@@ -7031,7 +7031,7 @@
 		"type1":		"dragon",
 		"type2":		"flying",
 		"ability1":		"innerfocus",
-		"genderRatio":	"0.5",
+		"genderRatio":	0.5,
 
 		"experienceCurve":	"slow",
 		"catchRate":	45,
@@ -7081,7 +7081,7 @@
 		"name":			"Mewtwo",
 		"type1":			"psychic",
 		"ability1":		"pressure",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"slow",
 		"catchRate":	3,
@@ -7131,7 +7131,7 @@
 		"name":			"Mew",
 		"type1":			"psychic",
 		"ability1":		"synchronize",
-		"genderRatio":	"-1",
+		"genderRatio":	-1,
 
 		"experienceCurve":	"mediumSlow",
 		"catchRate":	45,

@@ -1018,7 +1018,7 @@
  <objectgroup name="doors" width="121" height="200">
   <object name="pallet_hero_home_door" type="warp" x="2688" y="4736" width="32" height="32">
    <properties>
-    <property name="destination" value="[&quot;pallet_hero_home_1f&quot;, 4, 9, 2]"/>
+    <property name="destination" value="{&quot;mapName&quot;: &quot;pallet_hero_home_1f&quot;, &quot;x&quot;:4, &quot;y&quot;:9, &quot;direction&quot;:2}"/>
     <property name="type" value="door"/>
    </properties>
   </object>
@@ -1029,7 +1029,7 @@
   </object>
   <object name="pallet_rival_home_door" type="warp" x="2976" y="4736" width="32" height="32">
    <properties>
-    <property name="destination" value="[&quot;pallet_rival_home&quot;, 4, 9, 2]"/>
+    <property name="destination" value="{&quot;mapName&quot;: &quot;pallet_rival_home&quot;, &quot;x&quot;:4, &quot;y&quot;:9, &quot;direction&quot;:2}"/>
     <property name="type" value="door"/>
    </properties>
   </object>

@@ -229,9 +229,9 @@ class Game {
 		Renderer.resetHooks();
 	}
 	
-	public function initBattle(type:Int):Battle {
+	public function initBattle(b:Battle):Battle {
 		inBattle = true;
-		battle = new Battle(type);
+		battle = b;
 		
 		return battle;
 	}

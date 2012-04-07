@@ -40,6 +40,12 @@ class BattleTransition001 extends Transition{
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			g.drawPlayerChar = false;
 			g.drawPlayerFollower = false;
+			
+			var chr = Game.curGame.getPlayerChar();
+			if (chr != null) {
+				chr.x = g.battle.x;
+				chr.y = g.battle.y;
+			}
 		}else if(step < 70){
 			var perc = ((step - 50) / 20);
 			if(perc > 1) perc = 1;

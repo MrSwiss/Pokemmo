@@ -21,11 +21,11 @@ import pokemmo.Battle;
  */
 
 class Connection {
-	//inline static public var SERVER_HOST:String = "http://localhost:2828";
-	//inline static public var REGSERVER_HOST:String = "http://localhost:2827";
+	inline static public var SERVER_HOST:String = "http://localhost:2828";
+	inline static public var REGSERVER_HOST:String = "http://localhost:2827";
 	
-	inline static public var SERVER_HOST:String = "http://pokemmo.net:2828";
-	inline static public var REGSERVER_HOST:String = "http://pokemmo.net:2827";
+	//inline static public var SERVER_HOST:String = "http://pokemmo.net:2828";
+	//inline static public var REGSERVER_HOST:String = "http://pokemmo.net:2827";
 	
 	
 	static public var socket:SocketIOConnection;
@@ -41,6 +41,7 @@ class Connection {
 		socket.on('loadMap', onLoadMap);
 		socket.on('invalidMove', onInvalidMove);
 		socket.on('update', onUpdate);
+		socket.on('battleInit', onBattleInit);
 		socket.on('battleWild', onBattleWild);
 		socket.on('battleTurn', onBattleTurn);
 		socket.on('loginFail', onLoginFail);
@@ -167,46 +168,7 @@ class Connection {
 			var chr = Game.curGame.getCharByUsername(charData.username);
 			
 			if(chr != null){
-				chr.follower = charData.follower;
-			}
-			
-			if (charData.username == Game.username) {
-				if (charData.type != Game.playerBackspriteType) {
-					Game.playerBackspriteType = charData.type;
-					Game.setRes('playerBacksprite', new ImageResource('resources/chars_sprites/'+charData.type+'.png'));
-				}
-				continue;
-			}
-			
-			
-			if(chr != null){
-				if (!chr.canUpdate) continue;
-					
-				chr.inBattle = charData.inBattle;
-				chr.battleEnemy = charData.battleEnemy;
-				chr.targetX = charData.x;
-				chr.targetY = charData.y;
-				chr.targetDirection = charData.direction;
-				
-				//if(!chr.walking){
-					chr.lastX = charData.lastX;
-					chr.lastY = charData.lastY;
-				//}
-				
-				if(chr.x == charData.x && chr.y == charData.y){
-					chr.direction = charData.direction;
-				}else if((Math.abs(chr.x - charData.x) <= 1 && Math.abs(chr.y - charData.y) <= 1)
-				|| chr.x - 2 == charData.x && chr.y == charData.y
-				|| chr.x + 2 == charData.x && chr.y == charData.y
-				|| chr.x == charData.x && chr.y - 2 == charData.y
-				|| chr.x == charData.x && chr.y + 2 == charData.y){
-					// Let the bot move the character
-				}else{
-					// Character too far to be moved by the bot, move him manually
-					chr.direction = charData.direction;
-					chr.x = charData.x;
-					chr.y = charData.y;
-				}
+				chr.update(charData);
 			}else{
 				chr = new CCharacter(charData);
 			}
@@ -224,6 +186,19 @@ class Connection {
 		
 	}
 	
+	static private function onBattleInit(data:BattleInitData) {
+		var battle = Game.curGame.initBattle(new Battle(data));
+		
+		var chr = Game.curGame.getPlayerChar();
+		if(chr != null){
+			chr.inBattle = true;
+			chr.battleEnemy = battle.enemyPokemon.id;
+			chr.battleEnemyShiny = battle.enemyPokemon.shiny;
+		}
+		
+		Renderer.startTransition(new BattleTransition001()).step = -1;
+	}
+	
 	static private function onBattleWild(data: {
 			var x:Int;
 			var y:Int;
@@ -232,7 +207,7 @@ class Connection {
 				var enemy:Pokemon;
 			};
 		}){
-		
+		/*
 		var battle = Game.curGame.initBattle(Battle.BATTLE_WILD);
 		battle.x = data.x;
 		battle.y = data.y;
@@ -250,9 +225,10 @@ class Connection {
 		if(chr != null){
 			chr.inBattle = true;
 			chr.battleEnemy = battle.enemyPokemon.id;
+			chr.battleEnemyShiny = battle.enemyPokemon.shiny;
 		}
 		
-		Renderer.startTransition(new BattleTransition001()).step = -1;
+		Renderer.startTransition(new BattleTransition001()).step = -1;*/
 	}
 	
 	static private function onBattleTurn(data: {
@@ -290,4 +266,19 @@ class Connection {
 			socket.emit('startGame', {});
 		};
 	}
+}
+
+typedef BattleInitData = {
+	var type:Int;
+	var x:Int;
+	var y:Int;
+	var id:Int;
+	var team:Int;
+	var info:{
+		var players:Array<BattlePlayer>;
+	};
+}
+
+typedef BattlePlayer = {
+	var pokemon:Pokemon;
 }

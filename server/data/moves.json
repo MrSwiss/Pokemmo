@@ -1,4 +1,16 @@
 {
+// FIXME, it's using Tackle data
+	"struggle": {
+		"name": "Struggle",
+		"type": "normal",
+		"pp": 35,
+		"pp_max": 56,
+		"power": 35,
+		"accuracy": 0.95,
+		"contact": true,
+		"moveType": "simple"
+	},
+	
 // increased critical hit ratio, hits both opponents in a double battle, only hits opposing adjacent Pokémon in triple battles
 // Affected by Protect, Mirror Move, King's Rock, Not affected by Magic Coat, Snatch
 	"air cutter": { 
@@ -78,7 +90,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "atk",
-		"debuffAmount": "2"
+		"debuffAmount":	2
 	},
 	
 // In a double battle, Growl hits both opponents. In a triple battle, Growl will only hit opposing adjacent Pokémon. 
@@ -93,7 +105,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "atk",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 	
 // targeting May affect anyone adjacent to the user		
@@ -164,7 +176,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "accuracy",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // Leer hits both opponents in a double battle. In a triple battle, Leer will only hit opposing adjacent Pokémon
@@ -178,7 +190,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "def",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 	
 // targeting May affect anyone adjacent to the user	
@@ -232,7 +244,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "spDef",
-		"debuffAmount": "2"
+		"debuffAmount":	2
 	},
 	
 // targeting May affect anyone adjacent to the user	
@@ -300,7 +312,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "speed",
-		"debuffAmount": "2"
+		"debuffAmount":	2
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -328,7 +340,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "def",
-		"debuffAmount": "2"
+		"debuffAmount":	2
 	},
 	
 // capable of hitting opponents while they are using the move Fly or Bounce, targeting May affect anyone adjacent to the user	
@@ -382,7 +394,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "accuracy",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 // Hits both opponents in a double battle. In a triple battle, String Shot will only hit opposing adjacent Pokémon
 // Affected by Protect, Mirror Coat, Magic Bounce, Not affected by King's Rock, Snatch	
@@ -395,7 +407,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // Hits both opponents in a double battle. In a triple battle, Sweet Scent will only hit opposing adjacent Pokémon
@@ -410,7 +422,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user
@@ -437,7 +449,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "def",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 	
 // targeting May affect anyone adjacent to the user	
@@ -596,7 +608,7 @@
 		"contact": false,
 		"moveType": "debuff",
 		"debuffStat": "spDef",
-		"debuffAmount": "2"
+		"debuffAmount":	2
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1047,7 +1059,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "def",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1078,7 +1090,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "atk",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1125,7 +1137,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1142,7 +1154,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1158,7 +1170,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 	
 // targeting May affect anyone adjacent to the user		
@@ -1174,7 +1186,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.2,
 		"debuffStat": "spDef",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 	
 // targeting May affect anyone adjacent to the user	
@@ -1233,7 +1245,7 @@
 		"moveType": "simple",
 		"debuffChance": 1.0,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1250,7 +1262,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "def",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1267,7 +1279,7 @@
 		"moveType": "simple",
 		"debuffChance": 1.0,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1285,7 +1297,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.1,
 		"debuffStat": "spDef",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1302,7 +1314,7 @@
 		"moveType": "simple",
 		"debuffChance": 1.0,
 		"debuffStat": "speed",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1335,7 +1347,7 @@
 		"moveType": "simple",
 		"debuffChance": 0.2,
 		"debuffStat": "spDef",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1378,8 +1390,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "2"
+		"buffUserStat": "def",
+		"buffUserAmount":	2
 	},
 
 // targeting May affect anyone but the user
@@ -1407,8 +1419,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "speed",
-		"buffPlayerAmount": "2"
+		"buffUserStat": "speed",
+		"buffUserAmount":	2
 	},
 
 // Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock		
@@ -1420,8 +1432,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "spDef",
-		"buffPlayerAmount": "2"
+		"buffUserStat": "spDef",
+		"buffUserAmount":	2
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1437,8 +1449,8 @@
 		"contact": false,
 		"moveType": "simple",
 		"buffPlayerChance": 0.1,
-		"buffPlayerStat": "atk,def,spAtk,spDef,speed",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk,def,spAtk,spDef,speed",
+		"buffUserAmount":	1
 	},
 
 // Affected by Snatch, Not affected by Protect, Magic Coat, Mirror Move, King's Rock		
@@ -1450,8 +1462,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "2"
+		"buffUserStat": "def",
+		"buffUserAmount":	2
 	},
 
 // TM08
@@ -1464,8 +1476,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "atk,def",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk,def",
+		"buffUserAmount":	1
 	},
 
 // TM04
@@ -1478,8 +1490,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "spAtk,spDef",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "spAtk,spDef",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1520,8 +1532,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def,spDef",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "def,spDef",
+		"buffUserAmount":	1
 	},
 
 // Power of the move Rollout, Ice Ball will be doubled for the user as long as it remains in battle. Effect cannot be Baton Passed.	
@@ -1534,8 +1546,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "def",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1562,8 +1574,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "evasion",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "evasion",
+		"buffUserAmount":	1
 	},
 
 // Affected by Snatch, Not affected by Protect, Magic Coat, King's Rock		
@@ -1575,8 +1587,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "atk,speed",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk,speed",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1633,8 +1645,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "spAtk",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "spAtk",
+		"buffUserAmount":	1
 	},	
 
 // targeting May affect anyone but the user	
@@ -1661,8 +1673,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "def",
+		"buffUserAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user
@@ -1705,8 +1717,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "atk",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1721,8 +1733,8 @@
 		"contact": true,
 		"moveType": "simple",
 		"buffPlayerChance": 0.1,
-		"buffPlayerStat": "atk",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user		
@@ -1737,8 +1749,8 @@
 		"contact": true,
 		"moveType": "simple",
 		"buffPlayerChance": 0.2,
-		"buffPlayerStat": "atk",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk",
+		"buffUserAmount":	1
 	},
 
 // Sprite change?	
@@ -1752,8 +1764,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "evasion",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "evasion",
+		"buffUserAmount":	1
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1768,8 +1780,8 @@
 		"accuracy": 0.9,
 		"contact": false,
 		"moveType": "simple",
-		"debuffPlayerStat": "spAtk",
-		"debuffPlayerAmount": 2
+		"debuffUserStat": "spAtk",
+		"debuffUserAmount": 2
 	},
 
 // targeting May affect anyone adjacent to the user	
@@ -1811,8 +1823,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "atk",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk",
+		"buffUserAmount":	1
 	},
 
 // TM34
@@ -1859,8 +1871,8 @@
 		"contact": false,
 		"moveType": "simple",
 		"buffPlayerChance": 0.1,
-		"buffPlayerStat": "atk,def,spAtk,spDef,speed",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "atk,def,spAtk,spDef,speed",
+		"buffUserAmount":	1
 	},
 
 // TM47	
@@ -1876,8 +1888,8 @@
 		"contact": true,
 		"moveType": "simple",
 		"buffPlayerChance": 0.1,
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "def",
+		"buffUserAmount":	1
 	},	
 
 // targeting May affect anyone adjacent to the user	
@@ -1891,8 +1903,8 @@
 		"accuracy": 1.0,
 		"contact": true,
 		"moveType": "simple",
-		"debuffPlayerStat": "atk,def",
-		"debuffPlayerAmount": 1
+		"debuffUserStat": "atk,def",
+		"debuffUserAmount": 1
 	},
 
 // targeting Affects all adjacent foes, but not allies
@@ -1922,8 +1934,8 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "atk",
-		"buffPlayerAmount": "2"
+		"buffUserStat": "atk",
+		"buffUserAmount":	2
 	},	
 
 // Affected by Protect, Magic Coat, Magic Bounce, Not affected by King's Rock, Snatch	
@@ -1936,7 +1948,7 @@
 		"contact": false,
 		"type": "debuff",
 		"debuffStat": "atk,def",
-		"debuffAmount": "1"
+		"debuffAmount":	1
 	},	
 
 // hits both opponents in a double battle. In a triple battle, Twister will only hit opposing adjacent Pokémon.
@@ -1980,7 +1992,7 @@
 		"accuracy": -1,
 		"contact": false,
 		"moveType": "buff",
-		"buffPlayerStat": "def",
-		"buffPlayerAmount": "1"
+		"buffUserStat": "def",
+		"buffUserAmount":	1
 	}
 }
