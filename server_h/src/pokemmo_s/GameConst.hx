@@ -20,5 +20,6 @@ class GameConst {
 		'pallet_oaklab',
 		'pallet_rival_home',
 		'pewter',
+		'viridianforest',
 	];
 }

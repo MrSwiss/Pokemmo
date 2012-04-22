@@ -1,6 +1,7 @@
 package pokemmo_s;
 
 import pokemmo_s.MasterConnector;
+import pokemmo_s.Map;
 
 /**
  * ...
@@ -27,6 +28,9 @@ class ClientCharacter {
 	public var lastY:Int;
 	public var type:String;
 	
+	public var surfing:Bool;
+	public var usingBike:Bool;
+	
 	public var respawnLocation:Location;
 	
 	public var playerVars:Dynamic;
@@ -43,6 +47,9 @@ class ClientCharacter {
 		
 		speedHackChecks = [];
 		lastMessage = 0;
+		
+		surfing = false;
+		usingBike = false;
 		
 		retransmit = true;
 		money = save.money;
@@ -91,10 +98,11 @@ class ClientCharacter {
 			client.socket.on('adminTestLevelup', function(data) {
 				pokemon[0].experience = pokemon[0].experienceNeeded - 1;
 			});
+			
+			client.socket.on('adminTeleport', function(data) {
+				warp(data.map, data.x, data.y, untyped data.dir || 0);
+			});
 		}
-		
-		//TODO battleLearnMove
-		//TODO Admin commands: kickPlayer, adminSetPokemon, adminSetLevel
 		
 	}
 	
@@ -206,13 +214,15 @@ class ClientCharacter {
 		warpToLocation(respawnLocation);
 	}
 	
-	public function sendInvalidMove():Void {
+	private function sendInvalidMove():Void {
 		lastAckMove = Math.floor(Date.now().getTime() * 1000 + Math.random() * 1000);
 		client.socket.emit('invalidMove', {ack: lastAckMove, x: x, y: y});
 	}
 	
-	public function onWalk():Void {
+	private function onWalk():Void {
 		if (battle != null) return;
+		
+		var destSolid = mapInstance.map.solidData[x][y];
 		
 		retransmit = true;
 		
@@ -234,24 +244,35 @@ class ClientCharacter {
 		
 		var encounterAreas = mapInstance.map.getEncounterAreasAt(x, y);
 		for (area in encounterAreas) {
-			// Each area has a chance of having a pokemon
-			if (Math.random() > 1 / 18.5) continue;
-			
-			var chance = 0.0;
-			// Select the correct pokemon
-			var n = Math.random();
-			for (encounter in area.encounters) {
-				if (n >= (chance += encounter.chance)) continue;
-				
-				var level = Utils.randInt(encounter.min_level, encounter.max_level);
-				var enemy = encounter.id;
-				
-				battle = new BattleWild(client, new Pokemon().createWild(enemy, level));
-				battle.init();
-				return;
-			}
-			
+			if (checkEncounters(area.encounters)) return;
 		}
+		
+		if (destSolid == Map.SD_GRASS && mapInstance.map.grassEncounters != null) {
+			if (checkEncounters(mapInstance.map.grassEncounters)) return;
+		}
+	}
+	
+	private function checkEncounters(encounters:Array<EncounterData>):Bool {
+		if (Math.random() > 1 / 18.5) return false;
+		
+		var chance = 0.0;
+		var n = Math.random();
+		for (encounter in encounters) {
+			if (n >= (chance += encounter.chance)) continue;
+			
+			var level = Utils.randInt(encounter.min_level, encounter.max_level);
+			var enemy = encounter.id;
+			
+			battle = new BattleWild(client, new Pokemon().createWild(enemy, level));
+			battle.init();
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private inline function canWalkOnTileType(type:Int):Bool {
+		return surfing ? (type == Map.SD_WATER) : (type == Map.SD_NONE || type == Map.SD_GRASS);
 	}
 	
 	private function e_walk(data:Dynamic) {
@@ -275,7 +296,7 @@ class ClientCharacter {
 		
 		direction = Math.floor(Math.abs(data.dir) % 4);
 		
-		if (destSolid > Map.SD_NONE) {
+		if (!canWalkOnTileType(destSolid)) {
 			invalidMove = true;
 		}else if (x - 1 == data.x && y == data.y) {
 			lastX = x;

@@ -2111,7 +2111,7 @@ pokemmo.TitleScreen.render = function(ctx) {
 	}
 	ctx.font = "12px Courier";
 	ctx.fillStyle = "#000000";
-	ctx.fillText("Version: " + 0 + "." + 1 + "/" + 1606,10,600);
+	ctx.fillText("Version: " + 0 + "." + 1 + "/" + 1609,10,600);
 }
 pokemmo.TitleScreen.prototype.__class__ = pokemmo.TitleScreen;
 pokemmo.PokemonConst = function() { }
@@ -4916,7 +4916,7 @@ pokemmo.Main.initGame = function(canvas_,container_) {
 pokemmo.Main.printDebug = function() {
 	var w = js.Lib.window.open("","Debug Info");
 	w.document.body.innerHTML = "";
-	w.document.write(JSON.stringify({ version : { major : 0, minor : 1, build : 1606}}));
+	w.document.write(JSON.stringify({ version : { major : 0, minor : 1, build : 1609}}));
 }
 pokemmo.Main.resolveObject = function(obj,path) {
 	var arr = path.split(".");
@@ -5183,7 +5183,7 @@ pokemmo.Connection.REGSERVER_HOST = "http://localhost:2827";
 pokemmo.Connection.lastAckMove = 0;
 Version.Major = 0;
 Version.Minor = 1;
-Version.Build = 1606;
+Version.Build = 1609;
 Version.Revision = 0;
 pokemmo.Main.window = window;
 pokemmo.Main.document = document;

@@ -93,19 +93,19 @@ class Map {
 		}
 	}
 	
-	public function isTileSolid(x:Int, y:Int):Bool {
+	public inline function isTileSolid(x:Int, y:Int):Bool {
 		return hasTileProp(x, y, 'solid');
 	}
 	
-	public function isTileWater(x:Int, y:Int):Bool {
+	public inline function isTileWater(x:Int, y:Int):Bool {
 		return hasTileProp(x, y, 'water');
 	}
 	
-	public function isTileGrass(x:Int, y:Int):Bool {
+	public inline function isTileGrass(x:Int, y:Int):Bool {
 		return hasTileProp(x, y, 'grass');
 	}
 	
-	public function isTileLedge(x:Int, y:Int):Bool {
+	public inline function isTileLedge(x:Int, y:Int):Bool {
 		return hasTileProp(x, y, 'ledge');
 	}
 	
@@ -139,8 +139,6 @@ class Map {
 		
 		if (tileset == null) throw "Tileset is null";
 		
-		if(tileset.tileproperties[tileid - tileset.firstgid][untyped prop] == '1') return true;
-		
-		return false;
+		return tileset.tileproperties[tileid - tileset.firstgid][untyped prop] == '1';
 	}
 }

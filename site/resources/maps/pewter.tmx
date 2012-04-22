@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="155" height="123" tilewidth="32" tileheight="32">
- <tileset firstgid="1" name="bluetiles" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="preload_pokemon" value="13,10,16,19,21,16,29,32,39,56"/>
+ </properties>
+ <tileset firstgid="1" name="pewter" tilewidth="32" tileheight="32">
   <image source="../tilesets/pewter.png" width="256" height="1472"/>
   <tile id="81">
    <properties>
@@ -24,12 +27,72 @@
    eJzt2TEKwCAQBEDf6P8fk/4khcEsojMggoWFrOJxrQEAAAAAAAAAAAAAAAAAAAAAAMB9epl33ZMzyBlJsgEAcAe1AQlyBgAAAAAAAOyg9i71MPmDnJEkXwCs5P/yXS/jbY2RsyFBnTbPu8Ys94skeQMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWOMBAgIOaw==
   </data>
  </layer>
+ <layer name="Overchars" width="155" height="123">
+  <properties>
+   <property name="overchars" value="1"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt29sKgkAQBuDdFyssSzpovf/TNDeCUGQHcVG+D372RkTYhRkcTQkAAAAAAAAAAAAAAAAAAAAAAAAAAACApepySrdB7rn0EzGXTez11n4DwCSGdfUQ6/FFmvx8LQDwvyrq6i6yj9RqLDPS1wEAwPL1ff0pco5cItdIm/X8lNefwbEVSnE2AQDe8402AAAAAHzv01n52Hzy1/uYdwIAAAAAAAAAAAAAwPr4bwAAAAAApuM9GwAAAAAAAAAAAAAAAAAAAAAAwHo8AMR6F/s=
+  </data>
+ </layer>
  <layer name="data" width="155" height="123" opacity="0.48">
   <properties>
    <property name="data_layer" value="1"/>
   </properties>
   <data encoding="base64" compression="zlib">
-   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
+   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
   </data>
  </layer>
+ <objectgroup name="objects" width="155" height="123">
+  <object type="tall_grass" x="3424" y="1632" width="32" height="192">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="1088" y="2272" width="224" height="224">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 2, &quot;max_level&quot;: 5, &quot;chance&quot;:0.45}, {&quot;id&quot;: &quot;19&quot;, &quot;min_level&quot;: 2, &quot;max_level&quot;: 5, &quot;chance&quot;:0.45}, {&quot;id&quot;: &quot;10&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 5, &quot;chance&quot;:0.05}, {&quot;id&quot;: &quot;13&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 5, &quot;chance&quot;:0.05}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="4416" y="1728" width="32" height="96">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="3232" y="1632" width="192" height="96">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="3296" y="1728" width="128" height="64">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="3456" y="1664" width="224" height="160">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="4608" y="1632" width="96" height="160">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="4448" y="1664" width="160" height="160">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="4608" y="1600" width="32" height="32">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+  <object type="tall_grass" x="4512" y="1600" width="96" height="64">
+   <properties>
+    <property name="encounters" value="{&quot;id&quot;: &quot;21&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 8, &quot;chance&quot;: 0.35}, {&quot;id&quot;: &quot;16&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.30}, {&quot;id&quot;: &quot;29&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;32&quot;, &quot;min_level&quot;: 6, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.075}, {&quot;id&quot;: &quot;39&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}, {&quot;id&quot;: &quot;56&quot;, &quot;min_level&quot;: 7, &quot;max_level&quot;: 7, &quot;chance&quot;: 0.10}"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

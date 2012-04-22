@@ -1,0 +1,1 @@
+It selects all images from the input folder and resizes them by 2x keeping them pixelated

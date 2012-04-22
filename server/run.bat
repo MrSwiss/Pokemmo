@@ -1,5 +1,5 @@
 @echo off
 
-"./compile.bat" & node server.out.node.js
+node server.out.node.js
 
 pause

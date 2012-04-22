@@ -1,0 +1,1 @@
+It trims the transparent part of the bottom of the image by moving it (I used it in some pokemon backsprites).

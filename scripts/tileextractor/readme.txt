@@ -1,0 +1,1 @@
+Use ExtractTiles.py in a image to generate 2 files: <mapname>noanim.png and <mapname>tiles.png, then use MapWriter2.py to generate a .tmx file for the tileset. Grab the .tmx and the tileset and use it in Tiled (the map editor I use).

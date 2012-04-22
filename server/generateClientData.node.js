@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8'));
+var pokemonData = JSON.parse(fs.readFileSync('data/pokemon.json', 'utf8').replace(/\/\/[^\n\r]*/gm,''));
 var movesData = JSON.parse(fs.readFileSync('data/moves.json', 'utf8').replace(/\/\/[^\n\r]*/gm,''));
 var typeData = JSON.parse(fs.readFileSync('data/types.json', 'utf8'));
 

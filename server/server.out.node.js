@@ -1348,6 +1348,8 @@ pokemmo_s.ClientCharacter = function(client,save) {
 	this.client = client;
 	this.speedHackChecks = [];
 	this.lastMessage = 0;
+	this.surfing = false;
+	this.usingBike = false;
 	this.retransmit = true;
 	this.money = save.money;
 	this.pokemon = [];
@@ -1390,6 +1392,9 @@ pokemmo_s.ClientCharacter = function(client,save) {
 		client.socket.on("adminTestLevelup",function(data) {
 			me.pokemon[0].experience = me.pokemon[0].experienceNeeded - 1;
 		});
+		client.socket.on("adminTeleport",function(data) {
+			me.warp(data.map,data.x,data.y,data.dir || 0);
+		});
 	}
 }
 pokemmo_s.ClientCharacter.__name__ = ["pokemmo_s","ClientCharacter"];
@@ -1410,6 +1415,8 @@ pokemmo_s.ClientCharacter.prototype.direction = null;
 pokemmo_s.ClientCharacter.prototype.lastX = null;
 pokemmo_s.ClientCharacter.prototype.lastY = null;
 pokemmo_s.ClientCharacter.prototype.type = null;
+pokemmo_s.ClientCharacter.prototype.surfing = null;
+pokemmo_s.ClientCharacter.prototype.usingBike = null;
 pokemmo_s.ClientCharacter.prototype.respawnLocation = null;
 pokemmo_s.ClientCharacter.prototype.playerVars = null;
 pokemmo_s.ClientCharacter.prototype.battle = null;
@@ -1450,8 +1457,9 @@ pokemmo_s.ClientCharacter.prototype.generatePokemonNetworkObject = function() {
 	return arr;
 }
 pokemmo_s.ClientCharacter.prototype.putInMap = function(str) {
-	if(this.mapInstance != null) this.mapInstance.removeChar(this);
 	var map = pokemmo_s.GameData.maps[str];
+	if(map == null) return;
+	if(this.mapInstance != null) this.mapInstance.removeChar(this);
 	var $it0 = map.instances.iterator();
 	while( $it0.hasNext() ) {
 		var i = $it0.next();
@@ -1494,6 +1502,7 @@ pokemmo_s.ClientCharacter.prototype.sendInvalidMove = function() {
 }
 pokemmo_s.ClientCharacter.prototype.onWalk = function() {
 	if(this.battle != null) return;
+	var destSolid = this.mapInstance.map.solidData[this.x][this.y];
 	this.retransmit = true;
 	if(this.speedHackChecks.length >= 12) this.speedHackChecks.shift();
 	this.speedHackChecks.push(Date.now().getTime());
@@ -1516,21 +1525,31 @@ pokemmo_s.ClientCharacter.prototype.onWalk = function() {
 	while(_g < encounterAreas.length) {
 		var area = encounterAreas[_g];
 		++_g;
-		if(Math.random() > 1 / 18.5) continue;
-		var chance = 0.0;
-		var n = Math.random();
-		var _g1 = 0, _g2 = area.encounters;
-		while(_g1 < _g2.length) {
-			var encounter = _g2[_g1];
-			++_g1;
-			if(n >= (chance += encounter.chance)) continue;
-			var level = pokemmo_s.Utils.randInt(encounter.min_level,encounter.max_level);
-			var enemy = encounter.id;
-			this.battle = new pokemmo_s.BattleWild(this.client,new pokemmo_s.Pokemon().createWild(enemy,level));
-			this.battle.init();
-			return;
-		}
+		if(this.checkEncounters(area.encounters)) return;
 	}
+	if(destSolid == 7 && this.mapInstance.map.grassEncounters != null) {
+		if(this.checkEncounters(this.mapInstance.map.grassEncounters)) return;
+	}
+}
+pokemmo_s.ClientCharacter.prototype.checkEncounters = function(encounters) {
+	if(Math.random() > 1 / 18.5) return false;
+	var chance = 0.0;
+	var n = Math.random();
+	var _g = 0;
+	while(_g < encounters.length) {
+		var encounter = encounters[_g];
+		++_g;
+		if(n >= (chance += encounter.chance)) continue;
+		var level = pokemmo_s.Utils.randInt(encounter.min_level,encounter.max_level);
+		var enemy = encounter.id;
+		this.battle = new pokemmo_s.BattleWild(this.client,new pokemmo_s.Pokemon().createWild(enemy,level));
+		this.battle.init();
+		return true;
+	}
+	return false;
+}
+pokemmo_s.ClientCharacter.prototype.canWalkOnTileType = function(type) {
+	return this.surfing?type == 2:type == 0 || type == 7;
 }
 pokemmo_s.ClientCharacter.prototype.e_walk = function(data) {
 	if(this.battle != null) return;
@@ -1541,7 +1560,7 @@ pokemmo_s.ClientCharacter.prototype.e_walk = function(data) {
 	if(destSolid == null) return;
 	var invalidMove = false;
 	this.direction = Math.floor(Math.abs(data.dir) % 4);
-	if(destSolid > 0) invalidMove = true; else if(this.x - 1 == data.x && this.y == data.y) {
+	if(!(this.surfing?destSolid == 2:destSolid == 0 || destSolid == 7)) invalidMove = true; else if(this.x - 1 == data.x && this.y == data.y) {
 		this.lastX = this.x;
 		this.lastY = this.y;
 		this.x -= 1;
@@ -2674,6 +2693,7 @@ pokemmo_s.Map = function(id) {
 	this.width = this.data.width;
 	this.height = this.data.height;
 	if(this.data.properties.players_per_instance == null) this.playersPerInstance = 0; else this.playersPerInstance = Std.parseInt(this.data.properties.players_per_instance);
+	if(this.data.properties.grass_encounters != null) this.grassEncounters = js.Node.parse("{\"tmp\":[" + this.data.properties.grass_encounters + "]}").tmp;
 	var _g = 0, _g1 = this.data.layers;
 	while(_g < _g1.length) {
 		var layer = _g1[_g];
@@ -2709,9 +2729,7 @@ pokemmo_s.Map = function(id) {
 					if(tileset == null) "Tileset is null";
 					var curTilesetTileid = tileid - tileset.firstgid;
 					if(tileset.tileproperties[curTilesetTileid] != null) {
-						if(tileset.tileproperties[curTilesetTileid].solid == "1") this.solidData[x][y] = 1;
-						if(tileset.tileproperties[curTilesetTileid].water == "1") this.solidData[x][y] = 2;
-						if(tileset.tileproperties[curTilesetTileid].ledge == "1") {
+						if(tileset.tileproperties[curTilesetTileid].solid == "1") this.solidData[x][y] = 1; else if(tileset.tileproperties[curTilesetTileid].water == "1") this.solidData[x][y] = 2; else if(tileset.tileproperties[curTilesetTileid].grass == "1") this.solidData[x][y] = 7; else if(tileset.tileproperties[curTilesetTileid].ledge == "1") {
 							this.solidData[x][y] = 3;
 							if(tileset.tileproperties[curTilesetTileid].ledge_dir == "1") this.solidData[x][y] = 4; else if(tileset.tileproperties[curTilesetTileid].ledge_dir == "2") this.solidData[x][y] = 5; else if(tileset.tileproperties[curTilesetTileid].ledge_dir == "3") this.solidData[x][y] = 6;
 						}
@@ -2759,6 +2777,7 @@ pokemmo_s.Map.prototype.points = null;
 pokemmo_s.Map.prototype.instances = null;
 pokemmo_s.Map.prototype.numInstances = null;
 pokemmo_s.Map.prototype.playersPerInstance = null;
+pokemmo_s.Map.prototype.grassEncounters = null;
 pokemmo_s.Map.prototype.getEncounterAreasAt = function(x,y) {
 	var arr = [];
 	var _g = 0, _g1 = this.encounterAreas;
@@ -2961,7 +2980,7 @@ pokemmo_s.GameConst.DIR_DOWN = 0;
 pokemmo_s.GameConst.DIR_LEFT = 1;
 pokemmo_s.GameConst.DIR_UP = 2;
 pokemmo_s.GameConst.DIR_RIGHT = 3;
-pokemmo_s.GameConst.LOAD_MAPS = ["pallet","pallet_hero_home_1f","pallet_hero_home_2f","pallet_oaklab","pallet_rival_home","pewter"];
+pokemmo_s.GameConst.LOAD_MAPS = ["pallet","pallet_hero_home_1f","pallet_hero_home_2f","pallet_oaklab","pallet_rival_home","pewter","viridianflorest"];
 js.NodeC.UTF8 = "utf8";
 js.NodeC.ASCII = "ascii";
 js.NodeC.BINARY = "binary";
@@ -3062,6 +3081,7 @@ pokemmo_s.Map.SD_LEDGE_DOWN = 3;
 pokemmo_s.Map.SD_LEDGE_LEFT = 4;
 pokemmo_s.Map.SD_LEDGE_UP = 5;
 pokemmo_s.Map.SD_LEDGE_RIGHT = 6;
+pokemmo_s.Map.SD_GRASS = 7;
 pokemmo_s.Map.LAYER_TILELAYER = "tilelayer";
 pokemmo_s.Map.LAYER_OBJECTGROUP = "objectgroup";
 pokemmo_s.Main.main()

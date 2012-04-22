@@ -15,6 +15,7 @@ class Map {
 	static inline public var SD_LEDGE_LEFT:Int = 4;
 	static inline public var SD_LEDGE_UP:Int = 5;
 	static inline public var SD_LEDGE_RIGHT:Int = 6;
+	static inline public var SD_GRASS:Int = 7;
 	
 	static inline private var LAYER_TILELAYER = "tilelayer";
 	static inline private var LAYER_OBJECTGROUP = "objectgroup";
@@ -37,6 +38,7 @@ class Map {
 	public var numInstances:Int;
 	
 	public var playersPerInstance:Int;
+	public var grassEncounters:Array<EncounterData>;
 	
 	public function new(id:String) {
 		this.id = id;
@@ -61,6 +63,10 @@ class Map {
 			playersPerInstance = 0;
 		}else{
 			playersPerInstance = Std.parseInt(data.properties.players_per_instance);
+		}
+		
+		if (data.properties.grass_encounters != null) {
+			grassEncounters = Node.parse('{"tmp":['+ data.properties.grass_encounters + ']}').tmp;
 		}
 		
 		for (layer in data.layers) {
@@ -96,13 +102,11 @@ class Map {
 						if(tileset.tileproperties[curTilesetTileid] != null){
 							if(tileset.tileproperties[curTilesetTileid].solid == '1'){
 								solidData[x][y] = SD_SOLID;
-							}
-							
-							if(tileset.tileproperties[curTilesetTileid].water == '1'){
+							}else if(tileset.tileproperties[curTilesetTileid].water == '1'){
 								solidData[x][y] = SD_WATER;
-							}
-							
-							if(tileset.tileproperties[curTilesetTileid].ledge == '1'){
+							}else if(tileset.tileproperties[curTilesetTileid].grass == '1'){
+								solidData[x][y] = SD_GRASS;
+							}else if(tileset.tileproperties[curTilesetTileid].ledge == '1'){
 								solidData[x][y] = SD_LEDGE_DOWN;
 								if(tileset.tileproperties[curTilesetTileid].ledge_dir == '1'){
 									solidData[x][y] = SD_LEDGE_LEFT;
@@ -223,6 +227,7 @@ typedef MapFileData = {
 	var properties:{
 		var preload_pokemon:String;
 		var players_per_instance:String;
+		var grass_encounters:String;
 	};
 	
 	var tilesets:Array<MapTileset>;
@@ -244,6 +249,7 @@ typedef MapTileset = {
 		var water:String;
 		var ledge:String;
 		var ledge_dir:String;
+		var grass:String;
 	}>;
 };
 
@@ -252,13 +258,15 @@ typedef MapEncounterArea = {
 	var y1:Int;
 	var x2:Int;
 	var y2:Int;
-	var encounters:Array<{
-		var id:String;
-		var min_level:Int;
-		var max_level:Int;
-		var chance:Float;
-	}>;
+	var encounters:Array<EncounterData>;
 };
+
+typedef EncounterData = {
+	var id:String;
+	var min_level:Int;
+	var max_level:Int;
+	var chance:Float;
+}
 
 typedef MapWarp = {
 	var x:Int;

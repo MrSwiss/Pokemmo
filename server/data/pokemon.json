@@ -1286,7 +1286,7 @@
 	},
 
 	"29": {
-		"name":			"Nidoran♀",
+		"name":			"Nidoran", // Female
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
@@ -1434,7 +1434,7 @@
 	},
 
 	"32": {
-		"name":			"Nidoran♂",
+		"name":			"Nidoran", // Male
 		"type1":			"poison",
 		"ability1":		"poisonpoint",
 		"ability2":		"rivalry",
@@ -1588,7 +1588,7 @@
 		"ability2":		"magicguard",
 		"genderRatio":	0.25,
 
-		"experienceCurve":	"",
+		"experienceCurve":	"fast",
 		"catchRate":	150,
 		"baseExp":		68,
 		"baseStats": {
@@ -1643,7 +1643,7 @@
 		"ability2":		"magicguard",
 		"genderRatio":	0.25,
 
-		"experienceCurve":	"",
+		"experienceCurve":	"fast",
 		"catchRate":	25,
 		"baseExp":		129,
 		"baseStats": {
@@ -1773,7 +1773,7 @@
 		"ability1":		"cutecharm",
 		"genderRatio":	0.25,
 
-		"experienceCurve":	"",
+		"experienceCurve":	"fast",
 		"catchRate":	170,
 		"baseExp":		76,
 		"baseStats": {
@@ -1824,7 +1824,7 @@
 		"ability1":		"cutecharm",
 		"genderRatio":	0.25,
 
-		"experienceCurve":	"",
+		"experienceCurve":	"fast",
 		"catchRate":	50,
 		"baseExp":		109,
 		"baseStats": {
@@ -5345,7 +5345,7 @@
 		"ability2":		"serenegrace",
 		"genderRatio":	0.0,
 
-		"experienceCurve":	"",
+		"experienceCurve":	"fast",
 		"catchRate":	30,
 		"baseExp":		255,
 		"baseStats": {

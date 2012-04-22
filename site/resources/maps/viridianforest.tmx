@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="78" height="87" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="grass_encounters" value="{&quot;id&quot;: &quot;10&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 5, &quot;chance&quot;:0.40}, {&quot;id&quot;: &quot;13&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 5, &quot;chance&quot;:0.40}, {&quot;id&quot;: &quot;11&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 6, &quot;chance&quot;:0.075}, {&quot;id&quot;: &quot;14&quot;, &quot;min_level&quot;: 4, &quot;max_level&quot;: 6, &quot;chance&quot;:0.075}, {&quot;id&quot;: &quot;25&quot;, &quot;min_level&quot;: 3, &quot;max_level&quot;: 5, &quot;chance&quot;:0.05}"/>
+  <property name="preload_pokemon" value="10,13,11,14,25"/>
+ </properties>
+ <tileset firstgid="1" name="viridianforest" tilewidth="32" tileheight="32">
+  <image source="../tilesets/viridianforest.png" width="256" height="448"/>
+ </tileset>
+ <tileset firstgid="113" source="../tilesets/data.tsx"/>
+ <layer name="Ground" width="78" height="87">
+  <data encoding="base64" compression="zlib">
+   eJztnHd7mzAQxtWdpNuJ26atO929994jHe7e7ff/Hj2ecA9vLkJICJCw9cf7cLHAwPHTuOOceaXUAmk7aT7Z1vYW0lbStmQ72TE8uz7aMTy7PtoxPLs+2jE8uz7adXy+w9EOzUYMvO0m7SHttbRjYCMG3jaQNlpoE2mxg+feF95c/La5g+c+jbzNdfDcp5G3uQ6e+zTzxnPrTkt7wXF/HztG3nYpv/nX9dgu5/o2eRvkWnTY4rlkW9XxS7mdbYclW24f1Lh3H972kfZb6ABpmXSQdMhCh0kjca7l/DPejjSf4bbMR3I7zO0ueTtCOmqhY/m1HSedsNBJtZ4B5oiZGuYaw99j8IPuc7k/f9eoxr378HaKdDrXGdJZ0DloO59fG/vtAumiRpfAb5IBvkdmKrMv5+1XatgD+K5BjXv34e0q6RrpOukG6SboVv551n47vzb2G/tFjkvYLhlAfw007a62aSxtmzd8fndId0n3SPdJD0R7dt8P1SpXj+B6x2DLdjwX+mtZ0+5qo8/kWNpFPoTtx6QnpKekZ6TnSj8+4Vb2G+6HvMXjR9A20LS72jiPdD2fov0C7v0l6ZVof60RnlvXXnW8z/XKZxiKtzb8YvP9deMD2U9D8daGX6qO94kPZD+dJd7KJNd4vKbTjbGsWeKtTMwRxyccf+hiC1biTb8elDEG2iHn0xh5k+toU4wxi7ytgI3raMmb77w5TbyZ4k/Jm++82SfeeL2F43nZOWR8InnzjTFi5A3jLI6jcL01VEVejbemdX7Z+DZtvPG45JrbNOU7dPmXGN4vNMFbdt1vVDEuueY2TfkOyZtkONT7BZf4UdfO1/0WvifLJb1TRS6zzH6vzOOV7Ke8ftO9d4gtXsDnWTYfSi5d87amfAf6bSJ8J30YE28YB5r81sYch/30gyrGRBmfhuatznu+JnJfpvmU88esLI8s49PQ+V58z4fPdSL8hPsMVTEnNl0vJ5keqLXvszD3FpI3Xb/Q6aMqxhxei7Uxx+nGA11ePnS+F+cvl3WE7fv6pteTsr+GHN/keGISjzXoK7wXXwaq5u1YeMvuFXMRtjb6CtcHvgz0hTffd+dLsOUahFngrQlW2WfM4Szw1gars8Kb628Z2vxdQ194C1Xr2HfedNdpq1nmzcdvibf6vDU9NladZxp4a2NsrDqPzCOF5G0FrrHMblq2vGGNq65uOuZ4wddHE1XknqrGRjwO646wTh9zvjHHC2X+sOUUa4hceJM11VwfsqSKOCXmeEGXM3fhFOt7XXgrq42NoT7ENg7FPmbiRccO1pO78NbUvBkTby5zta7WwZW3Nu4rdt5wXE+82fOGNZOJt8RbGt/q2VWxZBlvVcdVzaemY6TfXOPctnmziSV1vNkch/fPa9aq48v6aR/qkaRsakVMqhuz4e8ZyvaJOR+i66cu+qRW+9XnGn4bVfgtZt5045OtsuNk3aqtz/g9tmm/PvDGeRxbn3EORFcLUeUzrJ8x7Rsrb/Kebet4uXaJ711Xh6WrL5nk++B+feRN3rNrDQ6PT6yJWu9D/M0V/p7NZkyNNd/L8xmvI2zreDP7UX78F9JX0je1tu+W/b+GMfiwKscXijef+hAb+zvpB+kn6Rfpd+6Ppr4/5vjU1f5D+muhf4Gvs+341NV2+T9CIa8zBsbQdvFb4i3xlnhLvCXeEm+Jt8Rb4i28nXhLvCXeEm+Jt7DX+R//H+kp
+  </data>
+ </layer>
+ <layer name="Overchars" width="78" height="87">
+  <properties>
+   <property name="overchars" value="1"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt2jkOgCAQAEAe6hH1/3+Q0sICJHLoTLIJFdliIbAQAgDAGLYYe0IcrRIEAICPmArGQBrrBgD4E/cHSqgfoGf2JVrRtwXIZ18EnvB2zijUIQBAfe4FjKB2nVoLAAD0zjkVALhT8j+kpAf39vwjm2Msl1jbpgMAAAAA2U7gkBaV
+  </data>
+ </layer>
+ <layer name="data" width="78" height="87" opacity="0.43">
+  <properties>
+   <property name="data_layer" value="1"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztl9uKxCAMQPvLZf8f9mmg61qbm2kczwEZqDWmh4yX4wAAAAAAAAAA+MvpaN7x2rkqYc3pbH5ngjffXJXAm41Z3iLXsje8zVpzJd48cSNieei5afdDa9zR+F29PdXjbt5656+fTovqt+QreTab2V7wFt+/+n76hre7Zv2GbPBmnxNvtjlX8RZ9NvdQyZsk1yq86U1bO7t5u9J7p81nlGsVor1c41rqZ3dv0rklzyR92UR4s+5pFm/fsJ+eh6/uou5M1bydg/5R3WlaLx/JM03/DO68XJF4i8wnY4wX75x40/Vp3tHQq//sHCRE1FvkHifdh9ox2cyac4a3u7h4w9sO3jxtFNeazwrePODNhrUWn2Lu4G1GzBW8ede3jHNvVW+j++dTwxveNODNRoS3yLVxpfupx1t0rfbykXxDNtK6iHSk8Sb9hopEeLuyk7cP2rUt0lvWGTKKkbencdHeVgJvNvBmA2828GYDbzbw9h/tPTL6/PZ0N5Hmmo30LvDBel+w3tmujGJnk+lNM9+3eTuE77dj2/9U5JyreDuEY3rjpDE071b19kZOLXjTf6d07cykYr21VPU2u2XM/W3s9r0AAAAAAAAAANX5BaKrdQg=
+  </data>
+ </layer>
+</map>
