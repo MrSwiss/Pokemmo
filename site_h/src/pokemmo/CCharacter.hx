@@ -12,7 +12,7 @@ import UserAgentContext;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class CCharacter extends GameObject {

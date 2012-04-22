@@ -4,7 +4,7 @@ import haxe.macro.Expr;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class MacroUtils {

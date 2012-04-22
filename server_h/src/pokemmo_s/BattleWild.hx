@@ -2,7 +2,7 @@ package pokemmo_s;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class BattleWild extends Battle {

@@ -3,7 +3,7 @@ import pokemmo.CCharacter;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class CStairs extends CWarp {

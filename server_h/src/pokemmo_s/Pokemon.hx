@@ -4,7 +4,7 @@ import pokemmo_s.GameData;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Pokemon {

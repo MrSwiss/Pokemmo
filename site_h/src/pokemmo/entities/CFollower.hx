@@ -6,7 +6,7 @@ import UserAgentContext;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class CFollower extends CPokemon {

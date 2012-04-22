@@ -5,7 +5,7 @@ import pokemmo_s.Map;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class ClientCharacter {

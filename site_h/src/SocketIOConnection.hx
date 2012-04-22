@@ -2,7 +2,7 @@ package ;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 extern class SocketIOConnection {

@@ -3,7 +3,7 @@ import js.Node;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class GameServer {

@@ -6,7 +6,7 @@ using pokemmo_s.exts.StringExt;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Utils {

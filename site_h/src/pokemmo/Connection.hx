@@ -17,7 +17,7 @@ import pokemmo.Battle;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Connection {

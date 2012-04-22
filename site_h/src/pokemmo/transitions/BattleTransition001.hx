@@ -8,7 +8,7 @@ import pokemmo.Battle;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class BattleTransition001 extends Transition{

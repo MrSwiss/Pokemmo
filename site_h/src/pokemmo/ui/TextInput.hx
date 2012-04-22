@@ -5,7 +5,7 @@ import UserAgentContext;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class TextInput extends UIInput {

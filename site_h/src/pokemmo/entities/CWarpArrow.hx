@@ -7,7 +7,7 @@ import UserAgentContext;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class CWarpArrow extends CWarp{

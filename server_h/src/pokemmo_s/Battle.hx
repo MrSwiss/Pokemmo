@@ -6,7 +6,7 @@ using pokemmo_s.exts.ArrayExt;
 
 /**
  * 
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Battle {

@@ -5,7 +5,7 @@ import pokemmo_s.Pokemon;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class MasterConnector {

@@ -2,7 +2,7 @@ package pokemmo;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Tileset {

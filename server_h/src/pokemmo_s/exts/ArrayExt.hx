@@ -2,7 +2,7 @@ package pokemmo_s.exts;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class ArrayExt {

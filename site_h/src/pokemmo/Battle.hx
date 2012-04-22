@@ -7,7 +7,7 @@ import pokemmo.Connection;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 typedef BattleTurnResult = {

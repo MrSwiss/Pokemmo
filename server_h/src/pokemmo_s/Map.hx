@@ -4,7 +4,7 @@ import pokemmo_s.MasterConnector;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class Map {

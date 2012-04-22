@@ -2,7 +2,7 @@ package pokemmo_s;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 extern class SocketConnection {

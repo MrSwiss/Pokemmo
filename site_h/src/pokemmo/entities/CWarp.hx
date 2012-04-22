@@ -5,7 +5,7 @@ import pokemmo.GameObject;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class CWarp extends GameObject{

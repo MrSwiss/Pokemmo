@@ -9,7 +9,7 @@ import pokemmo.ui.TextInput;
 
 /**
  * ...
- * @author Matheus28
+ * @author Sonyp
  */
 
 class UI {
