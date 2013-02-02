@@ -18,6 +18,6 @@ Start the game server in the /server/server.out.node.js
 
 Note that the server needs the folder "site" in the parent directory of it. So when you had copied the site files to nginx, make sure you didn't delete them from their original location.
 
-You only need the registration server during the registration process, it will create the needed database structures for you. Now go to http://localhost/ in your browser and create an account.
+You only need the registration server during the registration process, it will create the needed database structures for you. Now go to http://localhost/play.html in your browser and create an account.
 
 Everything should be up and running. Open multiple browser windows and login into other accounts to test multiplayer features.
