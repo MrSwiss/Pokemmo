@@ -82,8 +82,8 @@ extern interface CanvasRenderingContext2D {
 		public function createLinearGradient(x0:Double, y0:Double, x1:Double, y1:Double) : CanvasGradient;
 		public function createRadialGradient(x0:Double, y0:Double, r0:Double, x1:Double, y1:Double, r1:Double): CanvasGradient;
 		
-		@:overload(function createPattern(image:HTMLImageElement, repetition:DOMString ) : CanvasPattern {} )
-		@:overload( function createPattern(image:HTMLCanvasElement, repetition:DOMString ) : CanvasPattern {} )
+		@:overload(function(image:HTMLImageElement, repetition:DOMString ) : CanvasPattern {} )
+		@:overload(function(image:HTMLCanvasElement, repetition:DOMString ) : CanvasPattern {} )
 		public function createPattern(image:HTMLVideoElement, repetition:DOMString) : CanvasPattern;
 
 	  // line caps/joins
@@ -134,20 +134,20 @@ extern interface CanvasRenderingContext2D {
 	 	public function measureText(text:DOMString) : TextMetrics;
 	
 	  // drawing images
-	  	@:overload(function drawImage(image:HTMLImageElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-	  	@:overload(function drawImage(image:HTMLCanvasElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLVideoElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLImageElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLCanvasElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLVideoElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLImageElement, dx:Double, dy:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLCanvasElement, dx:Double, dy:Double) : Void {} )
-		@:overload(function drawImage(image:HTMLVideoElement, dx:Double, dy:Double) : Void {} )
+	  	@:overload(function(image:HTMLImageElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+	  	@:overload(function(image:HTMLCanvasElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+		@:overload(function(image:HTMLVideoElement, sx:Double, sy:Double, sw:Double, sh:Double, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+		@:overload(function(image:HTMLImageElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+		@:overload(function(image:HTMLCanvasElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+		@:overload(function(image:HTMLVideoElement, dx:Double, dy:Double, dw:Double, dh:Double) : Void {} )
+		@:overload(function(image:HTMLImageElement, dx:Double, dy:Double) : Void {} )
+		@:overload(function(image:HTMLCanvasElement, dx:Double, dy:Double) : Void {} )
+		@:overload(function(image:HTMLVideoElement, dx:Double, dy:Double) : Void {} )
 		public function drawImage(image:Dynamic, sx:Dynamic, sy:Dynamic, ?sw:Dynamic, ?sh:Dynamic, ?dx:Dynamic, ?dy:Dynamic, ?dw:Dynamic, ?dh:Dynamic) : Void;
 		
 		
 	  // pixel manipulation
-	  	@:overload(function createImageData(sw:Double, sh:Double) : ImageData {} )
+	  	@:overload(function(sw:Double, sh:Double) : ImageData {} )
 	  	public function createImageData(imagedata:ImageData) : ImageData;
 		public function getImageData(sx:Double, sy:Double, sw:Double, sh:Double) : ImageData;
 		public function putImageData(imagedata:ImageData, dx:Double, dy:Double, ?dirtyX:Double, ?dirtyY:Double, ?dirtyWidth:Double, ?dirtyHeight:Double) : Void;

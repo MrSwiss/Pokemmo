@@ -58,8 +58,8 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	function get(index:UnsignedLong):Int;
 	function subarray(begin:Long, end:Long):Int8Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Int8Array, ?offset:UnsignedLong):Void{})
+	@:overload(function(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function(array:Int8Array, ?offset:UnsignedLong):Void{})
 	function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 
@@ -82,8 +82,8 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Uint8Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Uint8Array, ?offset:UnsignedLong):Void{})
+	@:overload(function (index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function (array:Uint8Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 	
@@ -107,8 +107,8 @@ extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Int16Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Int16Array, ?offset:UnsignedLong):Void{})
+	@:overload(function (index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function (array:Int16Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 	
@@ -131,8 +131,8 @@ extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int>
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Uint16Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Uint16Array, ?offset:UnsignedLong):Void{})
+	@:overload(function (index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function (array:Uint16Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 
 	
@@ -155,8 +155,8 @@ extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Int32Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Int32Array, ?offset:UnsignedLong):Void{})
+	@:overload(function(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function(array:Int32Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 	
@@ -178,8 +178,8 @@ extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int>
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Uint32Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
-	@:overload(function set(array:Uint32Array, ?offset:UnsignedLong):Void{})
+	@:overload(function(index:UnsignedLong, value:ArrayAccess<Int>):Void{})
+	@:overload(function(array:Uint32Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 	
@@ -201,8 +201,8 @@ extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Flo
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Float32Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Float>):Void{})
-	@:overload(function set(array:Float32Array, ?offset:UnsignedLong):Void{})
+	@:overload(function(index:UnsignedLong, value:ArrayAccess<Float>):Void{})
+	@:overload(function(array:Float32Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 	
 	
@@ -224,8 +224,8 @@ extern class Float64Array implements ArrayBufferView, implements ArrayAccess<Flo
 	public function get(index:UnsignedLong):Int;
 	public function subarray(begin:Long, end:Long):Float64Array;
 	
-	@:overload(function set(index:UnsignedLong, value:ArrayAccess<Float>):Void{})
-	@:overload(function set(array:Float64Array, ?offset:UnsignedLong):Void{})
+	@:overload(function(index:UnsignedLong, value:ArrayAccess<Float>):Void{})
+	@:overload(function(array:Float64Array, ?offset:UnsignedLong):Void{})
 	public function set(array:ArrayBuffer, ?offset:UnsignedLong):Void;
 
 	

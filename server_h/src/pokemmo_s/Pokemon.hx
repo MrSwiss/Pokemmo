@@ -425,7 +425,7 @@ class Pokemon {
 				continue;
 			}
 			
-			if (m.level == -1 && moves.indexOf(m.move) == -1) {
+			if (m.level == -1 && Lambda.indexOf(moves, m.move) == -1) {
 				// Moves that learn during an evolution
 			}else if (m.level != level) {
 				// Not on right level to learn this move

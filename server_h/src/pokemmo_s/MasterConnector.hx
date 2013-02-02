@@ -55,11 +55,11 @@ class MasterConnector {
 	}
 	
 	static inline function isUser(username:String, func:Bool->Void):Void {
-		func(savingUsers.indexOf(username) != -1);
+		func(Lambda.indexOf(savingUsers, username) != -1);
 	}
 	
 	static public function loginUser(username:String, password:String, func:String->String->Void):Void {
-		if (savingUsers.indexOf(username) != -1 || loggedInUsers.indexOf(username) != -1) {
+		if (Lambda.indexOf(savingUsers, username) != -1 || Lambda.indexOf(loggedInUsers, username) != -1) {
 			func("loggedInAlready", null);
 			return;
 		}
@@ -101,7 +101,7 @@ class MasterConnector {
 	}
 	
 	static public function saveCharacter(username:String, data:ClientCharacterSave):Void {
-		if (savingUsers.indexOf(username) != -1) return;
+		if (Lambda.indexOf(savingUsers, username) != -1) return;
 		
 		savingUsers.push(username);
 		

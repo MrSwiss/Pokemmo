@@ -163,15 +163,15 @@ class UI {
 		if (inputs.length <= 1) return;
 		
 		if (selectedInput != null) {
-			inputs[(inputs.indexOf(selectedInput) + 1) % inputs.length].select();
+			inputs[(Lambda.indexOf(inputs, selectedInput) + 1) % inputs.length].select();
 		}else if(lastSelectedInput != null){
-			inputs[(inputs.indexOf(lastSelectedInput) + 1) % inputs.length].select();
+			inputs[(Lambda.indexOf(inputs, lastSelectedInput) + 1) % inputs.length].select();
 		}else if(inputs.length > 0){
 			inputs[0].select();
 		}
 		
 		if (selectedInput != null && selectedInput.disabled) {
-			var i = inputs.indexOf(selectedInput);
+			var i = Lambda.indexOf(inputs, selectedInput);
 			for (j in i...inputs.length) {
 				if (!inputs[j].disabled) {
 					inputs[j].select();

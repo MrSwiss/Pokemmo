@@ -487,11 +487,11 @@ extern class WebGLRenderingContext {
 		public function blendFunc(sfactor:GLenum, dfactor:GLenum) : Void;
 		public function blendFuncSeparate(srcRGB:GLenum, dstRGB:GLenum, srcAlpha:GLenum, dstAlpha:GLenum) : Void;
 		
-		@:overload(function bufferData(target:GLenum, size:GLsizeipt, usage:GLenum) : Void {} )
-		@:overload(function bufferData(target:GLenum, data:ArrayBufferView, usage:GLenum) : Void {} )
+		//@:overload(function(target:GLenum, size:GLsizeipt, usage:GLenum) : Void { })
+		@:overload(function(target:GLenum, data:ArrayBufferView, usage:GLenum) : Void {} )
 		public function bufferData(target:GLenum, data:ArrayBuffer, usage:GLenum):Void;
 		  
-		@:overload(function bufferSubData(target:GLenum, offset:GLintptr, data:ArrayBufferView) : Void {} )  
+		@:overload(function(target:GLenum, offset:GLintptr, data:ArrayBufferView) : Void {} )  
 		public function bufferSubData(target:GLenum, offset:GLintptr, data:ArrayBuffer):Void;
 			
 		public function checkFramebufferStatus(target:GLenum) : GLenum;
@@ -575,19 +575,19 @@ extern class WebGLRenderingContext {
 		public function stencilOp(fail:GLenum, zfail:GLenum, zpass:GLenum) : Void;
 		public function stencilOpSeparate(face:GLenum, fail:GLenum, zfail:GLenum, zpass:GLenum) : Void;
     	
-		@:overload(function texImage2D(target:GLenum, level:GLint, internalformat:GLenum, width:GLsizei , height:GLsizei , border:GLint , format:GLenum, type:GLenum , pixels:ArrayBufferView) : Void {} )
-		@:overload(function texImage2D(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum,  pixels:ImageData) : Void {} )
-		@:overload(function texImage2D(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum, image:HTMLImageElement) : Void {} )
-		@:overload(function texImage2D(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum, canvas:HTMLCanvasElement) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, internalformat:GLenum, width:GLsizei , height:GLsizei , border:GLint , format:GLenum, type:GLenum , pixels:ArrayBufferView) : Void {} )
+		//@:overload(function(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum,  pixels:ImageData) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum, image:HTMLImageElement) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum, canvas:HTMLCanvasElement) : Void {} )
 		public function texImage2D(target:GLenum, level:GLint, internalformat:GLenum, format:GLenum, type:GLenum, video:HTMLVideoElement):Void;
 		
-		@:overload(function texParameterf(target:GLenum, pname:GLenum, param:GLfloat) : Void {} )
+		@:overload(function(target:GLenum, pname:GLenum, param:GLfloat) : Void {} )
 		public function texParameteri(target:GLenum, pname:GLenum, param:GLint) : Void;
 		
-		@:overload(function texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, width:GLsizei, height:GLsizei, format:GLenum, type:GLenum, pixels:ArrayBufferView) : Void {} )
-		@:overload(function texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, pixels:ImageData) : Void {} )
-		@:overload(function texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, image:HTMLImageElement) : Void {} )
-		@:overload(function texSubImage2D(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, canvas:HTMLCanvasElement) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, width:GLsizei, height:GLsizei, format:GLenum, type:GLenum, pixels:ArrayBufferView) : Void {} )
+		//@:overload(function(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, pixels:ImageData) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, image:HTMLImageElement) : Void {} )
+		@:overload(function(target:GLenum, level:GLint, xoffset:GLint, yoffset:GLint, format:GLenum, type:GLenum, canvas:HTMLCanvasElement) : Void {} )
 		public function texSubImage2D(target:GLenum, level:GLint, xoffset:GLint , yoffset:GLint, format:GLenum, type:GLenum, video:HTMLVideoElement) : Void;
 		
 		public function uniform1f(location:WebGLUniformLocation, x:GLfloat) : Void;
@@ -599,37 +599,37 @@ extern class WebGLRenderingContext {
 		public function uniform4f(location:WebGLUniformLocation, x:GLfloat, y:GLfloat, z:GLfloat, w:GLfloat) : Void;
 		public function uniform4i(location:WebGLUniformLocation, x:GLint, y:GLint, z:GLint, w:GLint) : Void;
 		
-		@:overload(function uniform1fv(location:WebGLUniformLocation, v:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Float32Array) : Void {} )
 		public function uniform1fv(location:WebGLUniformLocation, v:ArrayAccess<Float>) : Void;
 
-    		@:overload(function uniform1iv(location:WebGLUniformLocation, v:Int32Array) : Void {} )
+    		@:overload(function(location:WebGLUniformLocation, v:Int32Array) : Void {} )
 		public function uniform1iv(location:WebGLUniformLocation, v:ArrayAccess<Long>) : Void;
     	
-		@:overload(function uniform2fv(location:WebGLUniformLocation, v:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Float32Array) : Void {} )
 		public function uniform2fv(location:WebGLUniformLocation, v:ArrayAccess<Float>) : Void;
 
-		@:overload(function uniform2iv(location:WebGLUniformLocation, v:Int32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Int32Array) : Void {} )
 		public function uniform2iv(location:WebGLUniformLocation, v:ArrayAccess<Long>) : Void;
 
-		@:overload(function uniform3fv(location:WebGLUniformLocation, v:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Float32Array) : Void {} )
 		public function uniform3fv(location:WebGLUniformLocation, v:ArrayAccess<Float>) : Void;
 		
-		@:overload(function uniform3iv(location:WebGLUniformLocation, v:Int32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Int32Array) : Void {} )
 		public function uniform3iv(location:WebGLUniformLocation, v:ArrayAccess<Long>) : Void;
 		
-		@:overload(function uniform4fv(location:WebGLUniformLocation, v:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Float32Array) : Void {} )
 		public function uniform4fv(location:WebGLUniformLocation, v:ArrayAccess<Float>) : Void;
 		
-		@:overload(function uniform4iv(location:WebGLUniformLocation, v:Int32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, v:Int32Array) : Void {} )
 		public function uniform4iv(location:WebGLUniformLocation, v:ArrayAccess<Long>) : Void;
 
-		@:overload(function uniformMatrix2fv(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
 		public function uniformMatrix2fv(location:WebGLUniformLocation, transpose:GLboolean, value:ArrayAccess<Float>) : Void;
 		    
-		@:overload(function uniformMatrix3fv(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
 		public function  uniformMatrix3fv(location:WebGLUniformLocation, transpose:GLboolean, value:ArrayAccess<Float>) : Void;
 		    
-		@:overload(function uniformMatrix4fv(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
+		@:overload(function(location:WebGLUniformLocation, transpose:GLboolean, value:Float32Array) : Void {} )
 		public function uniformMatrix4fv(location:WebGLUniformLocation, transpose:GLboolean, value:ArrayAccess<Float>) : Void;
 		
 		public function useProgram(program:WebGLProgram) : Void;
@@ -641,16 +641,16 @@ extern class WebGLRenderingContext {
 		public function vertexAttrib4f(indx:GLuint, x:GLfloat, y:GLfloat, z:GLfloat, w:GLfloat) : Void;
 		public function vertexAttribPointer(indx:GLuint, size:GLint, type:GLenum, normalized:GLboolean, stride:GLsizei, offset:GLintptr) : Void;
 
-		@:overload(function vertexAttrib1fv(indx:GLuint, values:Float32Array) : Void {} )
+		@:overload(function(indx:GLuint, values:Float32Array) : Void {} )
 		public function vertexAttrib1fv(indx:GLuint, values:ArrayAccess<Float>) : Void;
 
-		@:overload(function vertexAttrib2fv(indx:GLuint, values:Float32Array) : Void {} )
+		@:overload(function(indx:GLuint, values:Float32Array) : Void {} )
 		public function vertexAttrib2fv(indx:GLuint, values:ArrayAccess<Float>) : Void;
 
-		@:overload(function vertexAttrib3fv(indx:GLuint, values:Float32Array) : Void {} )
+		@:overload(function(indx:GLuint, values:Float32Array) : Void {} )
 		public function vertexAttrib3fv(indx:GLuint, values:ArrayAccess<Float>) : Void;
 
-		@:overload(function vertexAttrib4fv(indx:GLuint, values:Float32Array) : Void {} )
+		@:overload(function(indx:GLuint, values:Float32Array) : Void {} )
 		public function vertexAttrib4fv(indx:GLuint, values:ArrayAccess<Float>) : Void;
 	
 		public function viewport(x:GLint, y:GLint, width:GLsizei, height:GLsizei) : Void;	

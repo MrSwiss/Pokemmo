@@ -43,12 +43,12 @@ class Renderer {
 	}
 	
 	static public function hookRender(func:Void->Void):Void {
-		if(renderHooks.indexOf(func) != -1) return;
+		if(Lambda.indexOf(renderHooks, func) != -1) return;
 		renderHooks.push(func);
 	}
 	
 	static public function unHookRender(func:Void->Void):Void {
-		var i = renderHooks.indexOf(func);
+		var i = Lambda.indexOf(renderHooks, func);
 		if(i != -1) renderHooks.splice(i, 1);
 	}
 	

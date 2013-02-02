@@ -101,7 +101,7 @@ class Client {
 			return;
 		}
 		
-		if (ServerConst.pokemonStarters.indexOf(data.starter) == -1 || ServerConst.characterSprites.indexOf(data.character) == -1) {
+		if (Lambda.indexOf(ServerConst.pokemonStarters, data.starter) == -1 || Lambda.indexOf(ServerConst.characterSprites, data.character) == -1) {
 			return;
 		}
 		

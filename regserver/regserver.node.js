@@ -9,7 +9,7 @@ var server = new mongodb.Server("127.0.0.1", 27017, {});
 var dbclient;
 var accounts;
 
-var MAX_ACCOUNTS = 10;
+var MAX_ACCOUNTS = 10; // Used to limit the game to only beta testers
 
 var lastRegisteredIPs = [];
 
