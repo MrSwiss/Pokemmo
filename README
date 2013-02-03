@@ -6,6 +6,10 @@ First you have to install:
 * Node.js: http://nodejs.org/
 * MongoDB: http://www.mongodb.org/downloads
 
+Note:
+* In the default settings, you need to create a folder for mongo at C:\data\db, before starting the bin\mongodb.exe (in Windows)
+* When you run nginx in Windows it'll just open a command prompt and close, but it's working. Open "http://localhost/" in your browser to confirm
+
 Start up nginx and mongodb.
 
 Copy (don't move, copy) the contents from the /site/ dir to the html folder in nginx.
