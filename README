@@ -8,7 +8,7 @@ First you have to install:
 
 Start up nginx and mongodb.
 
-Extract the contents from the /site/ dir to the html folder in nginx.
+Copy (don't move, copy) the contents from the /site/ dir to the html folder in nginx.
 
 The lastest commit has the game engine configured to connect to localhost, so you shouldn't have to change anything regarding the server ip, but if for some reason in the future this changes, you have to edit IPs in the /site/js/main.out.js file to point to the correct IP address.
 
